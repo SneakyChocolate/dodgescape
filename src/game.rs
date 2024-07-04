@@ -12,7 +12,7 @@ pub fn draw<T: Drawable>(object: &T, camera: (f32, f32)) -> String {
     let (cx, cy) = camera;
     let (x, y) = object.get_pos();
     let shapes = object.get_shapes();
-    let mut o = "".to_owned();
+    let mut output = "".to_owned();
     for shape in shapes {
         let (color, shape, (sx, sy)) = shape;
         let s = match shape {
@@ -21,9 +21,9 @@ pub fn draw<T: Drawable>(object: &T, camera: (f32, f32)) -> String {
             },
             _ => format!("[{:?}],", (color, shape, (x + sx - cx, y + sy - cy))),
         };
-        o.push_str(&s);
+        output.push_str(&s);
     }
-    o
+    output
 }
 
 pub trait Moveable {
