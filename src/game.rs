@@ -1,19 +1,26 @@
 use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle, Thread}, time::Duration};
 
 use crate::{enemy::Enemy, player::Player};
+use rand::prelude::*;
 
 pub trait Drawable {
     fn get_pos(&self) -> (f32,f32);
     fn get_shapes(&self) -> &Vec<(String, Shape, (f32,f32))>;
 }
 
-pub fn draw<T: Drawable>(object: &T) -> String {
+pub fn draw<T: Drawable>(object: &T, camera: (f32, f32)) -> String {
+    let (cx, cy) = camera;
     let (x, y) = object.get_pos();
     let shapes = object.get_shapes();
     let mut o = "".to_owned();
     for shape in shapes {
         let (color, shape, (sx, sy)) = shape;
-        let s = format!("[{:?}],", (color, shape, (x + sx, y + sy)));
+        let s = match shape {
+            Shape::Line { x: lx, y: ly } => {
+                format!("[{:?}],", (color, Shape::Line { x: lx - cx, y: ly - cy }, (x + sx - cx, y + sy - cy)))
+            },
+            _ => format!("[{:?}],", (color, shape, (x + sx - cx, y + sy - cy))),
+        };
         o.push_str(&s);
     }
     o
@@ -64,7 +71,10 @@ impl Game {
             running: false,
             enemies: vec![],
         };
-        g.enemies.push(Enemy::new(200.0, 100.0, (0.3, 0.0)));
+        for i in 0..100 {
+            let velocity: (f32, f32) = (rand::random::<f32>(), rand::random::<f32>());
+            g.enemies.push(Enemy::new(200.0, 100.0, velocity));
+        }
 
         g
     }
@@ -91,9 +101,15 @@ impl Game {
                 let objects = &mut (game.enemies);
                 for object in objects {
                     move_object(object);
+                    // TODO collision over map struct
                     if object.x > 500.0 || object.x < -500.0 {
                         match object.velocity {
                             (x,y) => {object.velocity = (-x, y);}
+                        }
+                    }
+                    if object.y > 500.0 || object.y < -500.0 {
+                        match object.velocity {
+                            (x,y) => {object.velocity = (x, -y);}
                         }
                     }
                 }
@@ -102,16 +118,16 @@ impl Game {
         });
         game.game_loop = Some(t);
     }
-    pub fn pack_objects(&self) -> String {
+    pub fn pack_objects(&self, camera: (f32, f32)) -> String {
         let mut objects = "".to_owned();
         // players
         for object in self.players.iter() {
-            let acc = draw(object);
+            let acc = draw(object, camera);
             objects.push_str(&acc);
         }
         // enemies
         for object in self.enemies.iter() {
-            let acc = draw(object);
+            let acc = draw(object, camera);
             objects.push_str(&acc);
         }
         objects
@@ -122,11 +138,13 @@ impl Game {
             None => return "".to_owned(),
         };
 
+        let camera = (player.x.clone(), player.y.clone());
+
         player.mouse = mouse;
         player.keys_down = keys_down;
 
         // retrieve object data
-        self.pack_objects()
+        self.pack_objects(camera)
     }
     pub fn get(&mut self, player: &String) -> Option<&mut Player> {
         self.players.iter_mut().find(|p| {p.name == *player})
