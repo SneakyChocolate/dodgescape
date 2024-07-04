@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Jonas server</title>
+  </head>
+  <body>
+    <h1>Jonas his server</h1>
+    <input type="text" id="input">
+    <button id="login">login</button>
+    <p id="output">output: </p>
+    <script>
+      let login_button = document.getElementById("login");
+      let username = document.getElementById("input");
+      let output = document.getElementById("output");
+      let canvas;
+      let ctx;
+      let keys_down = [];
+
+      document.onkeydown = function(e) {
+       	if (keys_down.includes(e.code)) {
+      		return;
+      	}
+      	keys_down.push(e.code);
+      }
+
+      document.onkeyup = function(e) {
+      	let index = keys_down.indexOf(e.code);
+      	if (index >= 0) {
+      		keys_down.splice(index, 1);
+      	}
+      }
+
+      function seperate(string, seperator) {
+      	let elements = [];
+      	let last = -1;
+      	let layer = 0;
+      	for (let i = 0; i < string.length; i ++) {
+      		let char = string[i];
+      		if (char == seperator && layer == 1) {
+      			elements.push(string.substring(last + 1, i));
+      			last = i;
+      		}
+      		else if (char == "[" || char == "(" || char == "{") {
+      			if (layer == 0) {
+      				last = i;
+      			}
+      			layer ++;
+      		}
+      		else if (char == "]" || char == ")" || char == "}") {
+      			if (layer == 1) {
+      				elements.push(string.substring(last + 1, i));
+      			}
+      			layer --;
+      		}
+      	}
+      	return elements;
+      }
+
+      function send(msg, callback) {
+        fetch("http://192.168.178.66:7878/", {
+          method: "POST",
+          body: msg,
+          headers: {
+              "Content-type": "application/json"
+          }
+        })
+        .then((r) => r.text())
+        .then((r) => callback(r))
+      }
+
+      function circle(x, y, radius, color) {
+          ctx.beginPath();
+          ctx.arc(
+              x,
+              y,
+              radius,
+              0, 2 * Math.PI);
+          ctx.fillStyle = color;
+          ctx.fill();
+          ctx.closePath();
+      }
+
+      function rect(x, y, width, height, color) {
+          ctx.beginPath();
+          ctx.rect(x, y, width, height);
+          ctx.fillStyle = color;
+          ctx.fill();
+          ctx.closePath();
+      }
+
+      function line(start, end, width, color) {
+          ctx.lineWidth = width;
+          ctx.strokeStyle = color;
+
+          ctx.beginPath();
+          ctx.moveTo( start[0], start[1] );
+          ctx.lineTo( end[0], end[1] );
+          ctx.stroke();
+          ctx.closePath();
+      }
+
+      let renderLoop;
+      let mouse_x = 0;
+      let mouse_y = 0;
+
+      document.body.onmousemove = function(e) {
+        mouse_x = e.clientX;
+        mouse_y = e.clientY;
+      }
+
+      function findClosest(string, words, offset) {
+        let min = -1;
+        for (let i = 0; i < words.length; i ++) {
+          let word = words[i];
+          let index = string.indexOf(word, offset);
+          if ((index < min || min == -1) && index >= 0) {
+            min = index;
+          }
+        }
+        return min;
+      }
+
+      function getattribute(string, attribute) {
+        let signature = attribute + ": ";
+        let index = string.indexOf(signature) + signature.length;
+        let value = string.substring(index, findClosest(string, [" ", ","], index));
+        return value;
+      }
+
+      function render(data) {
+        // clear the canvas
+        rect(0, 0, canvas.width, canvas.height, "rgb(0,0,0)");
+        let shapes = seperate(data, ",");
+        // console.log(shapes);
+        for (let i = 0; i < shapes.length; i ++) {
+          let data = seperate(shapes[i], ",");
+          let color = data[0].substring(1,data[0].length - 1);
+          let shape = data[1];
+          let pos = data[2].substring(2,data[2].length - 1).split(", ");
+          let x = Number(pos[0]);
+          let y = Number(pos[1]);
+          
+          if (shape.includes("Circle")) {
+            let radius = Number(getattribute(shape, "radius"));
+            circle(x + canvas.width / 2, y + canvas.height / 2, radius, color);
+          }
+          else if (shape.includes("Rectangle")) {
+            let width = getattribute(shape, "width");
+            let height = getattribute(shape, "height");
+            rect(x + canvas.width / 2, y + canvas.height / 2, width, height, color);
+          }
+          else if (shape.includes("Line")) {
+            let x2 = Number(getattribute(shape, "x"));
+            let y2 = Number(getattribute(shape, "y"));
+            line([x + canvas.width / 2, y + canvas.height / 2], [x2 + canvas.width / 2, y2 + canvas.height / 2], 15, color);
+          }
+          else if (shape.includes("Text")) {
+            let content = getattribute(shape, "content").substring(1,getattribute(shape, "content").length - 1);
+            let size = getattribute(shape, "size");
+            // console.log(content, size);
+            ctx.fillStyle = color;
+            ctx.font = size + "px Arial";
+            ctx.fillText(content,x + canvas.width / 2, y + canvas.height / 2);
+          }
+        }
+      }
+
+      login_button.onclick = function(e) {
+        let msg = `let mode = login; let username: String = ${username.value}; let x: i32 = ${mouse_x}; let y: i32 = ${mouse_y}; let keys_down = ${keys_down.join(",")};`;
+        send(msg, (r) => {
+          // here comes what happens after login
+          // output.innerHTML = "output: " + r
+          document.body.innerHTML = "";
+          canvas = document.createElement("canvas");
+          ctx = canvas.getContext("2d");
+          document.body.append(canvas);
+          document.body.style.margin = "0";
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+
+          // starting canvas action
+          renderLoop = setInterval(function() {
+            let msg = `let mode = game; let username: String = ${username.value}; let x: i32 = ${mouse_x}; let y: i32 = ${mouse_y}; let keys_down = ${keys_down.join(",")};`;
+            try {
+              send(msg, render);
+            }
+            catch (e) {
+              clearInterval(renderLoop);
+            }
+          }, 30);
+        });
+      }
+
+      window.onunload = function () {
+        let msg = `let mode = logout; let username: String = ${username.value};`;
+        send(msg, (r) => {
+          console.log(r);
+        });
+      }
+    </script>
+  </body>
+</html>
