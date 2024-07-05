@@ -1,5 +1,6 @@
-use crate::game::{Drawable, Moveable, Shape};
+use std::array::TryFromSliceError;
 
+use crate::{game::{Drawable, Moveable, Position, Shape}, impl_Drawable, impl_Movable, impl_Position};
 
 #[derive(Debug, Default)]
 pub struct Player {
@@ -10,36 +11,23 @@ pub struct Player {
     pub x: f32,
     pub y: f32,
     pub shapes: Vec<(String, Shape, (f32,f32))>,
+    pub alive: bool,
+    pub radius: f32,
 }
 
-impl Moveable for Player {
-    fn get_x(&mut self) -> &mut f32 {
-        &mut self.x
-    }
-    fn get_y(&mut self) -> &mut f32 {
-        &mut self.y
-    }
-    fn get_velocity(&self) -> &(f32, f32) {
-        &self.velocity
-    }
-}
-
-impl Drawable for Player {
-    fn get_pos(&self) -> (f32,f32) {
-        (self.x, self.y)
-    }
-    fn get_shapes(&self) -> &Vec<(String, Shape, (f32,f32))> {
-        &self.shapes
-    }
-}
+impl_Position!(Player);
+impl_Movable!(Player);
+impl_Drawable!(Player);
 
 impl Player {
     pub fn new(name: &String) -> Player {
         let mut p = Player {
             name: name.clone(),
+            radius: 30.0,
+            alive: true,
             ..Default::default()
         };
-        p.shapes.push(("blue".to_owned(), Shape::Circle { radius: 30.0 }, (0.0, 0.0)));
+        p.shapes.push(("blue".to_owned(), Shape::Circle { radius: p.radius }, (0.0, 0.0)));
         p.shapes.push(("white".to_owned(), Shape::Text { content: name.clone(), size: 20.0 }, (-20.0, -40.0)));
         p.shapes.push(("red".to_owned(), Shape::Line { x: 0.0, y: 0.0 }, (0.0, 0.0)));
 

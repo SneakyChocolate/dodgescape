@@ -1,16 +1,64 @@
-use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle, Thread}, time::Duration};
+use std::{collections::btree_map::Entry, sync::{Arc, Mutex}, thread::{self, JoinHandle, Thread}, time::Duration};
 
 use crate::{enemy::Enemy, player::Player};
 use rand::prelude::*;
 
 pub trait Drawable {
-    fn get_pos(&self) -> (f32,f32);
     fn get_shapes(&self) -> &Vec<(String, Shape, (f32,f32))>;
 }
+#[macro_export]
+macro_rules! impl_Drawable {
+    ($struct_name:ident) => {
+        impl Drawable for $struct_name {
+            fn get_shapes(&self) -> &Vec<(String, Shape, (f32,f32))> {
+                &self.shapes
+            }
+        }
+    };
+}
+pub trait Position {
+    fn x(&self) -> f32;
+    fn y(&self) -> f32;
+}
+#[macro_export]
+macro_rules! impl_Position {
+    ($struct_name:ident) => {
+        impl Position for $struct_name {
+            fn x(&self) -> f32 {
+                self.x
+            }
+            fn y(&self) -> f32 {
+                self.y
+            }
+        }
+    };
+}
+pub trait Moveable {
+    fn get_x(&mut self) -> &mut f32;
+    fn get_y(&mut self) -> &mut f32;
+    fn get_velocity(&self) -> &(f32, f32);
+}
+#[macro_export]
+macro_rules! impl_Movable {
+    ($struct_name:ident) => {
+        impl Moveable for $struct_name {
+            fn get_x(&mut self) -> &mut f32 {
+                &mut self.x
+            }
+            fn get_y(&mut self) -> &mut f32 {
+                &mut self.y
+            }
+            fn get_velocity(&self) -> &(f32, f32) {
+                &self.velocity
+            }
+        }
+    };
+}
 
-pub fn draw<T: Drawable>(object: &T, camera: (f32, f32)) -> String {
+pub fn draw<T: Drawable + Position>(object: &T, camera: (f32, f32)) -> String {
     let (cx, cy) = camera;
-    let (x, y) = object.get_pos();
+    let x = object.x();
+    let y = object.y();
     let shapes = object.get_shapes();
     let mut output = "".to_owned();
     for shape in shapes {
@@ -25,18 +73,23 @@ pub fn draw<T: Drawable>(object: &T, camera: (f32, f32)) -> String {
     }
     output
 }
-
-pub trait Moveable {
-    fn get_x(&mut self) -> &mut f32;
-    fn get_y(&mut self) -> &mut f32;
-    fn get_velocity(&self) -> &(f32, f32);
-}
-
 pub fn move_object<T: Moveable + std::fmt::Debug>(object: &mut T) {
     let (vx, vy) = object.get_velocity().clone();
     *(object.get_x()) += vx;
     *(object.get_y()) += vy;
     // println!("{}, {}", object.get_x().clone(), object.get_y().clone());
+}
+
+pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {
+    let ax = a.x();
+    let ay = a.y();
+    let bx = b.x();
+    let by = b.y();
+
+    let dx = bx - ax;
+    let dy = by - ay;
+
+    (dx, dy, f32::sqrt(f32::powi(dx, 2) + f32::powi(dy, 2)))
 }
 
 #[derive(Debug)]
@@ -71,7 +124,7 @@ impl Game {
             running: false,
             enemies: vec![],
         };
-        for i in 0..100 {
+        for i in 0..300 {
             let velocity: (f32, f32) = (rand::random::<f32>(), rand::random::<f32>());
             g.enemies.push(Enemy::new(200.0, 100.0, velocity));
         }
@@ -92,28 +145,64 @@ impl Game {
                     break;
                 }
                 // handle players
-                let objects = &mut (game.players);
-                for object in objects {
-                    object.handle_keys();
-                    move_object(object);
+                for object in &mut game.players {
+                    if object.alive {
+                        object.shapes.get_mut(0).unwrap().0 = "blue".to_owned();
+                        object.handle_keys();
+                        move_object(object);
+                    }
+                    else {
+                        object.shapes.get_mut(0).unwrap().0 = "red".to_owned();
+                    }
                 }
                 // handle enemies
-                let objects = &mut (game.enemies);
-                for object in objects {
+                for object in &mut game.enemies {
                     move_object(object);
                     // TODO collision over map struct
-                    if object.x > 500.0 || object.x < -500.0 {
+                    if object.x > 3000.0 || object.x < -3000.0 {
                         match object.velocity {
                             (x,y) => {object.velocity = (-x, y);}
                         }
                     }
-                    if object.y > 500.0 || object.y < -500.0 {
+                    if object.y > 3000.0 || object.y < -3000.0 {
                         match object.velocity {
                             (x,y) => {object.velocity = (x, -y);}
                         }
                     }
                 }
 
+                // collisions
+                // enemy kill
+                let mut collisions: Vec<usize> = vec![];
+                for (i, player) in game.players.iter().enumerate() {
+                    for enemy in game.enemies.iter() {
+                        // when colliding then change player.alive = false;
+                        let (dx, dy, dd) = distance(player, enemy);
+                        if dd <= (player.radius + enemy.radius) / 2.0 {
+                            collisions.push(i);
+                        }
+                    }
+                }
+                for i in collisions {
+                    let player = game.players.get_mut(i).unwrap();
+                    player.alive = false;
+                }
+                // team revive
+                let mut collisions: Vec<usize> = vec![];
+                for (i, player) in game.players.iter().enumerate() {
+                    for other in game.players.iter() {
+                        if std::ptr::eq(player, other) || !other.alive {continue;}
+                        // when colliding then change player.alive = false;
+                        let (dx, dy, dd) = distance(player, other);
+                        if dd <= (player.radius + other.radius) / 2.0 {
+                            collisions.push(i);
+                        }
+                    }
+                }
+                for i in collisions {
+                    let player = game.players.get_mut(i).unwrap();
+                    player.alive = true;
+                }
             }
         });
         game.game_loop = Some(t);
