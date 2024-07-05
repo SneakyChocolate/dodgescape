@@ -179,33 +179,28 @@ impl Game {
 
                 // collisions
                 // enemy kill
-                let mut collisions: Vec<usize> = vec![];
+                let mut deaths: Vec<usize> = vec![];
+                let mut revives: Vec<usize> = vec![];
                 for (i, player) in game.players.iter().enumerate() {
                     for enemy in game.enemies.iter() {
-                        // when colliding then change player.alive = false;
                         let (dx, dy, dd) = distance(player, enemy);
                         if dd <= (player.radius + enemy.radius) {
-                            collisions.push(i);
+                            deaths.push(i);
+                        }
+                    }
+                    for other in game.players.iter() {
+                        if std::ptr::eq(player, other) || !other.alive {continue;}
+                        let (dx, dy, dd) = distance(player, other);
+                        if dd <= (player.radius + other.radius) {
+                            revives.push(i);
                         }
                     }
                 }
-                for i in collisions {
+                for i in deaths {
                     let player = game.players.get_mut(i).unwrap();
                     player.alive = false;
                 }
-                // team revive
-                let mut collisions: Vec<usize> = vec![];
-                for (i, player) in game.players.iter().enumerate() {
-                    for other in game.players.iter() {
-                        if std::ptr::eq(player, other) || !other.alive {continue;}
-                        // when colliding then change player.alive = false;
-                        let (dx, dy, dd) = distance(player, other);
-                        if dd <= (player.radius + other.radius) {
-                            collisions.push(i);
-                        }
-                    }
-                }
-                for i in collisions {
+                for i in revives {
                     let player = game.players.get_mut(i).unwrap();
                     player.alive = true;
                 }
