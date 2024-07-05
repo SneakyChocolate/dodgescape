@@ -4,6 +4,7 @@ mod parser;
 mod game;
 mod player;
 mod enemy;
+mod vector;
 
 use std::sync::{Arc, Mutex};
 

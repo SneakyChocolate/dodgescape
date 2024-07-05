@@ -1,6 +1,6 @@
 use std::array::TryFromSliceError;
 
-use crate::{game::{Drawable, Moveable, Position, Shape}, impl_Drawable, impl_Movable, impl_Position};
+use crate::{game::{Drawable, Moveable, Position, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
 
 #[derive(Debug, Default)]
 pub struct Player {
@@ -51,6 +51,12 @@ impl Player {
         let key = "KeyA".to_owned();
         if self.keys_down.contains(&key) {
             vx = -1.0;
+        }
+        (vx, vy) = vector::normalize((vx, vy), 1.0);
+        let key = "ShiftLeft".to_owned();
+        if self.keys_down.contains(&key) {
+            vx /= 2.0;
+            vy /= 2.0;
         }
         self.velocity = (vx, vy);
     }

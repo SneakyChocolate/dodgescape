@@ -154,7 +154,7 @@ impl Game {
             enemies: vec![],
         };
         for i in 0..300 {
-            let velocity: (f32, f32) = (rand::random::<f32>(), rand::random::<f32>());
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-0.5..=0.5), rand::thread_rng().gen_range(-0.5..=0.5));
             g.enemies.push(Enemy::new(200.0, 100.0, velocity));
         }
 
