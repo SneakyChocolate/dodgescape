@@ -116,6 +116,35 @@ pub struct Game {
     pub enemies: Vec<Enemy>,
 }
 
+pub fn handle_players(players: &mut Vec<Player>) {
+    for object in players {
+        if object.alive {
+            object.shapes.get_mut(0).unwrap().0 = "blue".to_owned();
+            object.handle_keys();
+            move_object(object);
+        }
+        else {
+            object.shapes.get_mut(0).unwrap().0 = "red".to_owned();
+        }
+    }
+}
+pub fn handle_enemies(enemies: &mut Vec<Enemy>) {
+    for object in enemies {
+        move_object(object);
+        // TODO collision over map struct
+        if object.x > 3000.0 || object.x < -3000.0 {
+            match object.velocity {
+                (x,y) => {object.velocity = (-x, y);}
+            }
+        }
+        if object.y > 3000.0 || object.y < -3000.0 {
+            match object.velocity {
+                (x,y) => {object.velocity = (x, -y);}
+            }
+        }
+    }
+}
+
 impl Game {
     pub fn new() -> Game {
         let mut g = Game {
@@ -144,32 +173,9 @@ impl Game {
                 if !game.running {
                     break;
                 }
-                // handle players
-                for object in &mut game.players {
-                    if object.alive {
-                        object.shapes.get_mut(0).unwrap().0 = "blue".to_owned();
-                        object.handle_keys();
-                        move_object(object);
-                    }
-                    else {
-                        object.shapes.get_mut(0).unwrap().0 = "red".to_owned();
-                    }
-                }
-                // handle enemies
-                for object in &mut game.enemies {
-                    move_object(object);
-                    // TODO collision over map struct
-                    if object.x > 3000.0 || object.x < -3000.0 {
-                        match object.velocity {
-                            (x,y) => {object.velocity = (-x, y);}
-                        }
-                    }
-                    if object.y > 3000.0 || object.y < -3000.0 {
-                        match object.velocity {
-                            (x,y) => {object.velocity = (x, -y);}
-                        }
-                    }
-                }
+
+                handle_players(&mut game.players);
+                handle_enemies(&mut game.enemies);
 
                 // collisions
                 // enemy kill
@@ -178,7 +184,7 @@ impl Game {
                     for enemy in game.enemies.iter() {
                         // when colliding then change player.alive = false;
                         let (dx, dy, dd) = distance(player, enemy);
-                        if dd <= (player.radius + enemy.radius) / 2.0 {
+                        if dd <= (player.radius + enemy.radius) {
                             collisions.push(i);
                         }
                     }
@@ -194,7 +200,7 @@ impl Game {
                         if std::ptr::eq(player, other) || !other.alive {continue;}
                         // when colliding then change player.alive = false;
                         let (dx, dy, dd) = distance(player, other);
-                        if dd <= (player.radius + other.radius) / 2.0 {
+                        if dd <= (player.radius + other.radius) {
                             collisions.push(i);
                         }
                     }
