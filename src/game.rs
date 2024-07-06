@@ -1,17 +1,17 @@
-use std::{collections::btree_map::Entry, sync::{Arc, Mutex, MutexGuard}, thread::{self, JoinHandle, Thread}, time::Duration};
+use std::{sync::{Arc, Mutex, MutexGuard}, thread::{self, spawn, JoinHandle}, time::Duration};
 
 use crate::{enemy::Enemy, player::Player, vector};
 use rand::prelude::*;
 
 pub trait Drawable {
-    fn get_shapes(&self) -> &Vec<(String, Shape, (f32,f32))>;
+    fn get_draw_packs(&self) -> &Vec<DrawPack>;
 }
 #[macro_export]
 macro_rules! impl_Drawable {
     ($struct_name:ident) => {
         impl Drawable for $struct_name {
-            fn get_shapes(&self) -> &Vec<(String, Shape, (f32,f32))> {
-                &self.shapes
+            fn get_draw_packs(&self) -> &Vec<DrawPack> {
+                &self.draw_packs
             }
         }
     };
@@ -59,13 +59,13 @@ pub fn draw<T: Drawable + Position>(object: &T, camera: (f32, f32)) -> String {
     let (cx, cy) = camera;
     let x = object.x();
     let y = object.y();
-    let shapes = object.get_shapes();
+    let shapes = object.get_draw_packs();
     let mut output = "".to_owned();
     for shape in shapes {
-        let (color, shape, (sx, sy)) = shape;
+        let (color, shape, (sx, sy)) = (&shape.color, &shape.shape, shape.offset);
         let s = match shape {
-            Shape::Line { x: lx, y: ly } => {
-                format!("[{:?}],", (color, Shape::Line { x: lx - cx, y: ly - cy }, (x + sx - cx, y + sy - cy)))
+            Shape::Line { x: lx, y: ly , width: w } => {
+                format!("[{:?}],", (color, Shape::Line { x: lx - cx, y: ly - cy, width: *w }, (x + sx - cx, y + sy - cy)))
             },
             _ => format!("[{:?}],", (color, shape, (x + sx - cx, y + sy - cy))),
         };
@@ -73,11 +73,10 @@ pub fn draw<T: Drawable + Position>(object: &T, camera: (f32, f32)) -> String {
     }
     output
 }
-pub fn move_object<T: Moveable + std::fmt::Debug>(object: &mut T) {
+pub fn move_object<T: Moveable>(object: &mut T) {
     let (vx, vy) = object.get_velocity().clone();
     *(object.get_x()) += vx;
     *(object.get_y()) += vy;
-    // println!("{}, {}", object.get_x().clone(), object.get_y().clone());
 }
 
 pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {
@@ -90,7 +89,7 @@ pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {
 pub enum Shape {
     Circle{radius: f32},
     Rectangle{width: f32, height: f32},
-    Line{x: f32, y: f32},
+    Line{width: f32, x: f32, y: f32},
     Text{content: String, size: f32},
 }
 
@@ -101,24 +100,38 @@ impl Default for Shape {
         // Self::Line {x: 0.0, y: 0.0}
     }
 }
+pub struct DrawPack {
+    color: String,
+    shape: Shape,
+    offset: (f32, f32),
+}
+impl DrawPack {
+    pub fn new(color: &str, shape: Shape, offset: (f32, f32)) -> Self {
+        Self {
+            color: color.to_owned(),
+            shape,
+            offset,
+        }
+    }
+}
 
-#[derive(Debug)]
 pub struct Game {
     pub players: Vec<Player>,
     pub game_loop: Option<JoinHandle<()>>,
     pub running: bool,
     pub enemies: Vec<Enemy>,
+    pub map: Vec<(String, Shape, (f32,f32))>,
 }
 
 pub fn handle_players(players: &mut Vec<Player>) {
     for object in players {
         if object.alive {
-            object.shapes.get_mut(0).unwrap().0 = "blue".to_owned();
+            object.draw_packs.get_mut(0).unwrap().color = "blue".to_owned();
             object.handle_keys();
             move_object(object);
         }
         else {
-            object.shapes.get_mut(0).unwrap().0 = "red".to_owned();
+            object.draw_packs.get_mut(0).unwrap().color = "red".to_owned();
         }
     }
 }
@@ -126,34 +139,64 @@ pub fn handle_enemies(enemies: &mut Vec<Enemy>) {
     for object in enemies {
         move_object(object);
         // TODO collision over map struct
-        if object.x > 3000.0 || object.x < -3000.0 {
+        let boarder = 2000.0;
+        if object.x > boarder || object.x < -boarder {
             match object.velocity {
                 (x,y) => {object.velocity = (-x, y);}
             }
         }
-        if object.y > 3000.0 || object.y < -3000.0 {
+        if object.y > boarder || object.y < -boarder {
             match object.velocity {
                 (x,y) => {object.velocity = (x, -y);}
             }
         }
     }
 }
-pub fn handle_collision(game_mutex: MutexGuard<Game>) {
-    
+// player enemy collision
+pub fn handle_collision(game: &mut MutexGuard<Game>) {
+    let mut deaths: Vec<usize> = vec![];
+    let mut revives: Vec<usize> = vec![];
+    for (i, player) in game.players.iter().enumerate() {
+        for enemy in game.enemies.iter() {
+            let dd = distance(player, enemy).2;
+            if dd <= (player.radius + enemy.radius) {
+                deaths.push(i);
+            }
+        }
+        for other in game.players.iter() {
+            if std::ptr::eq(player, other) || !other.alive {continue;}
+            let dd = distance(player, other).2;
+            if dd <= (player.radius + other.radius) {
+                revives.push(i);
+            }
+        }
+    }
+    for i in deaths {
+        let player = game.players.get_mut(i).unwrap();
+        player.alive = false;
+    }
+    for i in revives {
+        let player = game.players.get_mut(i).unwrap();
+        player.alive = true;
+    }
 }
 
 impl Game {
+    pub fn spawn_enemies(&mut self) {
+        for i in 0..2000 {
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-0.5..=0.5), rand::thread_rng().gen_range(-0.5..=0.5));
+            self.enemies.push(Enemy::new(200.0, 100.0, velocity));
+        }
+    }
     pub fn new() -> Game {
         let mut g = Game {
             players: vec![],
             game_loop: None,
             running: false,
             enemies: vec![],
+            map: vec![],
         };
-        for i in 0..300 {
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-0.5..=0.5), rand::thread_rng().gen_range(-0.5..=0.5));
-            g.enemies.push(Enemy::new(200.0, 100.0, velocity));
-        }
+        g.spawn_enemies();
 
         g
     }
@@ -173,35 +216,7 @@ impl Game {
 
                 handle_players(&mut game.players);
                 handle_enemies(&mut game.enemies);
-                // handle_collision(game);
-
-                // collisions
-                // enemy kill
-                let mut deaths: Vec<usize> = vec![];
-                let mut revives: Vec<usize> = vec![];
-                for (i, player) in game.players.iter().enumerate() {
-                    for enemy in game.enemies.iter() {
-                        let (dx, dy, dd) = distance(player, enemy);
-                        if dd <= (player.radius + enemy.radius) {
-                            deaths.push(i);
-                        }
-                    }
-                    for other in game.players.iter() {
-                        if std::ptr::eq(player, other) || !other.alive {continue;}
-                        let (dx, dy, dd) = distance(player, other);
-                        if dd <= (player.radius + other.radius) {
-                            revives.push(i);
-                        }
-                    }
-                }
-                for i in deaths {
-                    let player = game.players.get_mut(i).unwrap();
-                    player.alive = false;
-                }
-                for i in revives {
-                    let player = game.players.get_mut(i).unwrap();
-                    player.alive = true;
-                }
+                handle_collision(&mut game);
             }
         });
         game.game_loop = Some(t);
@@ -210,13 +225,18 @@ impl Game {
         let mut objects = "".to_owned();
         // players
         for object in self.players.iter() {
+            if vector::distance(camera, (object.x, object.y)).2 > 1000.0 {continue;}
             let acc = draw(object, camera);
             objects.push_str(&acc);
         }
         // enemies
         for object in self.enemies.iter() {
+            if vector::distance(camera, (object.x, object.y)).2 > 1000.0 {continue;}
             let acc = draw(object, camera);
             objects.push_str(&acc);
+        }
+        // map
+        for shape in self.map.iter() {
         }
         objects
     }

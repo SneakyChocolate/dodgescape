@@ -154,7 +154,8 @@
           else if (shape.includes("Line")) {
             let x2 = Number(getattribute(shape, "x"));
             let y2 = Number(getattribute(shape, "y"));
-            line([x + canvas.width / 2, y + canvas.height / 2], [x2 + canvas.width / 2, y2 + canvas.height / 2], 15, color);
+            let width = Number(getattribute(shape, "width"));
+            line([x + canvas.width / 2, y + canvas.height / 2], [x2 + canvas.width / 2, y2 + canvas.height / 2], width, color);
           }
           else if (shape.includes("Text")) {
             let content = getattribute(shape, "content").substring(1,getattribute(shape, "content").length - 1);

@@ -1,8 +1,8 @@
 use std::array::TryFromSliceError;
 
-use crate::{game::{Drawable, Moveable, Position, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
+use crate::{game::{DrawPack, Drawable, Moveable, Position, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Player {
     pub mouse: (i32, i32),
     pub keys_down: Vec<String>,
@@ -10,7 +10,7 @@ pub struct Player {
     pub name: String,
     pub x: f32,
     pub y: f32,
-    pub shapes: Vec<(String, Shape, (f32,f32))>,
+    pub draw_packs: Vec<DrawPack>,
     pub alive: bool,
     pub radius: f32,
 }
@@ -27,9 +27,9 @@ impl Player {
             alive: true,
             ..Default::default()
         };
-        p.shapes.push(("blue".to_owned(), Shape::Circle { radius: p.radius }, (0.0, 0.0)));
-        p.shapes.push(("white".to_owned(), Shape::Text { content: name.clone(), size: 20.0 }, (-20.0, -40.0)));
-        p.shapes.push(("red".to_owned(), Shape::Line { x: 0.0, y: 0.0 }, (0.0, 0.0)));
+        p.draw_packs.push(DrawPack::new("blue", Shape::Circle { radius: p.radius }, (0.0, 0.0)));
+        p.draw_packs.push(DrawPack::new("white", Shape::Text { content: name.clone(), size: 10.0 }, (-20.0, -40.0)));
+        p.draw_packs.push(DrawPack::new("red", Shape::Line { x: 0.0, y: 0.0, width: 10.0 }, (0.0, 0.0)));
 
         p
     }

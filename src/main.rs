@@ -21,6 +21,6 @@ fn main() {
     // let server = Server::new("192.168.178.66:7878", Arc::clone(&game));
     let server_handle = server.start();
     println!("server started...");
-    server_handle.join();
+    let _ = server_handle.join();
 }
 
