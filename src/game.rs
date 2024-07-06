@@ -1,6 +1,6 @@
-use std::{collections::btree_map::Entry, sync::{Arc, Mutex}, thread::{self, JoinHandle, Thread}, time::Duration};
+use std::{collections::btree_map::Entry, sync::{Arc, Mutex, MutexGuard}, thread::{self, JoinHandle, Thread}, time::Duration};
 
-use crate::{enemy::Enemy, player::Player};
+use crate::{enemy::Enemy, player::Player, vector};
 use rand::prelude::*;
 
 pub trait Drawable {
@@ -81,15 +81,9 @@ pub fn move_object<T: Moveable + std::fmt::Debug>(object: &mut T) {
 }
 
 pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {
-    let ax = a.x();
-    let ay = a.y();
-    let bx = b.x();
-    let by = b.y();
-
-    let dx = bx - ax;
-    let dy = by - ay;
-
-    (dx, dy, f32::sqrt(f32::powi(dx, 2) + f32::powi(dy, 2)))
+    let a = (a.x(), a.y());
+    let b = (b.x(), b.y());
+    vector::distance(a, b)
 }
 
 #[derive(Debug)]
@@ -144,6 +138,9 @@ pub fn handle_enemies(enemies: &mut Vec<Enemy>) {
         }
     }
 }
+pub fn handle_collision(game_mutex: MutexGuard<Game>) {
+    
+}
 
 impl Game {
     pub fn new() -> Game {
@@ -176,6 +173,7 @@ impl Game {
 
                 handle_players(&mut game.players);
                 handle_enemies(&mut game.enemies);
+                // handle_collision(game);
 
                 // collisions
                 // enemy kill
