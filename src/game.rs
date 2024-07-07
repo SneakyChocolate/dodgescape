@@ -198,13 +198,26 @@ pub fn handle_kill_revive(game: &mut MutexGuard<Game>) {
         player.alive = true;
     }
 }
-pub fn handle_collision(game: &mut MutexGuard<Game>) {
+pub fn handle_collision(mut game: &mut MutexGuard<Game>) {
     let mut enemy_collisions: Vec<(usize, (f32, f32))> = vec![];
-    for (i, enemy) in game.enemies.iter().enumerate() {
-        for wall in game.walls.iter() {
-            let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
-            if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.radius {
-                enemy_collisions.push((i, cp));
+    let mut player_collisions: Vec<(usize, (f32, f32))> = vec![];
+    for wall in game.walls.iter() {
+        // enemies
+        if wall.enemy {
+            for (i, enemy) in game.enemies.iter().enumerate() {
+                let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
+                if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.radius {
+                    enemy_collisions.push((i, cp));
+                }
+            }
+        }
+        // players
+        if wall.player {
+            for (i, player) in game.players.iter().enumerate() {
+                let cp = wall.get_nearest_point(&(player.x, player.y));
+                if vector::distance(cp, (player.x, player.y)).2 <= player.radius {
+                    player_collisions.push((i, cp));
+                }
             }
         }
     }
@@ -216,13 +229,20 @@ pub fn handle_collision(game: &mut MutexGuard<Game>) {
         move_object(enemy);
         // enemy.draw_packs.first_mut().unwrap().color = "green".to_owned();
     }
+    for (i, cp) in player_collisions {
+        let player = game.players.get_mut(i).unwrap();
+        let speed = vector::distance((0.0, 0.0), player.velocity).2;
+        let new_v = vector::normalize(vector::collision((player.x, player.y), player.velocity, cp), speed);
+        player.velocity = new_v;
+        move_object(player);
+    }
 }
 
 impl Game {
     pub fn spawn_enemies(&mut self) {
         for i in 0..200 {
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-0.5..=0.5), rand::thread_rng().gen_range(-0.5..=0.5));
-            self.enemies.push(Enemy::new(200.0, 100.0, velocity));
+            self.enemies.push(Enemy::new(0.0, 1000.0, velocity));
         }
     }
     pub fn spawn_grid(&mut self) {
@@ -248,8 +268,10 @@ impl Game {
         }
     }
     pub fn spawn_walls(&mut self) {
-        self.walls.push(Wall::new((0.0, -300.0), (500.0, -100.0)));
-        self.walls.push(Wall::new((-1000.0, 300.0), (0.0, -200.0)));
+        self.walls.push(Wall::new((-200.0, -200.0), (200.0, -200.0), true, true));
+        self.walls.push(Wall::new((-200.0, 200.0), (200.0, 200.0), true, true));
+        self.walls.push(Wall::new((200.0, 200.0), (200.0, -200.0), true, true));
+        self.walls.push(Wall::new((-200.0, 200.0), (-200.0, -200.0), true, true));
     }
     pub fn new() -> Game {
         let mut g = Game {
