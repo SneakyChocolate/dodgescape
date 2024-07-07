@@ -1,6 +1,6 @@
 use std::{sync::{Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{enemy::Enemy, player::Player, vector};
+use crate::{enemy::Enemy, player::Player, vector, wall::Wall};
 use rand::prelude::*;
 
 pub trait Drawable {
@@ -102,6 +102,7 @@ pub enum Shape {
     Rectangle{width: f32, height: f32},
     Line{width: f32, x: f32, y: f32},
     Text{content: String, size: f32},
+    Poly{corners: Vec<(f32,f32)>},
 }
 
 impl Default for Shape {
@@ -126,12 +127,14 @@ impl DrawPack {
     }
 }
 
+#[derive(Default)]
 pub struct Game {
     pub players: Vec<Player>,
     pub game_loop: Option<JoinHandle<()>>,
     pub running: bool,
     pub enemies: Vec<Enemy>,
     pub map: Vec<((f32, f32), DrawPack)>,
+    pub walls: Vec<Wall>,
 }
 
 pub fn handle_players(players: &mut Vec<Player>) {
@@ -195,6 +198,25 @@ pub fn handle_kill_revive(game: &mut MutexGuard<Game>) {
         player.alive = true;
     }
 }
+pub fn handle_collision(game: &mut MutexGuard<Game>) {
+    let mut enemy_collisions: Vec<(usize, (f32, f32))> = vec![];
+    for (i, enemy) in game.enemies.iter().enumerate() {
+        for wall in game.walls.iter() {
+            let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
+            if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.radius {
+                enemy_collisions.push((i, cp));
+            }
+        }
+    }
+    for (i, cp) in enemy_collisions {
+        let enemy = game.enemies.get_mut(i).unwrap();
+        let speed = vector::distance((0.0, 0.0), enemy.velocity).2;
+        let new_v = vector::normalize(vector::collision((enemy.x, enemy.y), enemy.velocity, cp), speed);
+        enemy.velocity = new_v;
+        move_object(enemy);
+        // enemy.draw_packs.first_mut().unwrap().color = "green".to_owned();
+    }
+}
 
 impl Game {
     pub fn spawn_enemies(&mut self) {
@@ -204,8 +226,8 @@ impl Game {
         }
     }
     pub fn spawn_grid(&mut self) {
-        for i in 0..10 {
-            let size = 1000.0;
+        for i in 0..20 {
+            let size = 2000.0;
             let offset = i as f32 * 100.0;
             self.map.push((
                 (offset, -size),
@@ -225,16 +247,19 @@ impl Game {
             ));
         }
     }
+    pub fn spawn_walls(&mut self) {
+        self.walls.push(Wall::new((0.0, -300.0), (500.0, -100.0)));
+        self.walls.push(Wall::new((-1000.0, 300.0), (0.0, -200.0)));
+    }
     pub fn new() -> Game {
         let mut g = Game {
-            players: vec![],
             game_loop: None,
             running: false,
-            enemies: vec![],
-            map: vec![],
+            ..Default::default()
         };
         g.spawn_enemies();
         g.spawn_grid();
+        g.spawn_walls();
 
         g
     }
@@ -255,6 +280,7 @@ impl Game {
                 handle_players(&mut game.players);
                 handle_enemies(&mut game.enemies);
                 handle_kill_revive(&mut game);
+                handle_collision(&mut game);
 
                 // TODO handle bounce collision
             }
@@ -268,6 +294,24 @@ impl Game {
             let acc = draw(&shape.0, &shape.1, &camera);
             objects.push_str(&acc);
         }
+        // walls
+        for wall in self.walls.iter() {
+            let draw_pack = DrawPack::new("green", Shape::Line { width: 5.0, x: wall.b.0, y: wall.b.1 }, (0.0, 0.0));
+            let acc = draw(&wall.a, &draw_pack, &camera);
+            objects.push_str(&acc);
+        }
+
+        // // wall colliders
+        // for wall in self.walls.iter() {
+        //     for player in self.players.iter() {
+        //         let start = (player.x, player.y);
+        //         let target = wall.get_nearest_point(&start);
+        //         let draw_pack = DrawPack::new("blue", Shape::Line { width: 5.0, x: target.0, y: target.1 }, (0.0, 0.0));
+        //         let acc = draw(&start, &draw_pack, &camera);
+        //         objects.push_str(&acc);
+        //     }
+        // }
+
         // players
         for object in self.players.iter() {
             if vector::distance(camera, (object.x, object.y)).2 > 1000.0 {continue;}
