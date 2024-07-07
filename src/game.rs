@@ -1,4 +1,4 @@
-use std::{sync::{Arc, Mutex, MutexGuard}, thread::{self, spawn, JoinHandle}, time::Duration};
+use std::{sync::{Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
 
 use crate::{enemy::Enemy, player::Player, vector};
 use rand::prelude::*;
@@ -54,21 +54,32 @@ macro_rules! impl_Movable {
         }
     };
 }
-
-pub fn draw<T: Drawable + Position>(object: &T, camera: (f32, f32)) -> String {
+pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32)) -> String {
+    let (x, y) = position;
     let (cx, cy) = camera;
-    let x = object.x();
-    let y = object.y();
-    let shapes = object.get_draw_packs();
+    match draw_pack.shape {
+        Shape::Line { width: lw , x: lx, y: ly } => {
+            format!("[(\"{}\", {:?}, ({}, {}))],",
+                draw_pack.color,
+                Shape::Line { x: lx - cx, y: ly - cy, width: lw },
+                x + draw_pack.offset.0 - cx,
+                y + draw_pack.offset.1 - cy
+            )
+        },
+        _ => format!("[(\"{}\", {:?}, ({}, {}))],",
+            draw_pack.color,
+            draw_pack.shape,
+            x + draw_pack.offset.0 - cx,
+            y + draw_pack.offset.1 - cy
+        ),
+    }
+}
+pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32)) -> String {
+    let pos = (object.x(), object.y());
+    let draw_packs = object.get_draw_packs();
     let mut output = "".to_owned();
-    for shape in shapes {
-        let (color, shape, (sx, sy)) = (&shape.color, &shape.shape, shape.offset);
-        let s = match shape {
-            Shape::Line { x: lx, y: ly , width: w } => {
-                format!("[{:?}],", (color, Shape::Line { x: lx - cx, y: ly - cy, width: *w }, (x + sx - cx, y + sy - cy)))
-            },
-            _ => format!("[{:?}],", (color, shape, (x + sx - cx, y + sy - cy))),
-        };
+    for draw_pack in draw_packs {
+        let s = draw(&pos, draw_pack, &camera);
         output.push_str(&s);
     }
     output
@@ -120,7 +131,7 @@ pub struct Game {
     pub game_loop: Option<JoinHandle<()>>,
     pub running: bool,
     pub enemies: Vec<Enemy>,
-    pub map: Vec<(String, Shape, (f32,f32))>,
+    pub map: Vec<((f32, f32), DrawPack)>,
 }
 
 pub fn handle_players(players: &mut Vec<Player>) {
@@ -163,6 +174,19 @@ pub fn handle_collision(game: &mut MutexGuard<Game>) {
                 deaths.push(i);
             }
         }
+        // for other in game.players.iter() {
+        //     if std::ptr::eq(player, other) || !other.alive {continue;}
+        //     let dd = distance(player, other).2;
+        //     if dd <= (player.radius + other.radius) {
+        //         revives.push(i);
+        //     }
+        // }
+    }
+    for i in deaths {
+        let player = game.players.get_mut(i).unwrap();
+        player.alive = false;
+    }
+    for (i, player) in game.players.iter().enumerate() {
         for other in game.players.iter() {
             if std::ptr::eq(player, other) || !other.alive {continue;}
             let dd = distance(player, other).2;
@@ -170,10 +194,6 @@ pub fn handle_collision(game: &mut MutexGuard<Game>) {
                 revives.push(i);
             }
         }
-    }
-    for i in deaths {
-        let player = game.players.get_mut(i).unwrap();
-        player.alive = false;
     }
     for i in revives {
         let player = game.players.get_mut(i).unwrap();
@@ -183,9 +203,31 @@ pub fn handle_collision(game: &mut MutexGuard<Game>) {
 
 impl Game {
     pub fn spawn_enemies(&mut self) {
-        for i in 0..2000 {
+        for i in 0..200 {
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-0.5..=0.5), rand::thread_rng().gen_range(-0.5..=0.5));
             self.enemies.push(Enemy::new(200.0, 100.0, velocity));
+        }
+    }
+    pub fn spawn_grid(&mut self) {
+        for i in 0..10 {
+            let size = 1000.0;
+            let offset = i as f32 * 100.0;
+            self.map.push((
+                (offset, -size),
+                DrawPack::new("rgb(255,255,255,0.1)", Shape::Line { width: 5.0, x: offset, y: size }, (0.0, 0.0))
+            ));
+            self.map.push((
+                (-offset, -size),
+                DrawPack::new("rgb(255,255,255,0.1)", Shape::Line { width: 5.0, x: -offset, y: size }, (0.0, 0.0))
+            ));
+            self.map.push((
+                (-size, offset),
+                DrawPack::new("rgb(255,255,255,0.1)", Shape::Line { width: 5.0, x: size, y: offset }, (0.0, 0.0))
+            ));
+            self.map.push((
+                (-size, -offset),
+                DrawPack::new("rgb(255,255,255,0.1)", Shape::Line { width: 5.0, x: size, y: -offset }, (0.0, 0.0))
+            ));
         }
     }
     pub fn new() -> Game {
@@ -197,6 +239,7 @@ impl Game {
             map: vec![],
         };
         g.spawn_enemies();
+        g.spawn_grid();
 
         g
     }
@@ -223,20 +266,22 @@ impl Game {
     }
     pub fn pack_objects(&self, camera: (f32, f32)) -> String {
         let mut objects = "".to_owned();
+        // map
+        for shape in self.map.iter() {
+            let acc = draw(&shape.0, &shape.1, &camera);
+            objects.push_str(&acc);
+        }
         // players
         for object in self.players.iter() {
             if vector::distance(camera, (object.x, object.y)).2 > 1000.0 {continue;}
-            let acc = draw(object, camera);
+            let acc = draw_object(object, &camera);
             objects.push_str(&acc);
         }
         // enemies
         for object in self.enemies.iter() {
             if vector::distance(camera, (object.x, object.y)).2 > 1000.0 {continue;}
-            let acc = draw(object, camera);
+            let acc = draw_object(object, &camera);
             objects.push_str(&acc);
-        }
-        // map
-        for shape in self.map.iter() {
         }
         objects
     }

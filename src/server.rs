@@ -11,7 +11,7 @@ impl Server {
     pub fn new(address: &str, game: Arc<Mutex<Game>>) -> Server {
         let server = Server {
             listener: TcpListener::bind(address).unwrap(),
-            game: game,
+            game,
         };
         server
     }

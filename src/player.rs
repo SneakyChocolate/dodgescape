@@ -1,4 +1,3 @@
-use std::array::TryFromSliceError;
 
 use crate::{game::{DrawPack, Drawable, Moveable, Position, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
 
@@ -28,7 +27,7 @@ impl Player {
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new("blue", Shape::Circle { radius: p.radius }, (0.0, 0.0)));
-        p.draw_packs.push(DrawPack::new("white", Shape::Text { content: name.clone(), size: 10.0 }, (-20.0, -40.0)));
+        p.draw_packs.push(DrawPack::new("white", Shape::Text { content: name.clone(), size: 20.0 }, (-20.0, -40.0)));
         p.draw_packs.push(DrawPack::new("red", Shape::Line { x: 0.0, y: 0.0, width: 10.0 }, (0.0, 0.0)));
 
         p
