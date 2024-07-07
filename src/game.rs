@@ -149,7 +149,6 @@ pub fn handle_players(players: &mut Vec<Player>) {
 pub fn handle_enemies(enemies: &mut Vec<Enemy>) {
     for object in enemies {
         move_object(object);
-        // TODO collision over map struct
         let boarder = 2000.0;
         if object.x > boarder || object.x < -boarder {
             match object.velocity {
@@ -164,9 +163,10 @@ pub fn handle_enemies(enemies: &mut Vec<Enemy>) {
     }
 }
 // player enemy collision
-pub fn handle_collision(game: &mut MutexGuard<Game>) {
+pub fn handle_kill_revive(game: &mut MutexGuard<Game>) {
     let mut deaths: Vec<usize> = vec![];
     let mut revives: Vec<usize> = vec![];
+    // handle deaths
     for (i, player) in game.players.iter().enumerate() {
         for enemy in game.enemies.iter() {
             let dd = distance(player, enemy).2;
@@ -174,18 +174,13 @@ pub fn handle_collision(game: &mut MutexGuard<Game>) {
                 deaths.push(i);
             }
         }
-        // for other in game.players.iter() {
-        //     if std::ptr::eq(player, other) || !other.alive {continue;}
-        //     let dd = distance(player, other).2;
-        //     if dd <= (player.radius + other.radius) {
-        //         revives.push(i);
-        //     }
-        // }
     }
     for i in deaths {
         let player = game.players.get_mut(i).unwrap();
         player.alive = false;
     }
+
+    // handle revives later so new deaths are accounted
     for (i, player) in game.players.iter().enumerate() {
         for other in game.players.iter() {
             if std::ptr::eq(player, other) || !other.alive {continue;}
@@ -259,7 +254,9 @@ impl Game {
 
                 handle_players(&mut game.players);
                 handle_enemies(&mut game.enemies);
-                handle_collision(&mut game);
+                handle_kill_revive(&mut game);
+
+                // TODO handle bounce collision
             }
         });
         game.game_loop = Some(t);
