@@ -69,10 +69,8 @@ pub mod matrix {
             panic!("wrong matrix input");
         };
         sort(matrix);
-        println!("sort");
         let len = matrix.len();
         for r in 0..len {
-            println!("on row {r}");
             let row = matrix.get_mut(r).unwrap();
             let pivot = row.iter().find(|e| {**e != 0.0});
             match pivot {
@@ -82,7 +80,6 @@ pub mod matrix {
 
             let mut row = row.clone();
             for u in (r + 1)..len {
-                println!("running delte");
                 let mut subrow = row.clone();
                 let row = matrix.get_mut(u).unwrap();
                 // let pivot = row.iter().find(|e| {**e != 0.0});
@@ -95,9 +92,7 @@ pub mod matrix {
                     None => {},
                 }
             }
-            println!("end of row");
         }
-        println!("finishing");
     }
 }
 
@@ -168,5 +163,13 @@ mod matrix_tests {
             vec![0.0, 0.0, 1.0],
         ];
         assert_eq!(matrix, expected);
+
+        let mut matrix = vec![
+            vec![3.0, 1.5, 5.0, -5.0],
+            vec![8.0, -15.0, 0.0, 3.2],
+            vec![0.0, 4.6, 0.2, 60.7],
+        ];
+        normalize(&mut matrix);
+        println!("{:#?}", matrix);
     }
 }
