@@ -140,12 +140,12 @@ pub struct Game {
 pub fn handle_players(players: &mut Vec<Player>) {
     for object in players {
         if object.alive {
-            object.draw_packs.get_mut(0).unwrap().color = "blue".to_owned();
+            object.draw_packs[0].color = "blue".to_owned();
             object.handle_keys();
             move_object(object);
         }
         else {
-            object.draw_packs.get_mut(0).unwrap().color = "red".to_owned();
+            object.draw_packs[0].color = "red".to_owned();
         }
     }
 }
@@ -226,7 +226,6 @@ pub fn handle_collision(mut game: &mut MutexGuard<Game>) {
         let speed = vector::distance((0.0, 0.0), enemy.velocity).2;
         let new_v = vector::normalize(vector::collision((enemy.x, enemy.y), enemy.velocity, cp), speed);
         enemy.velocity = new_v;
-        move_object(enemy);
         // enemy.draw_packs.first_mut().unwrap().color = "green".to_owned();
     }
     for (i, cp) in player_collisions {
@@ -234,7 +233,6 @@ pub fn handle_collision(mut game: &mut MutexGuard<Game>) {
         let speed = vector::distance((0.0, 0.0), player.velocity).2;
         let new_v = vector::normalize(vector::collision((player.x, player.y), player.velocity, cp), speed);
         player.velocity = new_v;
-        move_object(player);
     }
 }
 
@@ -242,7 +240,7 @@ impl Game {
     pub fn spawn_enemies(&mut self) {
         for i in 0..200 {
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-0.5..=0.5), rand::thread_rng().gen_range(-0.5..=0.5));
-            self.enemies.push(Enemy::new(0.0, 1000.0, velocity));
+            self.enemies.push(Enemy::new(0.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0)));
         }
     }
     pub fn spawn_grid(&mut self) {

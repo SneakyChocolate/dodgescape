@@ -15,11 +15,11 @@ impl_Movable!(Enemy);
 impl_Drawable!(Enemy);
 
 impl Enemy {
-    pub fn new(x: f32, y: f32, velocity: (f32, f32)) -> Enemy {
+    pub fn new(x: f32, y: f32, velocity: (f32, f32), radius: f32) -> Enemy {
         let mut p = Enemy {
             x,y,
             velocity,
-            radius: 10.0,
+            radius,
             draw_packs: vec![],
             ..Default::default()
         };
