@@ -228,6 +228,10 @@ pub fn handle_collision(game: &mut MutexGuard<Game>) {
     for (i, cp) in enemy_collisions {
         let enemy = game.enemies.get_mut(i).unwrap();
         let speed = vector::distance((0.0, 0.0), enemy.velocity).2;
+        let dist = vector::distance(cp, (enemy.x, enemy.y));
+        let push = vector::normalize((dist.0, dist.1), enemy.radius + speed);
+        enemy.x = cp.0 + push.0;
+        enemy.y = cp.1 + push.1;
         let new_v = vector::normalize(vector::collision((enemy.x, enemy.y), enemy.velocity, cp), speed);
         enemy.velocity = new_v;
         // enemy.draw_packs.first_mut().unwrap().color = "green".to_owned();
@@ -235,6 +239,10 @@ pub fn handle_collision(game: &mut MutexGuard<Game>) {
     for (i, cp) in player_collisions {
         let player = game.players.get_mut(i).unwrap();
         let speed = vector::distance((0.0, 0.0), player.velocity).2;
+        let dist = vector::distance(cp, (player.x, player.y));
+        let push = vector::normalize((dist.0, dist.1), player.radius + speed);
+        player.x = cp.0 + push.0;
+        player.y = cp.1 + push.1;
         let new_v = vector::normalize(vector::collision((player.x, player.y), player.velocity, cp), speed);
         player.velocity = new_v;
     }
@@ -281,7 +289,7 @@ impl Game {
         }
     }
     pub fn spawn_walls(&mut self) {
-        self.walls.push(Wall::new((-200.0, -200.0), (200.0, -200.0), true, true));
+        self.walls.push(Wall::new((-200.0, -200.0), (200.0, -270.0), true, true));
         self.walls.push(Wall::new((-200.0, 200.0), (200.0, 200.0), true, true));
         self.walls.push(Wall::new((200.0, 200.0), (200.0, -200.0), true, true));
         self.walls.push(Wall::new((-200.0, 200.0), (-200.0, -200.0), true, true));
