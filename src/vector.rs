@@ -28,6 +28,9 @@ pub fn angle_from_point(point: (f32, f32)) -> f32 {
     r
 }
 pub fn collision(position: (f32, f32), velocity: (f32, f32), point: (f32, f32)) -> (f32, f32) {
+    if velocity == (0.0, 0.0) {
+        return velocity;
+    }
     let dist = distance(position, point);
     let angle = angle_from_point((dist.0, dist.1));
     let new_angle = 180.0 + 2.0 * angle - angle_from_point(velocity);

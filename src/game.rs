@@ -142,7 +142,6 @@ pub fn handle_players(players: &mut Vec<Player>) {
         if object.alive {
             object.draw_packs[0].color = "blue".to_owned();
             object.handle_keys();
-            move_object(object);
         }
         else {
             object.draw_packs[0].color = "red".to_owned();
@@ -151,7 +150,6 @@ pub fn handle_players(players: &mut Vec<Player>) {
 }
 pub fn handle_enemies(enemies: &mut Vec<Enemy>) {
     for object in enemies {
-        move_object(object);
         let boarder = 2000.0;
         if object.x > boarder || object.x < -boarder {
             match object.velocity {
@@ -198,7 +196,7 @@ pub fn handle_kill_revive(game: &mut MutexGuard<Game>) {
         player.alive = true;
     }
 }
-pub fn handle_collision(mut game: &mut MutexGuard<Game>) {
+pub fn handle_collision(game: &mut MutexGuard<Game>) {
     let mut enemy_collisions: Vec<(usize, (f32, f32))> = vec![];
     let mut player_collisions: Vec<(usize, (f32, f32))> = vec![];
     for wall in game.walls.iter() {
@@ -207,6 +205,9 @@ pub fn handle_collision(mut game: &mut MutexGuard<Game>) {
             for (i, enemy) in game.enemies.iter().enumerate() {
                 let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
                 if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.radius {
+                    if enemy_collisions.iter().any(|(e, _)| {*e == i}) {
+                        continue;
+                    }
                     enemy_collisions.push((i, cp));
                 }
             }
@@ -216,6 +217,9 @@ pub fn handle_collision(mut game: &mut MutexGuard<Game>) {
             for (i, player) in game.players.iter().enumerate() {
                 let cp = wall.get_nearest_point(&(player.x, player.y));
                 if vector::distance(cp, (player.x, player.y)).2 <= player.radius {
+                    if player_collisions.iter().any(|(e, _)| {*e == i}) {
+                        continue;
+                    }
                     player_collisions.push((i, cp));
                 }
             }
@@ -235,11 +239,22 @@ pub fn handle_collision(mut game: &mut MutexGuard<Game>) {
         player.velocity = new_v;
     }
 }
+pub fn handle_movements(game: &mut MutexGuard<Game>) {
+    for object in &mut game.players {
+        if object.alive {
+            move_object(object);
+        }
+    }
+    for object in &mut game.enemies {
+        move_object(object);
+    }
+}
 
 impl Game {
     pub fn spawn_enemies(&mut self) {
         for i in 0..200 {
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-0.5..=0.5), rand::thread_rng().gen_range(-0.5..=0.5));
+            let cap = 0.5;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             self.enemies.push(Enemy::new(0.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0)));
         }
     }
@@ -301,8 +316,7 @@ impl Game {
                 handle_enemies(&mut game.enemies);
                 handle_kill_revive(&mut game);
                 handle_collision(&mut game);
-
-                // TODO handle bounce collision
+                handle_movements(&mut game);
             }
         });
         game.game_loop = Some(t);

@@ -12,6 +12,7 @@ pub struct Player {
     pub draw_packs: Vec<DrawPack>,
     pub alive: bool,
     pub radius: f32,
+    pub speed: f32,
 }
 
 impl_Position!(Player);
@@ -24,6 +25,7 @@ impl Player {
             name: name.clone(),
             radius: 30.0,
             alive: true,
+            speed: 1.0,
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new("blue", Shape::Circle { radius: p.radius }, (0.0, 0.0)));
@@ -37,21 +39,21 @@ impl Player {
         let mut vx = 0.0;
         let mut vy = 0.0;
         if self.keys_down.contains(&key) {
-            vy = -1.0;
+            vy += -1.0;
         }
         let key = "KeyS".to_owned();
         if self.keys_down.contains(&key) {
-            vy = 1.0;
+            vy += 1.0;
         }
         let key = "KeyD".to_owned();
         if self.keys_down.contains(&key) {
-            vx = 1.0;
+            vx += 1.0;
         }
         let key = "KeyA".to_owned();
         if self.keys_down.contains(&key) {
-            vx = -1.0;
+            vx += -1.0;
         }
-        (vx, vy) = vector::normalize((vx, vy), 1.0);
+        (vx, vy) = vector::normalize((vx, vy), self.speed);
         let key = "ShiftLeft".to_owned();
         if self.keys_down.contains(&key) {
             vx /= 2.0;
