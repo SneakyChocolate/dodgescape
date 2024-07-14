@@ -62,7 +62,7 @@ pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32)) ->
             Shape::Line { x: lx - cx, y: ly - cy, width: *lw }
         },
         Shape::Poly { corners: c } => {
-            let changed = c.iter().map(|(corx, cory)| {(corx - cx + x, cory - cy + y)}).collect::<Vec<(f32, f32)>>();
+            let changed = c.iter().map(|(corx, cory)| {(corx - cx + x + draw_pack.offset.0, cory - cy + y + draw_pack.offset.1)}).collect::<Vec<(f32, f32)>>();
             Shape::Poly { corners: changed }
         },
         _ => draw_pack.shape.clone()
@@ -271,7 +271,8 @@ impl Game {
             self.enemies.push(Enemy::new(0.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0)));
         }
     }
-    pub fn spawn_grid(&mut self) {
+    pub fn spawn_map(&mut self) {
+        // grid
         for i in 0..20 {
             let size = 2000.0;
             let offset = i as f32 * 100.0;
@@ -292,6 +293,13 @@ impl Game {
                 DrawPack::new("rgb(255,255,255,0.1)", Shape::Line { width: 5.0, x: size, y: -offset }, (0.0, 0.0))
             ));
         }
+        // rock
+        {
+            let start = (0.0, 0.0);
+            let poly = Shape::Poly { corners: vec![(0.0, 0.0), (100.0, 10.0), (150.0, 100.0), (50.0, 150.0), (0.0, 70.0)] };
+            let draw_pack = DrawPack::new("rgb(100,50,20)", poly, (0.0, 0.0));
+            self.map.push((start, draw_pack));
+        }
     }
     pub fn spawn_walls(&mut self) {
         self.walls.push(Wall::new((-200.0, -200.0), (200.0, -200.0), false, true));
@@ -306,7 +314,7 @@ impl Game {
             ..Default::default()
         };
         g.spawn_enemies();
-        g.spawn_grid();
+        g.spawn_map();
         g.spawn_walls();
 
         g
@@ -359,13 +367,6 @@ impl Game {
         //     }
         // }
 
-        {
-            let start = (0.0, 0.0);
-            let poly = Shape::Poly { corners: vec![(0.0, 100.0), (100.0, 100.0), (50.0, 300.0)] };
-            let draw_pack = DrawPack::new("blue", poly, (0.0, 0.0));
-            let acc = draw(&start, &draw_pack, &camera);
-            objects.push_str(&acc);
-        }
 
         const VIEW: f32 = 1000.0;
         // players
