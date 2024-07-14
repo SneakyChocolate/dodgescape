@@ -294,7 +294,7 @@ impl Game {
         }
     }
     pub fn spawn_walls(&mut self) {
-        self.walls.push(Wall::new((-200.0, -200.0), (200.0, -270.0), true, true));
+        self.walls.push(Wall::new((-200.0, -200.0), (200.0, -200.0), false, true));
         self.walls.push(Wall::new((-200.0, 200.0), (200.0, 200.0), true, true));
         self.walls.push(Wall::new((200.0, 200.0), (200.0, -200.0), true, true));
         self.walls.push(Wall::new((-200.0, 200.0), (-200.0, -200.0), true, true));
@@ -359,15 +359,16 @@ impl Game {
         //     }
         // }
 
+        const VIEW: f32 = 1000.0;
         // players
         for object in self.players.iter() {
-            if vector::distance(camera, (object.x, object.y)).2 > 1000.0 {continue;}
+            if vector::distance(camera, (object.x, object.y)).2 > VIEW {continue;}
             let acc = draw_object(object, &camera);
             objects.push_str(&acc);
         }
         // enemies
         for object in self.enemies.iter() {
-            if vector::distance(camera, (object.x, object.y)).2 > 1000.0 {continue;}
+            if vector::distance(camera, (object.x, object.y)).2 > VIEW {continue;}
             let acc = draw_object(object, &camera);
             objects.push_str(&acc);
         }
