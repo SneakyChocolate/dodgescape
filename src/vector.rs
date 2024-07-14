@@ -1,5 +1,8 @@
 use std::f32::consts::PI;
 
+pub fn abs(a: (f32, f32)) -> f32 {
+    f32::sqrt(f32::powi(a.0, 2) + f32::powi(a.1, 2))
+}
 pub fn distance(a: (f32, f32), b: (f32, f32)) -> (f32, f32, f32) {
     let (ax, ay) = a;
     let (bx, by) = b;
@@ -7,7 +10,7 @@ pub fn distance(a: (f32, f32), b: (f32, f32)) -> (f32, f32, f32) {
     let dx = bx - ax;
     let dy = by - ay;
 
-    (dx, dy, f32::sqrt(f32::powi(dx, 2) + f32::powi(dy, 2)))
+    (dx, dy, abs((dx, dy)))
 }
 pub fn normalize(a: (f32, f32), value: f32) -> (f32, f32) {
     let dd = distance(a, (0.0, 0.0)).2;

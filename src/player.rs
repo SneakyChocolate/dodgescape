@@ -13,6 +13,7 @@ pub struct Player {
     pub alive: bool,
     pub radius: f32,
     pub speed: f32,
+    pub skip_move: bool,
 }
 
 impl_Position!(Player);

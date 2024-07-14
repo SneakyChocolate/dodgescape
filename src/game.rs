@@ -225,32 +225,37 @@ pub fn handle_collision(game: &mut MutexGuard<Game>) {
             }
         }
     }
+    // offset for pushing object away on collision so collision doesnt trigger again
+    const OFFSET: f32 = 0.001;
     for (i, cp) in enemy_collisions {
         let enemy = game.enemies.get_mut(i).unwrap();
-        let speed = vector::distance((0.0, 0.0), enemy.velocity).2;
+        let speed = vector::abs(enemy.velocity);
         let dist = vector::distance(cp, (enemy.x, enemy.y));
-        let push = vector::normalize((dist.0, dist.1), enemy.radius + speed);
+        let push = vector::normalize((dist.0, dist.1), enemy.radius + OFFSET);
         enemy.x = cp.0 + push.0;
         enemy.y = cp.1 + push.1;
         let new_v = vector::normalize(vector::collision((enemy.x, enemy.y), enemy.velocity, cp), speed);
         enemy.velocity = new_v;
-        // enemy.draw_packs.first_mut().unwrap().color = "green".to_owned();
     }
     for (i, cp) in player_collisions {
         let player = game.players.get_mut(i).unwrap();
-        let speed = vector::distance((0.0, 0.0), player.velocity).2;
+        let speed = vector::abs(player.velocity);
         let dist = vector::distance(cp, (player.x, player.y));
-        let push = vector::normalize((dist.0, dist.1), player.radius + speed);
+        let push = vector::normalize((dist.0, dist.1), player.radius + OFFSET);
         player.x = cp.0 + push.0;
         player.y = cp.1 + push.1;
         let new_v = vector::normalize(vector::collision((player.x, player.y), player.velocity, cp), speed);
         player.velocity = new_v;
+        player.skip_move = true;
     }
 }
 pub fn handle_movements(game: &mut MutexGuard<Game>) {
     for object in &mut game.players {
-        if object.alive {
+        if object.alive && !object.skip_move {
             move_object(object);
+        }
+        else {
+            object.skip_move = false;
         }
     }
     for object in &mut game.enemies {
