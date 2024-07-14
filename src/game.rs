@@ -57,22 +57,22 @@ macro_rules! impl_Movable {
 pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32)) -> String {
     let (x, y) = position;
     let (cx, cy) = camera;
-    match draw_pack.shape {
+    let shape = match &draw_pack.shape {
         Shape::Line { width: lw , x: lx, y: ly } => {
-            format!("[(\"{}\", {:?}, ({}, {}))],",
-                draw_pack.color,
-                Shape::Line { x: lx - cx, y: ly - cy, width: lw },
-                x + draw_pack.offset.0 - cx,
-                y + draw_pack.offset.1 - cy
-            )
+            Shape::Line { x: lx - cx, y: ly - cy, width: *lw }
         },
-        _ => format!("[(\"{}\", {:?}, ({}, {}))],",
-            draw_pack.color,
-            draw_pack.shape,
-            x + draw_pack.offset.0 - cx,
-            y + draw_pack.offset.1 - cy
-        ),
-    }
+        Shape::Poly { corners: c } => {
+            let changed = c.iter().map(|(corx, cory)| {(corx - cx + x, cory - cy + y)}).collect::<Vec<(f32, f32)>>();
+            Shape::Poly { corners: changed }
+        },
+        _ => draw_pack.shape.clone()
+    };
+    format!("[(\"{}\", {:?}, ({}, {}))],",
+        draw_pack.color,
+        shape,
+        x + draw_pack.offset.0 - cx,
+        y + draw_pack.offset.1 - cy
+    )
 }
 pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32)) -> String {
     let pos = (object.x(), object.y());
@@ -96,7 +96,7 @@ pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {
     vector::distance(a, b)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Shape {
     Circle{radius: f32},
     Rectangle{width: f32, height: f32},
@@ -358,6 +358,14 @@ impl Game {
         //         objects.push_str(&acc);
         //     }
         // }
+
+        {
+            let start = (0.0, 0.0);
+            let poly = Shape::Poly { corners: vec![(0.0, 100.0), (100.0, 100.0), (50.0, 300.0)] };
+            let draw_pack = DrawPack::new("blue", poly, (0.0, 0.0));
+            let acc = draw(&start, &draw_pack, &camera);
+            objects.push_str(&acc);
+        }
 
         const VIEW: f32 = 1000.0;
         // players
