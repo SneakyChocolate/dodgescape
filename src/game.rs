@@ -264,6 +264,12 @@ impl Game {
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             self.enemies.push(Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgba(200,200,255,0.5)"));
         }
+        // fire area
+        for i in 0..500 {
+            let cap = 1.0;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            self.enemies.push(Enemy::new(0.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "red"));
+        }
     }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str) {
         let start = (0.0, 0.0);
@@ -281,22 +287,8 @@ impl Game {
         let draw_pack = DrawPack::new(color, poly, (0.0, 0.0));
         self.map.push((start, draw_pack));
     }
-    pub fn spawn_map(&mut self) {
+    pub fn spawn_grid(&mut self) {
         let size = 7000.0;
-        // fire area
-        let corners = vec![(-4000.0, -5000.0), (4000.0, -5000.0), (6000.0, 0.0), (4000.0, 5000.0), (-4000.0, 5000.0), (-6000.0, 0.0)];
-        self.spawn_area(corners, "rgb(50,20,30)");
-        // dirt area
-        let corners = vec![(200.0, 0.0), (4500.0, 500.0), (4000.0, 1000.0), (3000.0, 4500.0), (1000.0, 2000.0), (0.0, 200.0), (200.0, 200.0)];
-        self.spawn_area(corners, "rgb(100,50,20)");
-        // wind area
-        let corners = vec![(-200.0, 0.0), (-3500.0, 500.0), (-4500.0, 1500.0), (-4000.0, 2000.0), (-3000.0, 2500.0), (-1000.0, 2000.0), (0.0, 200.0), (-200.0, 200.0)];
-        self.spawn_area(corners, "rgb(100,100,150)");
-        // spawn area
-        let corners = vec![(-200.0, -200.0), (200.0, -200.0), (200.0, 200.0), (-200.0, 200.0)];
-        self.spawn_area(corners, "black");
-
-        // grid
         for i in 0..(size as i32 / 100) {
             let offset = i as f32 * 100.0;
             self.map.push((
@@ -316,6 +308,23 @@ impl Game {
                 DrawPack::new("rgb(255,255,255,0.1)", Shape::Line { width: 5.0, x: size, y: -offset }, (0.0, 0.0))
             ));
         }
+    }
+    pub fn spawn_map(&mut self) {
+        // fire area
+        let corners = vec![(-4000.0, -5000.0), (4000.0, -5000.0), (6000.0, 0.0), (4000.0, 5000.0), (-4000.0, 5000.0), (-6000.0, 0.0)];
+        self.spawn_area(corners, "rgb(50,20,30)");
+        // dirt area
+        let corners = vec![(200.0, 0.0), (4500.0, 500.0), (4000.0, 1000.0), (3000.0, 4500.0), (1000.0, 2000.0), (0.0, 200.0), (200.0, 200.0)];
+        self.spawn_area(corners, "rgb(100,50,20)");
+        // wind area
+        let corners = vec![(-200.0, 0.0), (-3500.0, 500.0), (-4500.0, 1500.0), (-4000.0, 2000.0), (-3000.0, 2500.0), (-1000.0, 2000.0), (0.0, 200.0), (-200.0, 200.0)];
+        self.spawn_area(corners, "rgb(100,100,150)");
+        // spawn area
+        let corners = vec![(-200.0, -200.0), (200.0, -200.0), (200.0, 200.0), (-200.0, 200.0)];
+        self.spawn_area(corners, "black");
+
+        // grid
+        self.spawn_grid();
         // map walls
         // self.walls.push(Wall::new((-size, -size), (size, -size), true, true));
         // self.walls.push(Wall::new((-size, size), (size, size), true, true));
@@ -350,7 +359,7 @@ impl Game {
         let g_inner = Arc::clone(&game_mutex);
         let t = thread::spawn(move || {
             loop {
-                thread::sleep(Duration::from_millis(1));
+                thread::sleep(Duration::from_micros(30));
                 let mut game = g_inner.lock().unwrap();
                 if !game.running {
                     break;
