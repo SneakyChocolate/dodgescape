@@ -252,10 +252,17 @@ pub fn handle_movements(game: &mut MutexGuard<Game>) {
 
 impl Game {
     pub fn spawn_enemies(&mut self) {
+        // dirt area
         for i in 0..200 {
             let cap = 0.5;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(0.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0)));
+            self.enemies.push(Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,20,10)"));
+        }
+        // wind area
+        for i in 0..50 {
+            let cap = 1.0;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            self.enemies.push(Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgba(200,200,255,0.5)"));
         }
     }
     pub fn spawn_map(&mut self) {
@@ -263,8 +270,37 @@ impl Game {
         // dirt area
         {
             let start = (0.0, 0.0);
-            let poly = Shape::Poly { corners: vec![(0.0, 0.0), (5000.0, 500.0), (4000.0, 1000.0), (3000.0, 5000.0), (1000.0, 2000.0)] };
+            let corners = vec![(200.0, 0.0), (5000.0, 500.0), (4000.0, 1000.0), (3000.0, 5000.0), (1000.0, 2000.0), (0.0, 200.0), (200.0, 200.0)];
+            for c in 0..corners.len() {
+                let a = corners[c];
+                let b = if c + 1 == corners.len() {
+                    corners[0]
+                }
+                else {
+                    corners[c + 1]
+                };
+                self.walls.push(Wall::new(a, b, false, true));
+            }
+            let poly = Shape::Poly { corners };
             let draw_pack = DrawPack::new("rgb(100,50,20)", poly, (0.0, 0.0));
+            self.map.push((start, draw_pack));
+        }
+        // wind area
+        {
+            let start = (0.0, 0.0);
+            let corners = vec![(-200.0, 0.0), (-3500.0, 500.0), (-4500.0, 1500.0), (-4000.0, 2000.0), (-3000.0, 2500.0), (-1000.0, 2000.0), (0.0, 200.0), (-200.0, 200.0)];
+            for c in 0..corners.len() {
+                let a = corners[c];
+                let b = if c + 1 == corners.len() {
+                    corners[0]
+                }
+                else {
+                    corners[c + 1]
+                };
+                self.walls.push(Wall::new(a, b, false, true));
+            }
+            let poly = Shape::Poly { corners };
+            let draw_pack = DrawPack::new("rgb(100,100,150)", poly, (0.0, 0.0));
             self.map.push((start, draw_pack));
         }
         // grid

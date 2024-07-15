@@ -15,7 +15,7 @@ impl_Movable!(Enemy);
 impl_Drawable!(Enemy);
 
 impl Enemy {
-    pub fn new(x: f32, y: f32, velocity: (f32, f32), radius: f32) -> Enemy {
+    pub fn new(x: f32, y: f32, velocity: (f32, f32), radius: f32, color: &str) -> Enemy {
         let mut p = Enemy {
             x,y,
             velocity,
@@ -23,7 +23,7 @@ impl Enemy {
             draw_packs: vec![],
             ..Default::default()
         };
-        p.draw_packs.push(DrawPack::new("rgb(200,200,200)", Shape::Circle { radius: p.radius }, (0.0, 0.0)));
+        p.draw_packs.push(DrawPack::new(color, Shape::Circle { radius: p.radius }, (0.0, 0.0)));
 
         p
     }
