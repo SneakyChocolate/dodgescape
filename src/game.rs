@@ -265,44 +265,37 @@ impl Game {
             self.enemies.push(Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgba(200,200,255,0.5)"));
         }
     }
+    pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str) {
+        let start = (0.0, 0.0);
+        for c in 0..corners.len() {
+            let a = corners[c];
+            let b = if c + 1 == corners.len() {
+                corners[0]
+            }
+            else {
+                corners[c + 1]
+            };
+            self.walls.push(Wall::new(a, b, false, true));
+        }
+        let poly = Shape::Poly { corners };
+        let draw_pack = DrawPack::new(color, poly, (0.0, 0.0));
+        self.map.push((start, draw_pack));
+    }
     pub fn spawn_map(&mut self) {
-        let size = 5000.0;
+        let size = 7000.0;
+        // fire area
+        let corners = vec![(-4000.0, -5000.0), (4000.0, -5000.0), (6000.0, 0.0), (4000.0, 5000.0), (-4000.0, 5000.0), (-6000.0, 0.0)];
+        self.spawn_area(corners, "rgb(50,20,30)");
         // dirt area
-        {
-            let start = (0.0, 0.0);
-            let corners = vec![(200.0, 0.0), (5000.0, 500.0), (4000.0, 1000.0), (3000.0, 5000.0), (1000.0, 2000.0), (0.0, 200.0), (200.0, 200.0)];
-            for c in 0..corners.len() {
-                let a = corners[c];
-                let b = if c + 1 == corners.len() {
-                    corners[0]
-                }
-                else {
-                    corners[c + 1]
-                };
-                self.walls.push(Wall::new(a, b, false, true));
-            }
-            let poly = Shape::Poly { corners };
-            let draw_pack = DrawPack::new("rgb(100,50,20)", poly, (0.0, 0.0));
-            self.map.push((start, draw_pack));
-        }
+        let corners = vec![(200.0, 0.0), (4500.0, 500.0), (4000.0, 1000.0), (3000.0, 4500.0), (1000.0, 2000.0), (0.0, 200.0), (200.0, 200.0)];
+        self.spawn_area(corners, "rgb(100,50,20)");
         // wind area
-        {
-            let start = (0.0, 0.0);
-            let corners = vec![(-200.0, 0.0), (-3500.0, 500.0), (-4500.0, 1500.0), (-4000.0, 2000.0), (-3000.0, 2500.0), (-1000.0, 2000.0), (0.0, 200.0), (-200.0, 200.0)];
-            for c in 0..corners.len() {
-                let a = corners[c];
-                let b = if c + 1 == corners.len() {
-                    corners[0]
-                }
-                else {
-                    corners[c + 1]
-                };
-                self.walls.push(Wall::new(a, b, false, true));
-            }
-            let poly = Shape::Poly { corners };
-            let draw_pack = DrawPack::new("rgb(100,100,150)", poly, (0.0, 0.0));
-            self.map.push((start, draw_pack));
-        }
+        let corners = vec![(-200.0, 0.0), (-3500.0, 500.0), (-4500.0, 1500.0), (-4000.0, 2000.0), (-3000.0, 2500.0), (-1000.0, 2000.0), (0.0, 200.0), (-200.0, 200.0)];
+        self.spawn_area(corners, "rgb(100,100,150)");
+        // spawn area
+        let corners = vec![(-200.0, -200.0), (200.0, -200.0), (200.0, 200.0), (-200.0, 200.0)];
+        self.spawn_area(corners, "black");
+
         // grid
         for i in 0..(size as i32 / 100) {
             let offset = i as f32 * 100.0;
@@ -324,16 +317,18 @@ impl Game {
             ));
         }
         // map walls
-        self.walls.push(Wall::new((-size, -size), (size, -size), true, true));
-        self.walls.push(Wall::new((-size, size), (size, size), true, true));
-        self.walls.push(Wall::new((size, size), (size, -size), true, true));
-        self.walls.push(Wall::new((-size, size), (-size, -size), true, true));
+        // self.walls.push(Wall::new((-size, -size), (size, -size), true, true));
+        // self.walls.push(Wall::new((-size, size), (size, size), true, true));
+        // self.walls.push(Wall::new((size, size), (size, -size), true, true));
+        // self.walls.push(Wall::new((-size, size), (-size, -size), true, true));
     }
     pub fn spawn_walls(&mut self) {
-        self.walls.push(Wall::new((-200.0, -200.0), (200.0, -200.0), false, true));
-        self.walls.push(Wall::new((-200.0, 200.0), (200.0, 200.0), false, true));
-        self.walls.push(Wall::new((200.0, 200.0), (200.0, -200.0), false, true));
-        self.walls.push(Wall::new((-200.0, 200.0), (-200.0, -200.0), false, true));
+        // walls for other stuff
+        // spawn
+        // self.walls.push(Wall::new((-200.0, -200.0), (200.0, -200.0), false, true));
+        // self.walls.push(Wall::new((-200.0, 200.0), (200.0, 200.0), false, true));
+        // self.walls.push(Wall::new((200.0, 200.0), (200.0, -200.0), false, true));
+        // self.walls.push(Wall::new((-200.0, 200.0), (-200.0, -200.0), false, true));
     }
     pub fn new() -> Game {
         let mut g = Game {
