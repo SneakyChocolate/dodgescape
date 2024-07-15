@@ -252,7 +252,7 @@ pub fn handle_movements(game: &mut MutexGuard<Game>) {
 
 impl Game {
     pub fn spawn_enemies(&mut self) {
-        let multiplier = 2.0;
+        let multiplier = 3.0;
         // dirt area
         for i in 0..200 {
             let cap = 0.5 * multiplier;
@@ -265,11 +265,20 @@ impl Game {
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             self.enemies.push(Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgb(200,200,255)"));
         }
+        // plant area
+        for i in 0..200 {
+            let cap = 0.3 * multiplier;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,255,0.3)", Shape::Circle { radius: enemy.radius * 3.0 }, (0.0, 0.0)));
+            self.enemies.push(enemy);
+        }
         // water area
         for i in 0..50 {
             let cap = 0.5 * multiplier;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(1000.0, -1000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "rgb(50,50,200)"));
+            let mut enemy = Enemy::new(1000.0, -1000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "rgb(50,50,200)");
+            self.enemies.push(enemy);
         }
         for i in 0..10 {
             let cap = 0.2 * multiplier;
@@ -339,6 +348,9 @@ impl Game {
         // wind area
         let corners = vec![(-200.0, 0.0), (-3500.0, 500.0), (-4500.0, 1500.0), (-4000.0, 2000.0), (-3000.0, 2500.0), (-1000.0, 2000.0), (0.0, 200.0), (-200.0, 200.0)];
         self.spawn_area(corners, "rgb(100,100,150)");
+        // plant area
+        let corners = vec![(-200.0, 0.0), (-3500.0, -500.0), (-4500.0, -1500.0), (-4000.0, -2000.0), (-3000.0, -2500.0), (-1000.0, -2000.0), (0.0, -200.0), (-200.0, -200.0)];
+        self.spawn_area(corners, "rgb(10,50,20)");
         // spawn area
         let corners = vec![(-200.0, -200.0), (200.0, -200.0), (200.0, 200.0), (-200.0, 200.0)];
         self.spawn_area(corners, "black");
