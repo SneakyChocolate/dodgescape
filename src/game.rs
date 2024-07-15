@@ -149,9 +149,6 @@ pub fn handle_players(players: &mut Vec<Player>) {
     }
 }
 pub fn handle_enemies(enemies: &mut Vec<Enemy>) {
-    for object in enemies {
-        object.run_effects();
-    }
 }
 // player enemy collision
 pub fn handle_kill_revive(game: &mut MutexGuard<Game>) {
@@ -274,10 +271,6 @@ impl Game {
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,255,0.3)", Shape::Circle { radius: enemy.radius * 3.0 }, (0.0, 0.0)));
-            let chase = |x: &mut f32, y: &mut f32, velocity: &mut (f32, f32), radius: &mut f32| {
-                *radius += 0.1;
-            };
-            enemy.effects.push(chase);
             self.enemies.push(enemy);
         }
         // water area

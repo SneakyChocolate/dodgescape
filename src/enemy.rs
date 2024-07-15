@@ -8,7 +8,6 @@ pub struct Enemy {
     pub y: f32,
     pub draw_packs: Vec<DrawPack>,
     pub radius: f32,
-    pub effects: Vec<fn(&mut f32, &mut f32, &mut (f32, f32), &mut f32) -> ()>
 }
 
 impl_Position!(Enemy);
@@ -27,11 +26,6 @@ impl Enemy {
         p.draw_packs.push(DrawPack::new(color, Shape::Circle { radius: p.radius }, (0.0, 0.0)));
 
         p
-    }
-    pub fn run_effects(&mut self) {
-        for effect in self.effects.iter_mut() {
-            effect(&mut self.x, &mut self.y, &mut self.velocity, &mut self.radius);
-        }
     }
 }
 
