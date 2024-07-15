@@ -252,23 +252,40 @@ pub fn handle_movements(game: &mut MutexGuard<Game>) {
 
 impl Game {
     pub fn spawn_enemies(&mut self) {
+        let multiplier = 2.0;
         // dirt area
         for i in 0..200 {
-            let cap = 0.5;
+            let cap = 0.5 * multiplier;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,20,10)"));
+            self.enemies.push(Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,40,20)"));
         }
         // wind area
         for i in 0..50 {
-            let cap = 1.0;
+            let cap = 1.0 * multiplier;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgba(200,200,255,0.5)"));
+            self.enemies.push(Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgb(200,200,255)"));
+        }
+        // water area
+        for i in 0..50 {
+            let cap = 0.5 * multiplier;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            self.enemies.push(Enemy::new(1000.0, -1000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "rgb(50,50,200)"));
+        }
+        for i in 0..10 {
+            let cap = 0.2 * multiplier;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            self.enemies.push(Enemy::new(1000.0, -1000.0, velocity, rand::thread_rng().gen_range(200.0..=400.0), "rgb(10,10,100)"));
         }
         // fire area
         for i in 0..500 {
-            let cap = 1.0;
+            let cap = 1.5 * multiplier;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             self.enemies.push(Enemy::new(0.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "red"));
+        }
+        for i in 0..500 {
+            let cap = 1.5 * multiplier;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            self.enemies.push(Enemy::new(0.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "red"));
         }
     }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str) {
@@ -315,7 +332,10 @@ impl Game {
         self.spawn_area(corners, "rgb(50,20,30)");
         // dirt area
         let corners = vec![(200.0, 0.0), (4500.0, 500.0), (4000.0, 1000.0), (3000.0, 4500.0), (1000.0, 2000.0), (0.0, 200.0), (200.0, 200.0)];
-        self.spawn_area(corners, "rgb(100,50,20)");
+        self.spawn_area(corners, "rgb(80,70,50)");
+        // water area
+        let corners = vec![(200.0, 0.0), (4500.0, -500.0), (4000.0, -1000.0), (3000.0, -4500.0), (1000.0, -2000.0), (0.0, -200.0), (200.0, -200.0)];
+        self.spawn_area(corners, "rgb(0,0,50)");
         // wind area
         let corners = vec![(-200.0, 0.0), (-3500.0, 500.0), (-4500.0, 1500.0), (-4000.0, 2000.0), (-3000.0, 2500.0), (-1000.0, 2000.0), (0.0, 200.0), (-200.0, 200.0)];
         self.spawn_area(corners, "rgb(100,100,150)");
@@ -359,7 +379,7 @@ impl Game {
         let g_inner = Arc::clone(&game_mutex);
         let t = thread::spawn(move || {
             loop {
-                thread::sleep(Duration::from_micros(30));
+                thread::sleep(Duration::from_millis(1));
                 let mut game = g_inner.lock().unwrap();
                 if !game.running {
                     break;
@@ -409,7 +429,7 @@ impl Game {
         }
         // enemies
         for object in self.enemies.iter() {
-            if vector::distance(camera, (object.x, object.y)).2 > VIEW {continue;}
+            if vector::distance(camera, (object.x, object.y)).2 - object.radius > VIEW {continue;}
             let acc = draw_object(object, &camera);
             objects.push_str(&acc);
         }
