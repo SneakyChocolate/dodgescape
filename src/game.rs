@@ -198,6 +198,11 @@ pub fn handle_effects(game: &mut MutexGuard<Game>) {
                         }
                     }
                 }
+                Effect::Crumble => {
+                    if enemy.just_collided {
+                        
+                    }
+                },
             }
         }
     }
@@ -209,6 +214,9 @@ pub fn handle_effects(game: &mut MutexGuard<Game>) {
     }
 }
 pub fn handle_collision(game: &mut MutexGuard<Game>) {
+    for enemy in game.enemies.iter_mut() {
+        enemy.just_collided = false;
+    }
     let mut enemy_collisions: Vec<(usize, (f32, f32))> = vec![];
     let mut player_collisions: Vec<(usize, (f32, f32))> = vec![];
     for wall in game.walls.iter() {
@@ -248,6 +256,7 @@ pub fn handle_collision(game: &mut MutexGuard<Game>) {
         enemy.y = cp.1 + push.1;
         let new_v = vector::normalize(vector::collision((enemy.x, enemy.y), enemy.velocity, cp), speed);
         enemy.velocity = new_v;
+        enemy.just_collided = true;
     }
     for (i, cp) in player_collisions {
         let player = game.players.get_mut(i).unwrap();

@@ -2,6 +2,7 @@ use crate::{game::{DrawPack, Drawable, Moveable, Position, Shape}, impl_Drawable
 
 pub enum Effect {
     Chase {radius: f32, power: f32},
+    Crumble,
 }
 
 #[derive(Default)]
@@ -12,6 +13,7 @@ pub struct Enemy {
     pub draw_packs: Vec<DrawPack>,
     pub radius: f32,
     pub effects: Vec<Effect>,
+    pub just_collided: bool,
 }
 
 impl_Position!(Enemy);
