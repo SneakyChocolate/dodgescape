@@ -1,7 +1,7 @@
 use crate::{game::{DrawPack, Drawable, Moveable, Position, Shape}, impl_Drawable, impl_Movable, impl_Position};
 
 pub enum Effect {
-    Chase {radius: f32},
+    Chase {radius: f32, power: f32},
 }
 
 #[derive(Default)]

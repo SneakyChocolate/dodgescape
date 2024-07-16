@@ -36,9 +36,16 @@ impl Player {
         p
     }
     pub fn handle_keys(&mut self) {
-        let key = "KeyW".to_owned();
+        let key = "KeyR".to_owned();
+        if self.keys_down.contains(&key) {
+            self.x = 0.0;
+            self.y = 0.0;
+            self.alive = true;
+        }
+        // movement
         let mut vx = 0.0;
         let mut vy = 0.0;
+        let key = "KeyW".to_owned();
         if self.keys_down.contains(&key) {
             vy += -1.0;
         }
@@ -55,6 +62,7 @@ impl Player {
             vx += -1.0;
         }
         (vx, vy) = vector::normalize((vx, vy), self.speed);
+        // slowing down
         let key = "ShiftLeft".to_owned();
         if self.keys_down.contains(&key) {
             vx /= 2.0;

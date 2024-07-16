@@ -139,9 +139,9 @@ pub struct Game {
 
 pub fn handle_players(players: &mut Vec<Player>) {
     for object in players {
+        object.handle_keys();
         if object.alive {
             object.draw_packs[0].color = "blue".to_owned();
-            object.handle_keys();
         }
         else {
             object.draw_packs[0].color = "red".to_owned();
@@ -188,12 +188,12 @@ pub fn handle_effects(game: &mut MutexGuard<Game>) {
     for (i, enemy) in game.enemies.iter().enumerate() {
         for effect in enemy.effects.iter() {
             match effect {
-                Effect::Chase { radius } => {
+                Effect::Chase { radius, power } => {
                     for player in game.players.iter() {
-                        if !player.alive {continue;}
+                        // if !player.alive {continue;}
                         let dist = distance(enemy, player);
                         if dist.2 <= *radius + player.radius {
-                            let add = vector::normalize((dist.0, dist.1), 0.02);
+                            let add = vector::normalize((dist.0, dist.1), *power);
                             changes.push((i, 0, (enemy.velocity.0 + add.0, enemy.velocity.1 + add.1)));
                         }
                     }
@@ -292,11 +292,11 @@ impl Game {
         }
         // plant area
         for i in 0..200 {
-            let cap = 0.3 * multiplier;
+            let cap = 0.2 * multiplier;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
-            enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,255,0.3)", Shape::Circle { radius: enemy.radius * 3.0 }, (0.0, 0.0)));
-            enemy.effects.push(Effect::Chase { radius: enemy.radius * 3.0 });
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,255,0.3)", Shape::Circle { radius: enemy.radius * 5.0 }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Chase { radius: enemy.radius * 5.0, power: 0.03});
             self.enemies.push(enemy);
         }
         // water area
