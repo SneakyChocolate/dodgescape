@@ -1,6 +1,6 @@
-use std::{sync::{Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
+use std::{borrow::BorrowMut, sync::{Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{enemy::Enemy, player::Player, vector, wall::Wall};
+use crate::{enemy::{Effect, Enemy}, player::{self, Player}, vector, wall::Wall};
 use rand::prelude::*;
 
 pub trait Drawable {
@@ -183,6 +183,31 @@ pub fn handle_kill_revive(game: &mut MutexGuard<Game>) {
         player.alive = true;
     }
 }
+pub fn handle_effects(game: &mut MutexGuard<Game>) {
+    let mut changes: Vec<(usize, usize, (f32, f32))> = vec![];
+    for (i, enemy) in game.enemies.iter().enumerate() {
+        for effect in enemy.effects.iter() {
+            match effect {
+                Effect::Chase { radius } => {
+                    for player in game.players.iter() {
+                        if !player.alive {continue;}
+                        let dist = distance(enemy, player);
+                        if dist.2 <= *radius + player.radius {
+                            let add = vector::normalize((dist.0, dist.1), 0.02);
+                            changes.push((i, 0, (enemy.velocity.0 + add.0, enemy.velocity.1 + add.1)));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for change in changes {
+        let enemy = game.enemies.get_mut(change.0).unwrap();
+        if change.1 == 0 {
+            enemy.velocity = change.2;
+        }
+    }
+}
 pub fn handle_collision(game: &mut MutexGuard<Game>) {
     let mut enemy_collisions: Vec<(usize, (f32, f32))> = vec![];
     let mut player_collisions: Vec<(usize, (f32, f32))> = vec![];
@@ -271,6 +296,7 @@ impl Game {
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,255,0.3)", Shape::Circle { radius: enemy.radius * 3.0 }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Chase { radius: enemy.radius * 3.0 });
             self.enemies.push(enemy);
         }
         // water area
@@ -399,6 +425,7 @@ impl Game {
 
                 handle_players(&mut game.players);
                 handle_enemies(&mut game.enemies);
+                handle_effects(&mut game);
                 handle_kill_revive(&mut game);
                 handle_collision(&mut game);
                 handle_movements(&mut game);
