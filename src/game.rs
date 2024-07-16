@@ -378,24 +378,36 @@ impl Game {
         }
     }
     pub fn spawn_map(&mut self) {
-        let multiplier = 2.0;
+        let multiplier = 2000.0;
+        
         // fire area
-        let corners = vec![(-4000.0 * multiplier, -5000.0 * multiplier), (4000.0 * multiplier, -5000.0 * multiplier), (6000.0 * multiplier, 0.0 * multiplier), (4000.0 * multiplier, 5000.0 * multiplier), (-4000.0 * multiplier, 5000.0 * multiplier), (-6000.0 * multiplier, 0.0 * multiplier)];
+        let corners = vec![(-4.0,-5.0),(4.0,-5.0),(6.0,0.0),(4.0,5.0),(-4.0,5.0),(-6.0,0.0)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(50,20,30)");
+        
         // dirt area
-        let corners = vec![(200.0 * multiplier, 0.0 * multiplier), (4500.0 * multiplier, 500.0 * multiplier), (4000.0 * multiplier, 1000.0 * multiplier), (3000.0 * multiplier, 4500.0 * multiplier), (1000.0 * multiplier, 2000.0 * multiplier), (0.0 * multiplier, 200.0 * multiplier), (200.0 * multiplier, 200.0 * multiplier)];
+        let corners = vec![(0.2,0.0),(4.5,0.5),(4.0,1.0),(3.0,4.5),(1.0,2.0),(0.0,0.2),(0.2,0.2)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(80,70,50)");
+        
         // water area
-        let corners = vec![(200.0 * multiplier, 0.0 * multiplier), (4500.0 * multiplier, -500.0 * multiplier), (4000.0 * multiplier, -1000.0 * multiplier), (3000.0 * multiplier, -4500.0 * multiplier), (1000.0 * multiplier, -2000.0 * multiplier), (0.0 * multiplier, -200.0 * multiplier), (200.0 * multiplier, -200.0 * multiplier)];
+        let corners = vec![(0.2,0.0),(4.5,-0.5),(4.0,-1.0),(3.0,-4.5),(1.0,-2.0),(0.0,-0.2),(0.2,-0.2)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(0,0,50)");
+        
         // wind area
-        let corners = vec![(-200.0 * multiplier, 0.0 * multiplier), (-3500.0 * multiplier, 500.0 * multiplier), (-4500.0 * multiplier, 1500.0 * multiplier), (-4000.0 * multiplier, 2000.0 * multiplier), (-3000.0 * multiplier, 2500.0 * multiplier), (-1000.0 * multiplier, 2000.0 * multiplier), (0.0 * multiplier, 200.0 * multiplier), (-200.0 * multiplier, 200.0 * multiplier)];
+        let corners = vec![(-0.2,0.0),(-3.5,0.5),(-4.5,1.5),(-4.0,2.0),(-3.0,2.5),(-1.0,2.0),(0.0,0.2),(-0.2,0.2)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(100,100,150)");
+        
         // plant area
-        let corners = vec![(-200.0 * multiplier, 0.0 * multiplier), (-3500.0 * multiplier, -500.0 * multiplier), (-4500.0 * multiplier, -1500.0 * multiplier), (-4000.0 * multiplier, -2000.0 * multiplier), (-3000.0 * multiplier, -2500.0 * multiplier), (-1000.0 * multiplier, -2000.0 * multiplier), (0.0 * multiplier, -200.0 * multiplier), (-200.0 * multiplier, -200.0 * multiplier)];
+        let corners = vec![(-0.2,0.0),(-3.5,-0.5),(-4.5,-1.5),(-4.0,-2.0),(-3.0,-2.5),(-1.0,-2.0),(0.0,-0.2),(-0.2,-0.2)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(10,50,20)");
+        
         // spawn area
-        let corners = vec![(-200.0 * multiplier, -200.0 * multiplier), (200.0 * multiplier, -200.0 * multiplier), (200.0 * multiplier, 200.0 * multiplier), (-200.0 * multiplier, 200.0 * multiplier)];
+        let corners = vec![(-0.2,-0.2),(0.2,-0.2),(0.2,0.2),(-0.2,0.2)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "black");
 
         // grid
