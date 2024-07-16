@@ -133,6 +133,7 @@ pub struct Game {
     pub game_loop: Option<JoinHandle<()>>,
     pub running: bool,
     pub enemies: Vec<Enemy>,
+    pub grid: Vec<((f32, f32), DrawPack, bool)>,
     pub map: Vec<((f32, f32), DrawPack)>,
     pub walls: Vec<Wall>,
 }
@@ -286,52 +287,53 @@ pub fn handle_movements(game: &mut MutexGuard<Game>) {
 
 impl Game {
     pub fn spawn_enemies(&mut self) {
-        let multiplier = 3.0;
+        let spawn_m = 3;
+        let speed_m = 9.0;
         // dirt area
-        for i in 0..200 {
-            let cap = 0.5 * multiplier;
+        for i in 0..200 * spawn_m {
+            let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,40,20)");
             enemy.effects.push(Effect::Crumble);
             self.enemies.push(enemy);
         }
         // wind area
-        for i in 0..50 {
-            let cap = 1.0 * multiplier;
+        for i in 0..50 * spawn_m {
+            let cap = 1.0 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             self.enemies.push(Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgb(200,200,255)"));
         }
         // plant area
-        for i in 0..200 {
-            let cap = 0.2 * multiplier;
+        for i in 0..200 * spawn_m {
+            let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,255,0.3)", Shape::Circle { radius: enemy.radius * 5.0 }, (0.0, 0.0)));
-            enemy.effects.push(Effect::Chase { radius: enemy.radius * 5.0, power: 0.03});
+            enemy.effects.push(Effect::Chase { radius: enemy.radius * 5.0, power: 0.2});
             self.enemies.push(enemy);
         }
         // water area
-        for i in 0..50 {
-            let cap = 0.5 * multiplier;
+        for i in 0..50 * spawn_m {
+            let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let mut enemy = Enemy::new(1000.0, -1000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "rgb(50,50,200)");
+            let mut enemy = Enemy::new(2000.0, -2000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "rgb(50,50,200)");
             self.enemies.push(enemy);
         }
-        for i in 0..10 {
-            let cap = 0.2 * multiplier;
+        for i in 0..10 * spawn_m {
+            let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(1000.0, -1000.0, velocity, rand::thread_rng().gen_range(200.0..=400.0), "rgb(10,10,100)"));
+            self.enemies.push(Enemy::new(3000.0, -3000.0, velocity, rand::thread_rng().gen_range(400.0..=600.0), "rgb(10,10,100)"));
         }
         // fire area
-        for i in 0..500 {
-            let cap = 1.5 * multiplier;
+        for i in 0..300 * spawn_m {
+            let cap = 2.0 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(0.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "red"));
+            self.enemies.push(Enemy::new(0.0, -1000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "red"));
         }
-        for i in 0..500 {
-            let cap = 1.5 * multiplier;
+        for i in 0..300 * spawn_m {
+            let cap = 2.0 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(0.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "red"));
+            self.enemies.push(Enemy::new(0.0, 1000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "red"));
         }
     }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str) {
@@ -350,55 +352,54 @@ impl Game {
         let draw_pack = DrawPack::new(color, poly, (0.0, 0.0));
         self.map.push((start, draw_pack));
     }
-    pub fn spawn_grid(&mut self) {
-        let size = 7000.0;
+    pub fn spawn_grid(&mut self, size: f32, color: &str) {
         for i in 0..(size as i32 / 100) {
             let offset = i as f32 * 100.0;
-            self.map.push((
+            self.grid.push((
                 (offset, -size),
-                DrawPack::new("rgb(255,255,255,0.1)", Shape::Line { width: 5.0, x: offset, y: size }, (0.0, 0.0))
+                DrawPack::new(color, Shape::Line { width: 5.0, x: offset, y: size }, (0.0, 0.0)),
+                true
             ));
-            self.map.push((
+            self.grid.push((
                 (-offset, -size),
-                DrawPack::new("rgb(255,255,255,0.1)", Shape::Line { width: 5.0, x: -offset, y: size }, (0.0, 0.0))
+                DrawPack::new(color, Shape::Line { width: 5.0, x: -offset, y: size }, (0.0, 0.0)),
+                true
             ));
-            self.map.push((
+            self.grid.push((
                 (-size, offset),
-                DrawPack::new("rgb(255,255,255,0.1)", Shape::Line { width: 5.0, x: size, y: offset }, (0.0, 0.0))
+                DrawPack::new(color, Shape::Line { width: 5.0, x: size, y: offset }, (0.0, 0.0)),
+                false
             ));
-            self.map.push((
+            self.grid.push((
                 (-size, -offset),
-                DrawPack::new("rgb(255,255,255,0.1)", Shape::Line { width: 5.0, x: size, y: -offset }, (0.0, 0.0))
+                DrawPack::new(color, Shape::Line { width: 5.0, x: size, y: -offset }, (0.0, 0.0)),
+                false
             ));
         }
     }
     pub fn spawn_map(&mut self) {
+        let multiplier = 2.0;
         // fire area
-        let corners = vec![(-4000.0, -5000.0), (4000.0, -5000.0), (6000.0, 0.0), (4000.0, 5000.0), (-4000.0, 5000.0), (-6000.0, 0.0)];
+        let corners = vec![(-4000.0 * multiplier, -5000.0 * multiplier), (4000.0 * multiplier, -5000.0 * multiplier), (6000.0 * multiplier, 0.0 * multiplier), (4000.0 * multiplier, 5000.0 * multiplier), (-4000.0 * multiplier, 5000.0 * multiplier), (-6000.0 * multiplier, 0.0 * multiplier)];
         self.spawn_area(corners, "rgb(50,20,30)");
         // dirt area
-        let corners = vec![(200.0, 0.0), (4500.0, 500.0), (4000.0, 1000.0), (3000.0, 4500.0), (1000.0, 2000.0), (0.0, 200.0), (200.0, 200.0)];
+        let corners = vec![(200.0 * multiplier, 0.0 * multiplier), (4500.0 * multiplier, 500.0 * multiplier), (4000.0 * multiplier, 1000.0 * multiplier), (3000.0 * multiplier, 4500.0 * multiplier), (1000.0 * multiplier, 2000.0 * multiplier), (0.0 * multiplier, 200.0 * multiplier), (200.0 * multiplier, 200.0 * multiplier)];
         self.spawn_area(corners, "rgb(80,70,50)");
         // water area
-        let corners = vec![(200.0, 0.0), (4500.0, -500.0), (4000.0, -1000.0), (3000.0, -4500.0), (1000.0, -2000.0), (0.0, -200.0), (200.0, -200.0)];
+        let corners = vec![(200.0 * multiplier, 0.0 * multiplier), (4500.0 * multiplier, -500.0 * multiplier), (4000.0 * multiplier, -1000.0 * multiplier), (3000.0 * multiplier, -4500.0 * multiplier), (1000.0 * multiplier, -2000.0 * multiplier), (0.0 * multiplier, -200.0 * multiplier), (200.0 * multiplier, -200.0 * multiplier)];
         self.spawn_area(corners, "rgb(0,0,50)");
         // wind area
-        let corners = vec![(-200.0, 0.0), (-3500.0, 500.0), (-4500.0, 1500.0), (-4000.0, 2000.0), (-3000.0, 2500.0), (-1000.0, 2000.0), (0.0, 200.0), (-200.0, 200.0)];
+        let corners = vec![(-200.0 * multiplier, 0.0 * multiplier), (-3500.0 * multiplier, 500.0 * multiplier), (-4500.0 * multiplier, 1500.0 * multiplier), (-4000.0 * multiplier, 2000.0 * multiplier), (-3000.0 * multiplier, 2500.0 * multiplier), (-1000.0 * multiplier, 2000.0 * multiplier), (0.0 * multiplier, 200.0 * multiplier), (-200.0 * multiplier, 200.0 * multiplier)];
         self.spawn_area(corners, "rgb(100,100,150)");
         // plant area
-        let corners = vec![(-200.0, 0.0), (-3500.0, -500.0), (-4500.0, -1500.0), (-4000.0, -2000.0), (-3000.0, -2500.0), (-1000.0, -2000.0), (0.0, -200.0), (-200.0, -200.0)];
+        let corners = vec![(-200.0 * multiplier, 0.0 * multiplier), (-3500.0 * multiplier, -500.0 * multiplier), (-4500.0 * multiplier, -1500.0 * multiplier), (-4000.0 * multiplier, -2000.0 * multiplier), (-3000.0 * multiplier, -2500.0 * multiplier), (-1000.0 * multiplier, -2000.0 * multiplier), (0.0 * multiplier, -200.0 * multiplier), (-200.0 * multiplier, -200.0 * multiplier)];
         self.spawn_area(corners, "rgb(10,50,20)");
         // spawn area
-        let corners = vec![(-200.0, -200.0), (200.0, -200.0), (200.0, 200.0), (-200.0, 200.0)];
+        let corners = vec![(-200.0 * multiplier, -200.0 * multiplier), (200.0 * multiplier, -200.0 * multiplier), (200.0 * multiplier, 200.0 * multiplier), (-200.0 * multiplier, 200.0 * multiplier)];
         self.spawn_area(corners, "black");
 
         // grid
-        self.spawn_grid();
-        // map walls
-        // self.walls.push(Wall::new((-size, -size), (size, -size), true, true));
-        // self.walls.push(Wall::new((-size, size), (size, size), true, true));
-        // self.walls.push(Wall::new((size, size), (size, -size), true, true));
-        // self.walls.push(Wall::new((-size, size), (-size, -size), true, true));
+        self.spawn_grid(30000.0, "rgb(255,255,255,0.05)");
     }
     pub fn spawn_walls(&mut self) {
         // walls for other stuff
@@ -451,24 +452,24 @@ impl Game {
             let acc = draw(&shape.0, &shape.1, &camera);
             objects.push_str(&acc);
         }
-        // walls
-        for wall in self.walls.iter() {
-            let draw_pack = DrawPack::new("green", Shape::Line { width: 5.0, x: wall.b.0, y: wall.b.1 }, (0.0, 0.0));
-            let acc = draw(&wall.a, &draw_pack, &camera);
+        for (position, drawpack, xory) in self.grid.iter() {
+            let dist = vector::distance(*position, camera);
+            if *xory {
+                if dist.0.abs() > 1000.0 {continue;}
+            }
+            else {
+                if dist.1.abs() > 1000.0 {continue;}
+            }
+            let acc = draw(&position, &drawpack, &camera);
             objects.push_str(&acc);
         }
 
-        // // wall colliders
+        // walls
         // for wall in self.walls.iter() {
-        //     for player in self.players.iter() {
-        //         let start = (player.x, player.y);
-        //         let target = wall.get_nearest_point(&start);
-        //         let draw_pack = DrawPack::new("blue", Shape::Line { width: 5.0, x: target.0, y: target.1 }, (0.0, 0.0));
-        //         let acc = draw(&start, &draw_pack, &camera);
-        //         objects.push_str(&acc);
-        //     }
+        //     let draw_pack = DrawPack::new("green", Shape::Line { width: 5.0, x: wall.b.0, y: wall.b.1 }, (0.0, 0.0));
+        //     let acc = draw(&wall.a, &draw_pack, &camera);
+        //     objects.push_str(&acc);
         // }
-
 
         const VIEW: f32 = 1000.0;
         // players

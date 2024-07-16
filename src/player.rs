@@ -26,7 +26,7 @@ impl Player {
             name: name.clone(),
             radius: 30.0,
             alive: true,
-            speed: 4.0,
+            speed: 8.0,
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new("blue", Shape::Circle { radius: p.radius }, (0.0, 0.0)));
