@@ -7,6 +7,7 @@ mod enemy;
 mod vector;
 mod wall;
 mod math;
+mod action;
 
 use std::sync::{Arc, Mutex};
 

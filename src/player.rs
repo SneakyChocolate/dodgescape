@@ -42,6 +42,10 @@ impl Player {
             self.y = 0.0;
             self.alive = true;
         }
+        let key = "KeyQ".to_owned();
+        if self.keys_down.contains(&key) {
+            self.alive = true;
+        }
         // movement
         let mut vx = 0.0;
         let mut vy = 0.0;

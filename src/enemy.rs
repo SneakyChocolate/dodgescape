@@ -3,6 +3,7 @@ use crate::{game::{DrawPack, Drawable, Moveable, Position, Shape}, impl_Drawable
 pub enum Effect {
     Chase {radius: f32, power: f32},
     Crumble,
+    Lifetime(usize),
 }
 
 #[derive(Default)]

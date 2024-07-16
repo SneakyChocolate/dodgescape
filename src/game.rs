@@ -1,6 +1,6 @@
-use std::{borrow::BorrowMut, sync::{Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
+use std::{sync::{Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{enemy::{Effect, Enemy}, player::{self, Player}, vector, wall::Wall};
+use crate::{action::Action, enemy::{Effect, Enemy}, player::Player, vector, wall::Wall};
 use rand::prelude::*;
 
 pub trait Drawable {
@@ -36,7 +36,7 @@ macro_rules! impl_Position {
 pub trait Moveable {
     fn get_x(&mut self) -> &mut f32;
     fn get_y(&mut self) -> &mut f32;
-    fn get_velocity(&self) -> &(f32, f32);
+    fn get_velocity(&mut self) -> &mut (f32, f32);
 }
 #[macro_export]
 macro_rules! impl_Movable {
@@ -48,8 +48,8 @@ macro_rules! impl_Movable {
             fn get_y(&mut self) -> &mut f32 {
                 &mut self.y
             }
-            fn get_velocity(&self) -> &(f32, f32) {
-                &self.velocity
+            fn get_velocity(&mut self) -> &mut (f32, f32) {
+                &mut self.velocity
             }
         }
     };
@@ -184,7 +184,7 @@ pub fn handle_kill_revive(game: &mut MutexGuard<Game>) {
     }
 }
 pub fn handle_effects(game: &mut MutexGuard<Game>) {
-    let mut changes: Vec<(usize, usize, (f32, f32))> = vec![];
+    let mut actions: Vec<(usize, Action)> = vec![];
     for (i, enemy) in game.enemies.iter().enumerate() {
         for effect in enemy.effects.iter() {
             match effect {
@@ -194,23 +194,23 @@ pub fn handle_effects(game: &mut MutexGuard<Game>) {
                         let dist = distance(enemy, player);
                         if dist.2 <= *radius + player.radius {
                             let add = vector::normalize((dist.0, dist.1), *power);
-                            changes.push((i, 0, (enemy.velocity.0 + add.0, enemy.velocity.1 + add.1)));
+                            actions.push((i, Action::UpdateVelocity((enemy.velocity.0 + add.0, enemy.velocity.1 + add.1))));
                         }
                     }
                 }
                 Effect::Crumble => {
                     if enemy.just_collided {
-                        
+                        actions.push((i, Action::SpawnCrumble));
                     }
+                },
+                Effect::Lifetime(t) => {
+                    actions.push((i, Action::ReduceLifetime));
                 },
             }
         }
     }
-    for change in changes {
-        let enemy = game.enemies.get_mut(change.0).unwrap();
-        if change.1 == 0 {
-            enemy.velocity = change.2;
-        }
+    for (i, action) in actions {
+        action.execute(game, i);
     }
 }
 pub fn handle_collision(game: &mut MutexGuard<Game>) {
@@ -291,7 +291,9 @@ impl Game {
         for i in 0..200 {
             let cap = 0.5 * multiplier;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,40,20)"));
+            let mut enemy = Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,40,20)");
+            enemy.effects.push(Effect::Crumble);
+            self.enemies.push(enemy);
         }
         // wind area
         for i in 0..50 {
