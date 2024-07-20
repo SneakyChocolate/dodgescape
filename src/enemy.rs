@@ -4,6 +4,7 @@ pub enum Effect {
     Chase {radius: f32, power: f32},
     Crumble,
     Lifetime(usize),
+    Push {radius: f32, power: f32},
 }
 
 #[derive(Default)]

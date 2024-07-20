@@ -1,7 +1,8 @@
 use crate::{enemy::{Effect, Enemy}, game::{Game, Moveable}, vector};
 
 pub enum Action {
-    UpdateVelocity((f32,f32)),
+    UpdateEnemyVelocity((f32,f32)),
+    UpdatePlayerVelocity((f32,f32)),
     SpawnCrumble,
     ReduceLifetime,
     Despawn,
@@ -10,9 +11,13 @@ pub enum Action {
 impl Action {
     pub fn execute(&self, game: &mut Game, entity: usize) {
         match self {
-            Action::UpdateVelocity(v) => {
-                let enemy = game.enemies.get_mut(entity).unwrap();
-                enemy.velocity = *v;
+            Action::UpdateEnemyVelocity(v) => {
+                let object = game.enemies.get_mut(entity).unwrap();
+                object.velocity = *v;
+            },
+            Action::UpdatePlayerVelocity(v) => {
+                let object = game.players.get_mut(entity).unwrap();
+                object.velocity = *v;
             },
             Action::SpawnCrumble => {
                 let enemy = game.enemies.get_mut(entity).unwrap();

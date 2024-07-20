@@ -74,7 +74,9 @@ pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zo
         Shape::Text { content, size } => {
             Shape::Text { content: content.clone(), size: size * zoom }
         },
-        _ => draw_pack.shape.clone()
+        Shape::Rectangle { width, height } => {
+            Shape::Rectangle { width: width * zoom, height: height * zoom }
+        },
     };
     format!("[(\"{}\", {:?}, ({}, {}))],",
         draw_pack.color,
@@ -204,7 +206,7 @@ pub fn handle_effects(game: &mut MutexGuard<Game>) {
                         let dist = distance(enemy, player);
                         if dist.2 <= *radius + player.radius {
                             let add = vector::normalize((dist.0, dist.1), *power);
-                            actions.push((i, Action::UpdateVelocity((enemy.velocity.0 + add.0, enemy.velocity.1 + add.1))));
+                            actions.push((i, Action::UpdateEnemyVelocity((enemy.velocity.0 + add.0, enemy.velocity.1 + add.1))));
                         }
                     }
                 }
@@ -215,6 +217,15 @@ pub fn handle_effects(game: &mut MutexGuard<Game>) {
                 },
                 Effect::Lifetime(t) => {
                     actions.push((i, Action::ReduceLifetime));
+                },
+                Effect::Push { radius, power } => {
+                    for (p, player) in game.players.iter().enumerate() {
+                        let dist = distance(enemy, player);
+                        if dist.2 <= *radius + player.radius {
+                            let add = vector::normalize((dist.0, dist.1), *power);
+                            actions.push((p, Action::UpdatePlayerVelocity((player.velocity.0 + add.0, player.velocity.1 + add.1))));
+                        }
+                    }
                 },
             }
         }
@@ -310,14 +321,17 @@ impl Game {
         for _ in 0..50 * spawn_m {
             let cap = 1.0 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgb(200,200,255)"));
+            let mut enemy = Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgb(200,200,255)");
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(255,255,255,0.1)", Shape::Circle { radius: enemy.radius * 3.0 }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Push { radius: enemy.radius * 3.0, power: 5.0 });
+            self.enemies.push(enemy);
         }
         // plant area
         for _ in 0..200 * spawn_m {
             let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
-            enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,255,0.3)", Shape::Circle { radius: enemy.radius * 5.0 }, (0.0, 0.0)));
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,255,0.2)", Shape::Circle { radius: enemy.radius * 5.0 }, (0.0, 0.0)));
             enemy.effects.push(Effect::Chase { radius: enemy.radius * 5.0, power: 0.2});
             self.enemies.push(enemy);
         }
