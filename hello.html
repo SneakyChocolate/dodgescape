@@ -16,6 +16,11 @@
       let canvas;
       let ctx;
       let keys_down = [];
+      let wheel = 0;
+
+      document.onwheel = function(e) {
+        wheel = e.deltaY;
+      }
 
       document.onkeydown = function(e) {
        	if (keys_down.includes(e.code)) {
@@ -198,13 +203,14 @@
           canvas = document.createElement("canvas");
           ctx = canvas.getContext("2d");
           document.body.append(canvas);
+          canvas.width = window.innerWidth - 3;
+          canvas.height = window.innerHeight - 3;
           document.body.style.margin = "0";
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
 
           // starting canvas action
           renderLoop = setInterval(function() {
-            let msg = `let mode = game; let username: String = ${username.value}; let x: i32 = ${mouse_x}; let y: i32 = ${mouse_y}; let keys_down = ${keys_down.join(",")};`;
+            let msg = `let mode = game; let username: String = ${username.value}; let x: i32 = ${mouse_x}; let y: i32 = ${mouse_y}; let keys_down = ${keys_down.join(",")}; let wheel = ${wheel};`;
+            wheel = 0;
             try {
               send(msg, render);
             }

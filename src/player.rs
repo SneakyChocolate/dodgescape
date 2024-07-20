@@ -1,5 +1,5 @@
 
-use crate::{game::{DrawPack, Drawable, Moveable, Position, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
+use crate::{game::{DrawPack, Drawable, Moveable, Position, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
 
 #[derive(Default)]
 pub struct Player {
@@ -14,6 +14,8 @@ pub struct Player {
     pub radius: f32,
     pub speed: f32,
     pub skip_move: bool,
+    pub inventory: Inventory,
+    pub zoom: f32,
 }
 
 impl_Position!(Player);
@@ -27,6 +29,7 @@ impl Player {
             radius: 30.0,
             alive: true,
             speed: 8.0,
+            zoom: 1.0,
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new("blue", Shape::Circle { radius: p.radius }, (0.0, 0.0)));
@@ -36,6 +39,7 @@ impl Player {
         p
     }
     pub fn handle_keys(&mut self) {
+        // respawn
         let key = "KeyR".to_owned();
         if self.keys_down.contains(&key) {
             self.x = 0.0;
@@ -45,6 +49,14 @@ impl Player {
         let key = "KeyQ".to_owned();
         if self.keys_down.contains(&key) {
             self.alive = true;
+        }
+        // inventory
+        let key = "KeyE".to_owned();
+        if self.keys_down.contains(&key) {
+            self.inventory.open = true;
+        }
+        else {
+            self.inventory.open = false;
         }
         // movement
         let mut vx = 0.0;

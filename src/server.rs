@@ -100,7 +100,8 @@ impl Server {
             else if mode == "game".to_owned() {
                 let mouse = parser::get_mouse(&body_string).unwrap();
                 let keys_down = parser::get_keys_down(&body_string);
-                objects = game_data.handle_input(&username, mouse, keys_down);
+                let wheel: i32 = parser::get_variable(&body_string, "wheel").unwrap().parse().unwrap();
+                objects = game_data.handle_input(&username, mouse, keys_down, wheel);
             }
             else if mode == "logout".to_owned() {
                 objects = game_data.logout(&username);

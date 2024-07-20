@@ -54,32 +54,41 @@ macro_rules! impl_Movable {
         }
     };
 }
-pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32)) -> String {
+pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
     let (x, y) = position;
     let (cx, cy) = camera;
     let shape = match &draw_pack.shape {
         Shape::Line { width: lw , x: lx, y: ly } => {
-            Shape::Line { x: lx - cx, y: ly - cy, width: *lw }
+            Shape::Line { x: (lx - cx) * zoom, y: (ly - cy) * zoom, width: *lw * zoom }
         },
         Shape::Poly { corners: c } => {
-            let changed = c.iter().map(|(corx, cory)| {(corx - cx + x + draw_pack.offset.0, cory - cy + y + draw_pack.offset.1)}).collect::<Vec<(f32, f32)>>();
+            let changed = c.iter().map(|(corx, cory)| { (
+                (corx - cx + x + draw_pack.offset.0) * zoom,
+                (cory - cy + y + draw_pack.offset.1) * zoom
+            )}).collect::<Vec<(f32, f32)>>();
             Shape::Poly { corners: changed }
+        },
+        Shape::Circle { radius } => {
+            Shape::Circle { radius: radius * zoom }
+        },
+        Shape::Text { content, size } => {
+            Shape::Text { content: content.clone(), size: size * zoom }
         },
         _ => draw_pack.shape.clone()
     };
     format!("[(\"{}\", {:?}, ({}, {}))],",
         draw_pack.color,
         shape,
-        x + draw_pack.offset.0 - cx,
-        y + draw_pack.offset.1 - cy
+        (x + draw_pack.offset.0 - cx) * zoom,
+        (y + draw_pack.offset.1 - cy) * zoom
     )
 }
-pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32)) -> String {
+pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom: f32) -> String {
     let pos = (object.x(), object.y());
     let draw_packs = object.get_draw_packs();
     let mut output = "".to_owned();
     for draw_pack in draw_packs {
-        let s = draw(&pos, draw_pack, &camera);
+        let s = draw(&pos, draw_pack, &camera, zoom);
         output.push_str(&s);
     }
     output
@@ -290,7 +299,7 @@ impl Game {
         let spawn_m = 3;
         let speed_m = 9.0;
         // dirt area
-        for i in 0..200 * spawn_m {
+        for _ in 0..200 * spawn_m {
             let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,40,20)");
@@ -298,13 +307,13 @@ impl Game {
             self.enemies.push(enemy);
         }
         // wind area
-        for i in 0..50 * spawn_m {
+        for _ in 0..50 * spawn_m {
             let cap = 1.0 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             self.enemies.push(Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgb(200,200,255)"));
         }
         // plant area
-        for i in 0..200 * spawn_m {
+        for _ in 0..200 * spawn_m {
             let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
@@ -313,27 +322,41 @@ impl Game {
             self.enemies.push(enemy);
         }
         // water area
-        for i in 0..50 * spawn_m {
+        for _ in 0..50 * spawn_m {
             let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(2000.0, -2000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "rgb(50,50,200)");
             self.enemies.push(enemy);
         }
-        for i in 0..10 * spawn_m {
+        for _ in 0..10 * spawn_m {
             let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             self.enemies.push(Enemy::new(3000.0, -3000.0, velocity, rand::thread_rng().gen_range(400.0..=600.0), "rgb(10,10,100)"));
         }
         // fire area
-        for i in 0..300 * spawn_m {
-            let cap = 2.0 * speed_m;
+        let size = 20.0..=50.0;
+        let amount = 300;
+        let speed = 1.0;
+        let dist = 4500.0;
+        for _ in 0..amount * spawn_m {
+            let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(0.0, -1000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "red"));
+            self.enemies.push(Enemy::new(0.0, -dist, velocity, rand::thread_rng().gen_range(size.clone()), "red"));
         }
-        for i in 0..300 * spawn_m {
-            let cap = 2.0 * speed_m;
+        for _ in 0..amount * spawn_m {
+            let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(0.0, 1000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "red"));
+            self.enemies.push(Enemy::new(0.0, dist, velocity, rand::thread_rng().gen_range(size.clone()), "red"));
+        }
+        for _ in 0..amount * spawn_m {
+            let cap = speed * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            self.enemies.push(Enemy::new(-dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), "red"));
+        }
+        for _ in 0..amount * spawn_m {
+            let cap = speed * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            self.enemies.push(Enemy::new(dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), "red"));
         }
     }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str) {
@@ -381,27 +404,27 @@ impl Game {
         let multiplier = 2000.0;
         
         // fire area
-        let corners = vec![(-4.0,-5.0),(4.0,-5.0),(6.0,0.0),(4.0,5.0),(-4.0,5.0),(-6.0,0.0)]
+        let corners = vec![(-5.0,-5.0),(5.0,-5.0),(5.0,5.0),(-5.0,5.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(50,20,30)");
         
         // dirt area
-        let corners = vec![(0.0,0.0),(4.5,0.5),(4.0,1.0),(3.0,4.5),(1.0,2.0)]
+        let corners = vec![(0.0,0.0),(3.0,1.0),(4.0,4.0),(1.0,3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(80,70,50)");
         
         // water area
-        let corners = vec![(0.0,0.0),(4.5,-0.5),(4.0,-1.0),(3.0,-4.5),(1.0,-2.0)]
+        let corners = vec![(0.0,0.0),(3.0,-1.0),(4.0,-4.0),(1.0,-3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(0,0,50)");
         
         // wind area
-        let corners = vec![(0.0,0.0),(-3.5,0.5),(-4.5,1.5),(-4.0,2.0),(-3.0,2.5),(-1.0,2.0)]
+        let corners = vec![(0.0,0.0),(-3.0,1.0),(-4.0,4.0),(-1.0,3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(100,100,150)");
         
         // plant area
-        let corners = vec![(0.0,0.0),(-3.5,-0.5),(-4.5,-1.5),(-4.0,-2.0),(-3.0,-2.5),(-1.0,-2.0)]
+        let corners = vec![(0.0,0.0),(-3.0,-1.0),(-4.0,-4.0),(-1.0,-3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(10,50,20)");
         
@@ -450,70 +473,87 @@ impl Game {
                 handle_players(&mut game.players);
                 handle_enemies(&mut game.enemies);
                 handle_effects(&mut game);
-                handle_kill_revive(&mut game);
                 handle_collision(&mut game);
+                handle_kill_revive(&mut game);
                 handle_movements(&mut game);
             }
         });
         game.game_loop = Some(t);
     }
-    pub fn pack_objects(&self, camera: (f32, f32)) -> String {
+    pub fn pack_objects(&mut self, camera: (f32, f32), name: &String, zoom: f32) -> String {
+        let view = 1000.0 / zoom;
         let mut objects = "".to_owned();
         // map
         for shape in self.map.iter() {
-            let acc = draw(&shape.0, &shape.1, &camera);
+            let acc = draw(&shape.0, &shape.1, &camera, zoom);
             objects.push_str(&acc);
         }
         for (position, drawpack, xory) in self.grid.iter() {
             let dist = vector::distance(*position, camera);
             if *xory {
-                if dist.0.abs() > 1000.0 {continue;}
+                if dist.0.abs() > view {continue;}
             }
             else {
-                if dist.1.abs() > 1000.0 {continue;}
+                if dist.1.abs() > view {continue;}
             }
-            let acc = draw(&position, &drawpack, &camera);
+            let acc = draw(&position, &drawpack, &camera, zoom);
             objects.push_str(&acc);
         }
 
         // walls
         // for wall in self.walls.iter() {
         //     let draw_pack = DrawPack::new("green", Shape::Line { width: 5.0, x: wall.b.0, y: wall.b.1 }, (0.0, 0.0));
-        //     let acc = draw(&wall.a, &draw_pack, &camera);
+        //     let acc = draw(&wall.a, &draw_pack, &camera, zoom);
         //     objects.push_str(&acc);
         // }
 
-        const VIEW: f32 = 1000.0;
         // players
         for object in self.players.iter() {
-            if vector::distance(camera, (object.x, object.y)).2 > VIEW {continue;}
-            let acc = draw_object(object, &camera);
+            if vector::distance(camera, (object.x, object.y)).2 > view {continue;}
+            let acc = draw_object(object, &camera, zoom);
             objects.push_str(&acc);
         }
         // enemies
         for object in self.enemies.iter() {
-            if vector::distance(camera, (object.x, object.y)).2 - object.radius > VIEW {continue;}
-            let acc = draw_object(object, &camera);
+            if vector::distance(camera, (object.x, object.y)).2 - object.radius > view {continue;}
+            let acc = draw_object(object, &camera, zoom);
             objects.push_str(&acc);
         }
+        // inventory
+        for object in self.players.iter() {
+            if *name == *object.name && object.inventory.open {
+                let drawpack = DrawPack::new("rgba(200,100,50,0.8)", Shape::Rectangle { width: 400.0, height: 800.0 }, (-900.0, -400.0));
+                let acc = draw(&(object.x, object.y), &drawpack, &camera, zoom);
+                objects.push_str(&acc);
+            }
+        }
+
         objects
     }
-    pub fn handle_input(&mut self, player: &String, mouse: (i32, i32), keys_down: Vec<String>) -> String {
-        let player: &mut Player = match self.get(player) {
+    pub fn handle_input(&mut self, player_name: &String, mouse: (i32, i32), keys_down: Vec<String>, wheel: i32) -> String {
+        let player = match self.get_mut(player_name) {
             Some(p) => p,
             None => return "".to_owned(),
         };
-
-        let camera = (player.x.clone(), player.y.clone());
-
         player.mouse = mouse;
         player.keys_down = keys_down;
+        if wheel > 0 {
+            player.zoom /= 1.1;
+        }
+        else if wheel < 0 {
+            player.zoom *= 1.1;
+        }
 
         // retrieve object data
-        self.pack_objects(camera)
+        let camera = (player.x, player.y);
+        let zoom = player.zoom;
+        self.pack_objects(camera, &player_name, zoom)
     }
-    pub fn get(&mut self, player: &String) -> Option<&mut Player> {
+    pub fn get_mut(&mut self, player: &String) -> Option<&mut Player> {
         self.players.iter_mut().find(|p| {p.name == *player})
+    }
+    pub fn get(&mut self, player: &String) -> Option<&Player> {
+        self.players.iter().find(|p| {p.name == *player})
     }
     pub fn logout(&mut self, player: &String) -> String {
         let index = self.players.iter().position(|p| {p.name == *player});

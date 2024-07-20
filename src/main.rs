@@ -8,6 +8,7 @@ mod vector;
 mod wall;
 mod math;
 mod action;
+mod inventory;
 
 use std::sync::{Arc, Mutex};
 
