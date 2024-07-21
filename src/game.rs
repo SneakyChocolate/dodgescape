@@ -313,11 +313,11 @@ impl Game {
             let mut enemy = Enemy::new(2000.0, -2000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "rgb(50,50,200)");
             enemies.push(enemy);
         }
-        for _ in 0..10 * spawn_m {
+        for _ in 0..5 * spawn_m {
             let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(3000.0, -3000.0, velocity, rand::thread_rng().gen_range(400.0..=600.0), "rgb(10,10,100)");
-            enemy.draw_packs.insert(0, DrawPack::new("rgba(0,0,255,0.1)", Shape::Circle { radius: enemy.radius * 1.3 }, (0.0, 0.0)));
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(10,10,100,0.5)", Shape::Circle { radius: enemy.radius * 1.3 }, (0.0, 0.0)));
             enemy.effects.push(Effect::Push { radius: enemy.radius * 1.3, power: -2.0 });
             enemies.push(enemy);
         }
