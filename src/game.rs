@@ -92,10 +92,10 @@ pub struct Game {
     pub players: Vec<Player>,
     pub game_loop: Option<JoinHandle<()>>,
     pub running: bool,
-    pub enemies: Vec<Enemy>,
+    pub enemies: Vec<(Vec<usize>, Vec<Enemy>)>,
     pub grid: Vec<((f32, f32), DrawPack, bool)>,
     pub map: Vec<((f32, f32), DrawPack)>,
-    pub walls: Vec<Wall>,
+    pub walls: Vec<(usize, Vec<Wall>)>,
 }
 
 pub fn handle_players(players: &mut Vec<Player>) {
@@ -109,18 +109,18 @@ pub fn handle_players(players: &mut Vec<Player>) {
         }
     }
 }
-pub fn handle_enemies(enemies: &mut Vec<Enemy>) {
-}
 // player enemy collision
 pub fn handle_kill_revive(game: &mut MutexGuard<Game>) {
     let mut deaths: Vec<usize> = vec![];
     let mut revives: Vec<usize> = vec![];
     // handle deaths
     for (i, player) in game.players.iter().enumerate() {
-        for enemy in game.enemies.iter() {
-            let dd = distance(player, enemy).2;
-            if dd <= (player.radius + enemy.radius) {
-                deaths.push(i);
+        for group in game.enemies.iter() {
+            for enemy in group.1.iter() {
+                let dd = distance(player, enemy).2;
+                if dd <= (player.radius + enemy.radius) {
+                    deaths.push(i);
+                }
             }
         }
     }
@@ -146,36 +146,38 @@ pub fn handle_kill_revive(game: &mut MutexGuard<Game>) {
 }
 pub fn handle_effects(game: &mut MutexGuard<Game>) {
     let mut actions: Vec<(usize, Action)> = vec![];
-    for (i, enemy) in game.enemies.iter().enumerate() {
-        for effect in enemy.effects.iter() {
-            match effect {
-                Effect::Chase { radius, power } => {
-                    for player in game.players.iter() {
-                        // if !player.alive {continue;}
-                        let dist = distance(enemy, player);
-                        if dist.2 <= *radius + player.radius {
-                            let add = vector::normalize((dist.0, dist.1), *power);
-                            actions.push((i, Action::UpdateEnemyVelocity((enemy.velocity.0 + add.0, enemy.velocity.1 + add.1))));
+    for (g, group) in game.enemies.iter().enumerate() {
+        for (i, enemy) in group.1.iter().enumerate() {
+            for effect in enemy.effects.iter() {
+                match effect {
+                    Effect::Chase { radius, power } => {
+                        for player in game.players.iter() {
+                            // if !player.alive {continue;}
+                            let dist = distance(enemy, player);
+                            if dist.2 <= *radius + player.radius {
+                                let add = vector::normalize((dist.0, dist.1), *power);
+                                actions.push((i, Action::UpdateEnemyVelocity(g, (enemy.velocity.0 + add.0, enemy.velocity.1 + add.1))));
+                            }
                         }
                     }
+                    Effect::Crumble => {
+                        if enemy.just_collided {
+                            actions.push((i, Action::SpawnCrumble(g)));
+                        }
+                    },
+                    Effect::Lifetime(t) => {
+                        actions.push((i, Action::ReduceLifetime(g)));
+                    },
+                    Effect::Push { radius, power } => {
+                        for (p, player) in game.players.iter().enumerate() {
+                            let dist = distance(enemy, player);
+                            if dist.2 <= *radius + player.radius {
+                                let add = vector::normalize((dist.0, dist.1), *power);
+                                actions.push((p, Action::AddPlayerVelocity(add)));
+                            }
+                        }
+                    },
                 }
-                Effect::Crumble => {
-                    if enemy.just_collided {
-                        actions.push((i, Action::SpawnCrumble));
-                    }
-                },
-                Effect::Lifetime(t) => {
-                    actions.push((i, Action::ReduceLifetime));
-                },
-                Effect::Push { radius, power } => {
-                    for (p, player) in game.players.iter().enumerate() {
-                        let dist = distance(enemy, player);
-                        if dist.2 <= *radius + player.radius {
-                            let add = vector::normalize((dist.0, dist.1), *power);
-                            actions.push((p, Action::AddPlayerVelocity(add)));
-                        }
-                    }
-                },
             }
         }
     }
@@ -184,41 +186,48 @@ pub fn handle_effects(game: &mut MutexGuard<Game>) {
     }
 }
 pub fn handle_collision(game: &mut MutexGuard<Game>) {
-    for enemy in game.enemies.iter_mut() {
-        enemy.just_collided = false;
+    for group in game.enemies.iter_mut() {
+        for enemy in group.1.iter_mut() {
+            enemy.just_collided = false;
+        }
     }
-    let mut enemy_collisions: Vec<(usize, (f32, f32))> = vec![];
+    let mut enemy_collisions: Vec<(usize, usize, (f32, f32))> = vec![];
     let mut player_collisions: Vec<(usize, (f32, f32))> = vec![];
-    for wall in game.walls.iter() {
-        // enemies
-        if wall.enemy {
-            for (i, enemy) in game.enemies.iter().enumerate() {
-                let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
-                if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.radius {
-                    if enemy_collisions.iter().any(|(e, _)| {*e == i}) {
-                        continue;
+    for wgroup in game.walls.iter() {
+        for wall in wgroup.1.iter() {
+            // enemies
+            if wall.enemy {
+                for (g, egroup) in game.enemies.iter().enumerate() {
+                    if !egroup.0.contains(&wgroup.0) {continue;} 
+                    for (i, enemy) in egroup.1.iter().enumerate() {
+                        let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
+                        if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.radius {
+                            if enemy_collisions.iter().any(|(_, e, _)| {*e == i}) {
+                                continue;
+                            }
+                            enemy_collisions.push((g, i, cp));
+                        }
                     }
-                    enemy_collisions.push((i, cp));
                 }
             }
-        }
-        // players
-        if wall.player {
-            for (i, player) in game.players.iter().enumerate() {
-                let cp = wall.get_nearest_point(&(player.x, player.y));
-                if vector::distance(cp, (player.x, player.y)).2 <= player.radius {
-                    if player_collisions.iter().any(|(e, _)| {*e == i}) {
-                        continue;
+            // players
+            if wall.player {
+                for (i, player) in game.players.iter().enumerate() {
+                    let cp = wall.get_nearest_point(&(player.x, player.y));
+                    if vector::distance(cp, (player.x, player.y)).2 <= player.radius {
+                        if player_collisions.iter().any(|(e, _)| {*e == i}) {
+                            continue;
+                        }
+                        player_collisions.push((i, cp));
                     }
-                    player_collisions.push((i, cp));
                 }
             }
         }
     }
     // offset for pushing object away on collision so collision doesnt trigger again
     const OFFSET: f32 = 0.001;
-    for (i, cp) in enemy_collisions {
-        let enemy = game.enemies.get_mut(i).unwrap();
+    for (g, i, cp) in enemy_collisions {
+        let enemy = game.enemies.get_mut(g).unwrap().1.get_mut(i).unwrap();
         let speed = vector::abs(enemy.velocity);
         let dist = vector::distance(cp, (enemy.x, enemy.y));
         let push = vector::normalize((dist.0, dist.1), enemy.radius + OFFSET);
@@ -249,8 +258,10 @@ pub fn handle_movements(game: &mut MutexGuard<Game>) {
             object.skip_move = false;
         }
     }
-    for object in &mut game.enemies {
-        move_object(object);
+    for group in game.enemies.iter_mut() {
+        for object in group.1.iter_mut() {
+            move_object(object);
+        }
     }
 }
 
@@ -259,70 +270,92 @@ impl Game {
         let spawn_m = 3;
         let speed_m = 9.0;
         // dirt area
+        let ids = vec![0, 5];
+        let mut enemies = vec![];
         for _ in 0..200 * spawn_m {
             let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,40,20)");
             enemy.effects.push(Effect::Crumble);
-            self.enemies.push(enemy);
+            enemies.push(enemy);
         }
+        self.enemies.push((ids, enemies));
         // wind area
+        let ids = vec![1, 5];
+        let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 1.0 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgb(200,200,255)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,255,255,0.1)", Shape::Circle { radius: enemy.radius * 3.0 }, (0.0, 0.0)));
             enemy.effects.push(Effect::Push { radius: enemy.radius * 3.0, power: 5.0 });
-            self.enemies.push(enemy);
+            enemies.push(enemy);
         }
+        self.enemies.push((ids, enemies));
         // plant area
+        let ids = vec![2, 5];
+        let mut enemies = vec![];
         for _ in 0..200 * spawn_m {
             let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,255,0.2)", Shape::Circle { radius: enemy.radius * 5.0 }, (0.0, 0.0)));
             enemy.effects.push(Effect::Chase { radius: enemy.radius * 5.0, power: 0.2});
-            self.enemies.push(enemy);
+            enemies.push(enemy);
         }
+        self.enemies.push((ids, enemies));
         // water area
+        let ids = vec![3,5];
+        let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(2000.0, -2000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "rgb(50,50,200)");
-            self.enemies.push(enemy);
+            enemies.push(enemy);
         }
         for _ in 0..10 * spawn_m {
             let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(3000.0, -3000.0, velocity, rand::thread_rng().gen_range(400.0..=600.0), "rgb(10,10,100)"));
+            let mut enemy = Enemy::new(3000.0, -3000.0, velocity, rand::thread_rng().gen_range(400.0..=600.0), "rgb(10,10,100)");
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(0,0,255,0.1)", Shape::Circle { radius: enemy.radius * 1.3 }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Push { radius: enemy.radius * 1.3, power: -2.0 });
+            enemies.push(enemy);
         }
+        self.enemies.push((ids, enemies));
         // fire area
         let size = 20.0..=50.0;
         let amount = 300;
         let speed = 1.0;
         let dist = 4500.0;
+        let ids = vec![0,1,2,3,4,5];
+        let mut enemies = vec![];
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(0.0, -dist, velocity, rand::thread_rng().gen_range(size.clone()), "red"));
+            let enemy = Enemy::new(0.0, -dist, velocity, rand::thread_rng().gen_range(size.clone()), "red");
+            enemies.push(enemy);
         }
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(0.0, dist, velocity, rand::thread_rng().gen_range(size.clone()), "red"));
+            let enemy = Enemy::new(0.0, dist, velocity, rand::thread_rng().gen_range(size.clone()), "red");
+            enemies.push(enemy);
         }
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(-dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), "red"));
+            let enemy = Enemy::new(-dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), "red");
+            enemies.push(enemy);
         }
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            self.enemies.push(Enemy::new(dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), "red"));
+            let enemy = Enemy::new(dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), "red");
+            enemies.push(enemy);
         }
+        self.enemies.push((ids, enemies));
     }
-    pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str) {
+    pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, id: usize) {
         let start = (0.0, 0.0);
         for c in 0..corners.len() {
             let a = corners[c];
@@ -332,7 +365,16 @@ impl Game {
             else {
                 corners[c + 1]
             };
-            self.walls.push(Wall::new(a, b, false, true));
+            let addition = Wall::new(a, b, false, true);
+            let group = self.walls.iter_mut().find(|(i, _)| {*i == id});
+            match group {
+                Some(g) => {
+                    g.1.push(addition);
+                },
+                None => {
+                    self.walls.push((id, vec![addition]));
+                },
+            }
         }
         let poly = Shape::Poly { corners };
         let draw_pack = DrawPack::new(color, poly, (0.0, 0.0));
@@ -369,33 +411,30 @@ impl Game {
         // fire area
         let corners = vec![(-5.0,-5.0),(5.0,-5.0),(5.0,5.0),(-5.0,5.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(50,20,30)");
-        
+        self.spawn_area(corners, "rgb(50,20,30)", 4);
+
         // dirt area
         let corners = vec![(0.0,0.0),(3.0,1.0),(4.0,4.0),(1.0,3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(80,70,50)");
-        
-        // water area
-        let corners = vec![(0.0,0.0),(3.0,-1.0),(4.0,-4.0),(1.0,-3.0)]
-            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(0,0,50)");
-        
+        self.spawn_area(corners, "rgb(80,70,50)", 0);
         // wind area
         let corners = vec![(0.0,0.0),(-3.0,1.0),(-4.0,4.0),(-1.0,3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(100,100,150)");
-        
+        self.spawn_area(corners, "rgb(100,100,150)", 1);
         // plant area
         let corners = vec![(0.0,0.0),(-3.0,-1.0),(-4.0,-4.0),(-1.0,-3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(10,50,20)");
+        self.spawn_area(corners, "rgb(10,50,20)", 2);
+        // water area
+        let corners = vec![(0.0,0.0),(3.0,-1.0),(4.0,-4.0),(1.0,-3.0)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
+        self.spawn_area(corners, "rgb(0,0,50)", 3);
         
         // spawn area
-        let corners = vec![(-0.2,-0.2),(0.2,-0.2),(0.2,0.2),(-0.2,0.2)]
+        let corners = vec![(-0.4,0.0),(0.0,0.4),(0.4,0.0),(0.0,-0.4)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "black");
-
+        self.spawn_area(corners, "black", 5);
+        
         // grid
         self.spawn_grid(30000.0, "rgb(255,255,255,0.05)");
     }
@@ -434,7 +473,6 @@ impl Game {
                 }
 
                 handle_players(&mut game.players);
-                handle_enemies(&mut game.enemies);
                 handle_effects(&mut game);
                 handle_collision(&mut game);
                 handle_kill_revive(&mut game);
@@ -477,15 +515,21 @@ impl Game {
             objects.push_str(&acc);
         }
         // enemies
-        for object in self.enemies.iter() {
-            if vector::distance(camera, (object.x, object.y)).2 - object.radius > view {continue;}
-            let acc = draw_object(object, &camera, zoom);
-            objects.push_str(&acc);
+        for group in self.enemies.iter() {
+            for object in group.1.iter() {
+                if vector::distance(camera, (object.x, object.y)).2 - object.radius > view {continue;}
+                let acc = draw_object(object, &camera, zoom);
+                objects.push_str(&acc);
+            }
         }
         // inventory
         for object in self.players.iter() {
             if *name == *object.name && object.inventory.open {
                 let drawpack = DrawPack::new("rgba(200,100,50,0.8)", Shape::Rectangle { width: 400.0, height: 800.0 }, (-900.0, -400.0));
+                let acc = draw(&(object.x, object.y), &drawpack, &camera, zoom);
+                objects.push_str(&acc);
+
+                let drawpack = DrawPack::new("white", Shape::Text { content: "Inventory".to_owned(), size: 30.0 }, (-800.0, -350.0));
                 let acc = draw(&(object.x, object.y), &drawpack, &camera, zoom);
                 objects.push_str(&acc);
             }
