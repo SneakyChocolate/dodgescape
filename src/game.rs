@@ -354,6 +354,48 @@ impl Game {
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies));
+        // space area
+        let size = 200.0..=500.0;
+        let amount = 30;
+        let speed = 2.0;
+        let dist = 15000.0;
+        let ids = vec![4,6];
+        let color = "black";
+        let auracolor = "rgba(0,0,0,0.2)";
+        let mut enemies = vec![];
+        for _ in 0..amount * spawn_m {
+            let cap = speed * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let mut enemy = Enemy::new(0.0, -dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: enemy.radius * 2.0 }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Push { radius: enemy.radius * 2.0, power: -6.0 });
+            enemies.push(enemy);
+        }
+        for _ in 0..amount * spawn_m {
+            let cap = speed * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let mut enemy = Enemy::new(0.0, dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: enemy.radius * 2.0 }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Push { radius: enemy.radius * 2.0, power: -6.0 });
+            enemies.push(enemy);
+        }
+        for _ in 0..amount * spawn_m {
+            let cap = speed * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let mut enemy = Enemy::new(-dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: enemy.radius * 2.0 }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Push { radius: enemy.radius * 2.0, power: -6.0 });
+            enemies.push(enemy);
+        }
+        for _ in 0..amount * spawn_m {
+            let cap = speed * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let mut enemy = Enemy::new(dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: enemy.radius * 2.0 }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Push { radius: enemy.radius * 2.0, power: -6.0 });
+            enemies.push(enemy);
+        }
+        self.enemies.push((ids, enemies));
     }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, id: usize) {
         let start = (0.0, 0.0);
@@ -408,6 +450,10 @@ impl Game {
     pub fn spawn_map(&mut self) {
         let multiplier = 2000.0;
         
+        // space area
+        let corners = vec![(-15.0,0.0),(0.0,15.0),(15.0,0.0),(0.0,-15.0)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
+        self.spawn_area(corners, "rgb(20,0,30)", 6);
         // fire area
         let corners = vec![(-5.0,-5.0),(5.0,-5.0),(5.0,5.0),(-5.0,5.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
@@ -426,6 +472,11 @@ impl Game {
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(10,50,20)", 2);
         // water area
+        let corners = vec![(0.0,0.0),(3.0,-1.0),(4.0,-4.0),(1.0,-3.0)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
+        self.spawn_area(corners, "rgb(0,0,50)", 3);
+
+        // top right cp
         let corners = vec![(0.0,0.0),(3.0,-1.0),(4.0,-4.0),(1.0,-3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(0,0,50)", 3);
