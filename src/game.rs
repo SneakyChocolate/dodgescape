@@ -1,59 +1,8 @@
 use std::{sync::{Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{action::Action, enemy::{Effect, Enemy}, player::Player, vector, wall::Wall};
+use crate::{action::Action, enemy::{Effect, Enemy}, gametraits::{Drawable, Moveable, Position}, player::Player, vector, wall::Wall};
 use rand::prelude::*;
 
-pub trait Drawable {
-    fn get_draw_packs(&self) -> &Vec<DrawPack>;
-}
-#[macro_export]
-macro_rules! impl_Drawable {
-    ($struct_name:ident) => {
-        impl Drawable for $struct_name {
-            fn get_draw_packs(&self) -> &Vec<DrawPack> {
-                &self.draw_packs
-            }
-        }
-    };
-}
-pub trait Position {
-    fn x(&self) -> f32;
-    fn y(&self) -> f32;
-}
-#[macro_export]
-macro_rules! impl_Position {
-    ($struct_name:ident) => {
-        impl Position for $struct_name {
-            fn x(&self) -> f32 {
-                self.x
-            }
-            fn y(&self) -> f32 {
-                self.y
-            }
-        }
-    };
-}
-pub trait Moveable {
-    fn get_x(&mut self) -> &mut f32;
-    fn get_y(&mut self) -> &mut f32;
-    fn get_velocity(&mut self) -> &mut (f32, f32);
-}
-#[macro_export]
-macro_rules! impl_Movable {
-    ($struct_name:ident) => {
-        impl Moveable for $struct_name {
-            fn get_x(&mut self) -> &mut f32 {
-                &mut self.x
-            }
-            fn get_y(&mut self) -> &mut f32 {
-                &mut self.y
-            }
-            fn get_velocity(&mut self) -> &mut (f32, f32) {
-                &mut self.velocity
-            }
-        }
-    };
-}
 pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
     let (x, y) = position;
     let (cx, cy) = camera;
@@ -223,7 +172,7 @@ pub fn handle_effects(game: &mut MutexGuard<Game>) {
                         let dist = distance(enemy, player);
                         if dist.2 <= *radius + player.radius {
                             let add = vector::normalize((dist.0, dist.1), *power);
-                            actions.push((p, Action::UpdatePlayerVelocity((player.velocity.0 + add.0, player.velocity.1 + add.1))));
+                            actions.push((p, Action::AddPlayerVelocity(add)));
                         }
                     }
                 },

@@ -9,6 +9,7 @@ mod wall;
 mod math;
 mod action;
 mod inventory;
+mod gametraits;
 
 use std::sync::{Arc, Mutex};
 

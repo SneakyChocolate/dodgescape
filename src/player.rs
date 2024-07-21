@@ -1,5 +1,6 @@
 
-use crate::{game::{DrawPack, Drawable, Moveable, Position, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
+use crate::{game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
+use crate::gametraits::*;
 
 #[derive(Default)]
 pub struct Player {

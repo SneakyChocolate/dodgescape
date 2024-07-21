@@ -1,4 +1,5 @@
-use crate::{game::{DrawPack, Drawable, Moveable, Position, Shape}, impl_Drawable, impl_Movable, impl_Position};
+use crate::{game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position};
+use crate::gametraits::*;
 
 pub enum Effect {
     Chase {radius: f32, power: f32},
