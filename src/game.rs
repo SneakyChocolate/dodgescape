@@ -588,7 +588,7 @@ impl Game {
 
         objects
     }
-    pub fn handle_input(&mut self, player_name: &String, mouse: (i32, i32), keys_down: Vec<String>, wheel: i32) -> String {
+    pub fn handle_input(&mut self, player_name: &String, mouse: (f32, f32), keys_down: Vec<String>, wheel: i32) -> String {
         let player = match self.get_mut(player_name) {
             Some(p) => p,
             None => return "".to_owned(),

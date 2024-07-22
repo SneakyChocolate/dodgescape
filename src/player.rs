@@ -4,7 +4,7 @@ use crate::gametraits::*;
 
 #[derive(Default)]
 pub struct Player {
-    pub mouse: (i32, i32),
+    pub mouse: (f32, f32),
     pub keys_down: Vec<String>,
     pub velocity: (f32, f32),
     pub name: String,
@@ -41,8 +41,7 @@ impl Player {
 
         p
     }
-    pub fn handle_keys(&mut self) {
-        // respawn
+    fn handle_respawn(&mut self) {
         let key = "KeyR".to_owned();
         if self.keys_down.contains(&key) {
             self.x = 0.0;
@@ -53,7 +52,8 @@ impl Player {
         if self.keys_down.contains(&key) {
             self.alive = true;
         }
-        // inventory
+    }
+    fn handle_inventory(&mut self) {
         let key = "KeyE".to_owned();
         if self.keys_down.contains(&key) {
             self.inventory.open = true;
@@ -61,26 +61,36 @@ impl Player {
         else {
             self.inventory.open = false;
         }
-        // movement
+    }
+    fn handle_movement(&mut self) {
         let mut vx = 0.0;
         let mut vy = 0.0;
-        let key = "KeyW".to_owned();
+        let key = "Space".to_owned();
         if self.keys_down.contains(&key) {
-            vy += -1.0;
+            vx = self.mouse.0 as f32 / 200.0 * self.speed;
+            vy = self.mouse.1 as f32 / 200.0 * self.speed;
         }
-        let key = "KeyS".to_owned();
-        if self.keys_down.contains(&key) {
-            vy += 1.0;
+        else {
+            let key = "KeyW".to_owned();
+            if self.keys_down.contains(&key) {
+                vy += -self.speed;
+            }
+            let key = "KeyS".to_owned();
+            if self.keys_down.contains(&key) {
+                vy += self.speed;
+            }
+            let key = "KeyD".to_owned();
+            if self.keys_down.contains(&key) {
+                vx += self.speed;
+            }
+            let key = "KeyA".to_owned();
+            if self.keys_down.contains(&key) {
+                vx += -self.speed;
+            }
         }
-        let key = "KeyD".to_owned();
-        if self.keys_down.contains(&key) {
-            vx += 1.0;
+        if vector::abs((vx, vy)) > self.speed {
+            (vx, vy) = vector::normalize((vx, vy), self.speed);  
         }
-        let key = "KeyA".to_owned();
-        if self.keys_down.contains(&key) {
-            vx += -1.0;
-        }
-        (vx, vy) = vector::normalize((vx, vy), self.speed);
         // slowing down
         let key = "ShiftLeft".to_owned();
         if self.keys_down.contains(&key) {
@@ -88,6 +98,11 @@ impl Player {
             vy /= 2.0;
         }
         self.velocity = (vx, vy);
+    }
+    pub fn handle_keys(&mut self) {
+        self.handle_respawn();
+        self.handle_inventory();
+        self.handle_movement();
     }
 }
 

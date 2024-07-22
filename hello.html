@@ -111,8 +111,8 @@
       let mouse_y = 0;
 
       document.body.onmousemove = function(e) {
-        mouse_x = e.clientX;
-        mouse_y = e.clientY;
+        mouse_x = e.clientX - canvas.width / 2;
+        mouse_y = e.clientY - canvas.height / 2;
       }
 
       function findClosest(string, words, offset) {

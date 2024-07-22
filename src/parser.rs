@@ -18,7 +18,7 @@ pub fn get_variable(string: &String, name: &str) -> Option<String> {
     value
 }
 
-pub fn get_mouse(string: &String) -> Option<(i32, i32)> {
+pub fn get_mouse(string: &String) -> Option<(f32, f32)> {
     let x_string = match get_variable(&string, "x") {
         Some(e) => e,
         None => {return None;},
@@ -28,8 +28,8 @@ pub fn get_mouse(string: &String) -> Option<(i32, i32)> {
         None => {return None;},
     };
 
-    let x: i32 = x_string.parse().unwrap();
-    let y: i32 = y_string.parse().unwrap();
+    let x: f32 = x_string.parse().unwrap();
+    let y: f32 = y_string.parse().unwrap();
 
     Some((x, y))
 }
