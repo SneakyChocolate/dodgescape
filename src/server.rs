@@ -1,4 +1,4 @@
-use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::{Arc, Mutex}, thread::{self, JoinHandle}, time::Duration};
+use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::{Arc, Mutex}, thread::{self, JoinHandle}};
 
 use crate::{game::Game, http::Http_request, parser::{self, get_variable}, player::Player};
 
@@ -8,7 +8,7 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn new(address: &str, game: Arc<Mutex<Game>>) -> Server {
+    pub fn new<T: std::net::ToSocketAddrs>(address: T, game: Arc<Mutex<Game>>) -> Server {
         let server = Server {
             listener: TcpListener::bind(address).unwrap(),
             game,

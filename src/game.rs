@@ -596,10 +596,10 @@ impl Game {
         player.mouse = mouse;
         player.keys_down = keys_down;
         if wheel > 0 {
-            player.zoom /= 1.1;
+            // player.zoom /= 1.1;
         }
         else if wheel < 0 {
-            player.zoom *= 1.1;
+            // player.zoom *= 1.1;
         }
 
         // retrieve object data
