@@ -2,6 +2,7 @@ use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::{mpsc::{se
 
 use crate::{game::Game, http::Http_request, parser::{self, get_variable}, player::Player};
 
+#[derive(Debug)]
 pub enum ServerMessage {
     Login(String),
     Logout(String),
@@ -104,8 +105,8 @@ impl Server {
             else if mode == "logout".to_owned() {
                 self.sender.send(ServerMessage::Logout(username));
             }
+            objects = self.receiver.recv().unwrap();
         }
-        objects = self.receiver.recv().unwrap();
 
         // getting the output
         let (status_line, response) = match request.request_line.as_str() {
