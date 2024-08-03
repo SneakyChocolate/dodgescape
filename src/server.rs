@@ -1,23 +1,30 @@
-use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::{Arc, Mutex}, thread::{self, JoinHandle}};
+use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::{mpsc::{self, Receiver}, Arc, Mutex}, thread::{self, JoinHandle}};
 
 use crate::{game::Game, http::Http_request, parser::{self, get_variable}, player::Player};
 
+pub enum ServerMessage {
+    Login(String),
+    Logout(String),
+    Input{name: String, mouse: (f32, f32), keys: Vec<String>, wheel: i32 },
+}
+
 pub struct Server {
     listener: TcpListener,
-    game: Arc<Mutex<Game>>
+    sender: mpsc::Sender<ServerMessage>,
+    receiver: mpsc::Receiver<String>,
 }
 
 impl Server {
-    pub fn new<T: std::net::ToSocketAddrs>(address: T, game: Arc<Mutex<Game>>) -> Server {
+    pub fn new<T: std::net::ToSocketAddrs>(address: T, sender: mpsc::Sender<ServerMessage>, receiver: mpsc::Receiver<String>) -> Server {
         let server = Server {
             listener: TcpListener::bind(address).unwrap(),
-            game,
+            sender,
+            receiver,
         };
         server
     }
-    pub fn start(&self) -> JoinHandle<()> {
+    pub fn start(mut self) -> JoinHandle<()> {
         let listener = Arc::new(self.listener.try_clone().expect("Failed to clone listener"));
-        let game = Arc::clone(&self.game);
         thread::spawn(move || {
             for stream in listener.incoming() {
                 let stream = match stream {
@@ -29,15 +36,11 @@ impl Server {
                 };
                 // println!("conntection incoming");
 
-                let game = Arc::clone(&game);
-                let connection_handler = thread::spawn(move || {
-                    // thread::sleep(Duration::from_secs(5));
-                    Server::handle_connection(stream, game);
-                });
+                self.handle_connection(stream);
             }
         })
     }
-    fn handle_connection(mut stream: TcpStream, game: Arc<Mutex<Game>>) {
+    fn handle_connection(&mut self, mut stream: TcpStream) {
         let received: String = Server::receive(&mut stream);
 
         let request = match Http_request::parse(&received) {
@@ -48,7 +51,7 @@ impl Server {
             },
         };
 
-        let (status_line, contents) = Server::handle_response(&request, game);
+        let (status_line, contents) = self.handle_response(&request);
 
         let response = format!(
             "{}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n{}",
@@ -77,11 +80,7 @@ impl Server {
         }
         received
     }
-    fn handle_response(request: &Http_request, game: Arc<Mutex<Game>>) -> (&str, String) {
-        // println!("requesting game data");
-        let mut game_data = game.lock().unwrap();
-        // println!("got game data access");
-
+    fn handle_response(&mut self, request: &Http_request) -> (&str, String) {
         let body_string = request.body.join("\n");
         // println!("received: {:#?}", body_string);
 
@@ -94,19 +93,19 @@ impl Server {
         if let Some(mode) = mode_option {
             let username = parser::get_variable(&body_string, "username").unwrap();
             if mode == "login".to_owned() {
-                game_data.players.push(Player::new(&username));
-                // println!("list of players is {:?}", game_data.players);
+                self.sender.send(ServerMessage::Login(username));
             }
             else if mode == "game".to_owned() {
                 let mouse = parser::get_mouse(&body_string).unwrap();
                 let keys_down = parser::get_keys_down(&body_string);
                 let wheel: i32 = parser::get_variable(&body_string, "wheel").unwrap().parse().unwrap();
-                objects = game_data.handle_input(&username, mouse, keys_down, wheel);
+                self.sender.send(ServerMessage::Input { name: username, mouse , keys: keys_down, wheel });
             }
             else if mode == "logout".to_owned() {
-                objects = game_data.logout(&username);
+                self.sender.send(ServerMessage::Logout(username));
             }
         }
+        objects = self.receiver.recv().unwrap();
 
         // getting the output
         let (status_line, response) = match request.request_line.as_str() {

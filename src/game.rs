@@ -1,6 +1,6 @@
-use std::{sync::{Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
+use std::{sync::{mpsc::{Receiver, Sender}, Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{action::Action, enemy::{Effect, Enemy}, gametraits::{Drawable, Moveable, Position}, player::Player, vector, wall::Wall};
+use crate::{action::Action, enemy::{Effect, Enemy}, gametraits::{Drawable, Moveable, Position}, player::Player, server::ServerMessage, vector, wall::Wall};
 use rand::prelude::*;
 
 pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
@@ -87,8 +87,10 @@ impl DrawPack {
     }
 }
 
-#[derive(Default)]
 pub struct Game {
+    pub receiver: Receiver<ServerMessage>,
+    pub sender: Sender<String>,
+    
     pub players: Vec<Player>,
     pub game_loop: Option<JoinHandle<()>>,
     pub running: bool,
@@ -110,7 +112,7 @@ pub fn handle_players(players: &mut Vec<Player>) {
     }
 }
 // player enemy collision
-pub fn handle_kill_revive(game: &mut MutexGuard<Game>) {
+pub fn handle_kill_revive(game: &mut Game) {
     let mut deaths: Vec<usize> = vec![];
     let mut revives: Vec<usize> = vec![];
     // handle deaths
@@ -144,7 +146,7 @@ pub fn handle_kill_revive(game: &mut MutexGuard<Game>) {
         player.alive = true;
     }
 }
-pub fn handle_effects(game: &mut MutexGuard<Game>) {
+pub fn handle_effects(game: &mut Game) {
     let mut actions: Vec<(usize, Action)> = vec![];
     for (g, group) in game.enemies.iter().enumerate() {
         for (i, enemy) in group.1.iter().enumerate() {
@@ -185,7 +187,7 @@ pub fn handle_effects(game: &mut MutexGuard<Game>) {
         action.execute(game, i);
     }
 }
-pub fn handle_collision(game: &mut MutexGuard<Game>) {
+pub fn handle_collision(game: &mut Game) {
     for group in game.enemies.iter_mut() {
         for enemy in group.1.iter_mut() {
             enemy.just_collided = false;
@@ -249,7 +251,7 @@ pub fn handle_collision(game: &mut MutexGuard<Game>) {
         player.skip_move = true;
     }
 }
-pub fn handle_movements(game: &mut MutexGuard<Game>) {
+pub fn handle_movements(game: &mut Game) {
     for object in &mut game.players {
         if object.alive && !object.skip_move {
             move_object(object);
@@ -497,11 +499,17 @@ impl Game {
         // self.walls.push(Wall::new((200.0, 200.0), (200.0, -200.0), false, true));
         // self.walls.push(Wall::new((-200.0, 200.0), (-200.0, -200.0), false, true));
     }
-    pub fn new() -> Game {
+    pub fn new(sender: Sender<String>, receiver: Receiver<ServerMessage>) -> Game {
         let mut g = Game {
             game_loop: None,
             running: false,
-            ..Default::default()
+            sender,
+            receiver,
+            players: Default::default(),
+            enemies: Default::default(),
+            grid: Default::default(),
+            map: Default::default(),
+            walls: Default::default(),
         };
         g.spawn_enemies();
         g.spawn_map();
@@ -509,28 +517,22 @@ impl Game {
 
         g
     }
-    pub fn start(game_mutex: &Arc<Mutex<Game>>) {
-        let g_outer = Arc::clone(&game_mutex);
-        let mut game = g_outer.lock().unwrap();
-        game.running = true;
-
-        let g_inner = Arc::clone(&game_mutex);
+    pub fn start(mut self) {
+        self.running = true;
         let t = thread::spawn(move || {
             loop {
-                thread::sleep(Duration::from_millis(1));
-                let mut game = g_inner.lock().unwrap();
-                if !game.running {
+                // thread::sleep(Duration::from_millis(1));
+                if !self.running {
                     break;
                 }
 
-                handle_players(&mut game.players);
-                handle_effects(&mut game);
-                handle_collision(&mut game);
-                handle_kill_revive(&mut game);
-                handle_movements(&mut game);
+                handle_players(&mut self.players);
+                handle_effects(&mut self);
+                handle_collision(&mut self);
+                handle_kill_revive(&mut self);
+                handle_movements(&mut self);
             }
         });
-        game.game_loop = Some(t);
     }
     pub fn pack_objects(&mut self, camera: (f32, f32), name: &String, zoom: f32) -> String {
         let view = 1000.0 / zoom;

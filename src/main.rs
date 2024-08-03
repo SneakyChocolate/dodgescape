@@ -11,17 +11,20 @@ mod action;
 mod inventory;
 mod gametraits;
 
-use std::sync::{Arc, Mutex};
+use std::sync::{mpsc::channel, Arc, Mutex};
 
 use server::Server;
 
-use crate::game::Game;
+use crate::{game::Game, server::ServerMessage};
 
 fn main() {
-    let game = Arc::new(Mutex::new(Game::new()));
-    Game::start(&game);
+    let (sms, smr) = channel::<ServerMessage>();
+    let (gms, gmr) = channel::<String>();
+
+    let mut game = Game::new(gms, smr);
+    game.start();
     // wsl ip
-    let server = Server::new("172.28.37.92:7878", Arc::clone(&game));
+    let server = Server::new("172.28.37.92:7878", sms, gmr);
     // windows ip
     // let server = Server::new("192.168.178.66:7878", Arc::clone(&game));
     let server_handle = server.start();
