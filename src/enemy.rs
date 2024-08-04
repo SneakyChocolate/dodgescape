@@ -82,10 +82,12 @@ pub fn handle_effects(game: &mut Game) {
                                 let v = vector::normalize((dist.0, dist.1), *speed);
                                 if *time_left == 0 {
                                     actions.push((i, Action::SpawnProjectile { group: g, velocity: v, radius: *projectile_radius, color: "black".to_owned(), lifetime: *lifetime }));
+                                    actions.push((i, Action::ResetCooldown(g)));
                                 }
-                                actions.push((i, Action::ReduceCooldown(g)));
+                                break;
                             }
                         }
+                        actions.push((i, Action::ReduceCooldown(g)));
                     },
                 }
             }

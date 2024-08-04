@@ -376,12 +376,13 @@ impl Game {
         let ids = vec![8];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
-            let cap = 0.2 * speed_m;
+            let cap = 0.8 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let mut enemy = Enemy::new(20000.0, 0.0, velocity, rand::thread_rng().gen_range(30.0..=30.0), "rgb(25,25,25)");
-            enemy.draw_packs.insert(0, DrawPack::new("rgba(0,255,255,0.05)", Shape::Circle { radius: enemy.radius * 30.0 }, (0.0, 0.0)));
-            enemy.effects.push(Effect::Shoot { radius: enemy.radius * 30.0, speed: 10.0, cooldown: 5, time_left: 0, lifetime: 200, projectile_radius: 40.0 });
-            enemy.view_radius = enemy.radius * 30.0;
+            let mut enemy = Enemy::new(20000.0, 0.0, velocity, 90.0, "rgb(25,25,25)");
+            let r = enemy.radius * 20.0;
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(0,255,255,0.05)", Shape::Circle { radius: r }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Shoot { radius: r, speed: 10.0, cooldown: 5, time_left: 0, lifetime: 50, projectile_radius: 40.0 });
+            enemy.view_radius = r;
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies));
