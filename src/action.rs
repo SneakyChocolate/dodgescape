@@ -66,7 +66,7 @@ impl Action {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 for effect in enemy.effects.iter_mut() {
                     match effect {
-                        crate::enemy::Effect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius } => {
+                        crate::enemy::Effect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius, color } => {
                             if *time_left > 0 {
                                 *time_left -= 1;
                             }
@@ -79,7 +79,7 @@ impl Action {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 for effect in enemy.effects.iter_mut() {
                     match effect {
-                        crate::enemy::Effect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius } => {
+                        crate::enemy::Effect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius, color } => {
                             *time_left = *cooldown;
                         },
                         _ => {},

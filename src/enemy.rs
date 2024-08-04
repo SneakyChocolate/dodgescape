@@ -6,7 +6,7 @@ pub enum Effect {
     Crumble,
     Lifetime(usize),
     Push {radius: f32, power: f32},
-    Shoot {lifetime: usize, radius: f32, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize}
+    Shoot {lifetime: usize, radius: f32, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize, color: String }
 }
 
 #[derive(Default)]
@@ -74,14 +74,14 @@ pub fn handle_effects(game: &mut Game) {
                             }
                         }
                     },
-                    Effect::Shoot { radius, speed, cooldown, time_left, lifetime, projectile_radius } => {
+                    Effect::Shoot { radius, speed, cooldown, time_left, lifetime, projectile_radius, color } => {
                         for player in game.players.iter() {
                             if !player.alive {continue;}
                             let dist = distance(enemy, player);
                             if dist.2 <= *radius + player.radius {
                                 let v = vector::normalize((dist.0, dist.1), *speed);
                                 if *time_left == 0 {
-                                    actions.push((i, Action::SpawnProjectile { group: g, velocity: v, radius: *projectile_radius, color: "black".to_owned(), lifetime: *lifetime }));
+                                    actions.push((i, Action::SpawnProjectile { group: g, velocity: v, radius: *projectile_radius, color: color.clone(), lifetime: *lifetime }));
                                     actions.push((i, Action::ResetCooldown(g)));
                                 }
                                 break;
