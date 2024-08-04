@@ -6,6 +6,7 @@ pub enum Action {
     AddPlayerVelocity((f32,f32)),
     SpawnCrumble(usize),
     ReduceLifetime(usize),
+    ReduceCooldown(usize),
     Despawn(usize),
     SpawnProjectile { group: usize, velocity: (f32, f32), radius: f32, color: String },
 }
@@ -58,6 +59,22 @@ impl Action {
                 }
                 for (g, i) in despawn {
                     game.enemies.get_mut(g).unwrap().1.remove(i);
+                }
+            },
+            Action::ReduceCooldown(group) => {
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                for effect in enemy.effects.iter_mut() {
+                    match effect {
+                        crate::enemy::Effect::Shoot { radius, speed, time_left, cooldown } => {
+                            if *time_left == 0 {
+                                *time_left = *cooldown;
+                            }
+                            else {
+                                *time_left -= 1;
+                            }
+                        },
+                        _ => {},
+                    }
                 }
             },
             Action::SpawnProjectile { group, velocity, color, radius } => {

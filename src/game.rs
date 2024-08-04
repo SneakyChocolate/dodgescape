@@ -147,57 +147,7 @@ pub fn handle_kill_revive(game: &mut Game) {
         player.alive = true;
     }
 }
-pub fn handle_effects(game: &mut Game) {
-    let mut actions: Vec<(usize, Action)> = vec![];
-    for (g, group) in game.enemies.iter().enumerate() {
-        for (i, enemy) in group.1.iter().enumerate() {
-            for effect in enemy.effects.iter() {
-                match effect {
-                    Effect::Chase { radius, power } => {
-                        for player in game.players.iter() {
-                            // if !player.alive {continue;}
-                            let dist = distance(enemy, player);
-                            if dist.2 <= *radius + player.radius {
-                                let add = vector::normalize((dist.0, dist.1), *power);
-                                actions.push((i, Action::UpdateEnemyVelocity(g, (enemy.velocity.0 + add.0, enemy.velocity.1 + add.1))));
-                            }
-                        }
-                    }
-                    Effect::Crumble => {
-                        if enemy.just_collided {
-                            actions.push((i, Action::SpawnCrumble(g)));
-                        }
-                    },
-                    Effect::Lifetime(t) => {
-                        actions.push((i, Action::ReduceLifetime(g)));
-                    },
-                    Effect::Push { radius, power } => {
-                        for (p, player) in game.players.iter().enumerate() {
-                            let dist = distance(enemy, player);
-                            if dist.2 <= *radius + player.radius {
-                                let add = vector::normalize((dist.0, dist.1), *power);
-                                actions.push((p, Action::AddPlayerVelocity(add)));
-                            }
-                        }
-                    },
-                    Effect::Shoot { radius, speed } => {
-                        for player in game.players.iter() {
-                            if !player.alive {continue;}
-                            let dist = distance(enemy, player);
-                            if dist.2 <= *radius + player.radius {
-                                let v = vector::normalize((dist.0, dist.1), *speed);
-                                actions.push((i, Action::SpawnProjectile { group: g, velocity: v, radius: 20.0, color: "black".to_owned() }));
-                            }
-                        }
-                    },
-                }
-            }
-        }
-    }
-    for (i, action) in actions {
-        action.execute(game, i);
-    }
-}
+
 pub fn handle_collision(game: &mut Game) {
     for group in game.enemies.iter_mut() {
         for enemy in group.1.iter_mut() {
@@ -408,6 +358,7 @@ impl Game {
             enemy.effects.push(Effect::Push { radius: enemy.radius * 2.0, power: -6.0 });
             enemies.push(enemy);
         }
+        self.enemies.push((ids, enemies));
         // tech area
         let ids = vec![7];
         let mut enemies = vec![];
@@ -415,8 +366,8 @@ impl Game {
             let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-20000.0, 0.0, velocity, rand::thread_rng().gen_range(30.0..=30.0), "rgb(25,25,25)");
-            enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,0,0.2)", Shape::Circle { radius: enemy.radius * 30.0 }, (0.0, 0.0)));
-            enemy.effects.push(Effect::Shoot { radius: enemy.radius * 30.0, speed: 10.0 });
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(255,255,0,0.05)", Shape::Circle { radius: enemy.radius * 30.0 }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Shoot { radius: enemy.radius * 30.0, speed: 10.0, cooldown: 60, time_left: 0 });
             enemy.view_radius = enemy.radius * 30.0;
             enemies.push(enemy);
         }
@@ -569,7 +520,7 @@ impl Game {
                 }
 
                 handle_players(&mut self.players);
-                handle_effects(&mut self);
+                crate::enemy::handle_effects(&mut self);
                 handle_collision(&mut self);
                 handle_kill_revive(&mut self);
                 handle_movements(&mut self);
