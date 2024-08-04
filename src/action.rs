@@ -2,8 +2,9 @@ use crate::{enemy::{Effect, Enemy}, game::{Game}, vector};
 
 pub enum Action {
     UpdateEnemyVelocity(usize, (f32,f32)),
-    UpdatePlayerVelocity((f32,f32)),
+    SetPlayerVelocity((f32,f32)),
     AddPlayerVelocity((f32,f32)),
+    MulPlayerVelocity(f32),
     SpawnCrumble(usize),
     ReduceLifetime(usize),
     ReduceCooldown(usize),
@@ -19,13 +20,17 @@ impl Action {
                 let enemy = game.enemies.get_mut(*g).unwrap().1.get_mut(entity).unwrap();
                 enemy.velocity = *v;
             },
-            Action::UpdatePlayerVelocity(v) => {
+            Action::SetPlayerVelocity(v) => {
                 let object = game.players.get_mut(entity).unwrap();
                 object.velocity = *v;
             },
             Action::AddPlayerVelocity(v) => {
                 let object = game.players.get_mut(entity).unwrap();
                 object.velocity = (object.velocity.0 + v.0, object.velocity.1 + v.1);
+            },
+            Action::MulPlayerVelocity(factor) => {
+                let object = game.players.get_mut(entity).unwrap();
+                object.velocity = (object.velocity.0 * factor, object.velocity.1 * factor);
             },
             Action::SpawnCrumble(g) => {
                 let enemy = game.enemies.get_mut(*g).unwrap().1.get_mut(entity).unwrap();
