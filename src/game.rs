@@ -1,6 +1,6 @@
 use std::{sync::{mpsc::{Receiver, Sender}, Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{action::Action, enemy::{Effect, Enemy}, gametraits::{Drawable, Moveable, Position}, player::Player, server::ServerMessage, vector, wall::Wall};
+use crate::{action::Action, collectable::Collectable, enemy::{Effect, Enemy}, gametraits::{Drawable, Moveable, Position}, player::Player, server::ServerMessage, vector, wall::Wall};
 use rand::prelude::*;
 
 pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
@@ -98,6 +98,7 @@ pub struct Game {
     pub grid: Vec<((f32, f32), DrawPack, bool)>,
     pub map: Vec<((f32, f32), DrawPack)>,
     pub walls: Vec<(usize, Vec<Wall>)>,
+    pub collectables: Vec<Collectable>,
 }
 
 pub fn handle_players(players: &mut Vec<Player>) {
@@ -176,6 +177,16 @@ pub fn handle_effects(game: &mut Game) {
                             if dist.2 <= *radius + player.radius {
                                 let add = vector::normalize((dist.0, dist.1), *power);
                                 actions.push((p, Action::AddPlayerVelocity(add)));
+                            }
+                        }
+                    },
+                    Effect::Shoot { radius, speed } => {
+                        for player in game.players.iter() {
+                            if !player.alive {continue;}
+                            let dist = distance(enemy, player);
+                            if dist.2 <= *radius + player.radius {
+                                let v = vector::normalize((dist.0, dist.1), *speed);
+                                actions.push((i, Action::SpawnProjectile { group: g, velocity: v, radius: 20.0, color: "black".to_owned() }));
                             }
                         }
                     },
@@ -274,7 +285,7 @@ impl Game {
         // dirt area
         let ids = vec![0, 5];
         let mut enemies = vec![];
-        for _ in 0..200 * spawn_m {
+        for _ in 0..150 * spawn_m {
             let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,40,20)");
@@ -361,14 +372,14 @@ impl Game {
         let amount = 30;
         let speed = 2.0;
         let dist = 15000.0;
-        let ids = vec![4,6];
+        let ids = vec![4,6,7];
         let color = "black";
         let auracolor = "rgba(0,0,0,0.2)";
         let mut enemies = vec![];
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let mut enemy = Enemy::new(0.0, -dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            let mut enemy = Enemy::new(dist, -dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: enemy.radius * 2.0 }, (0.0, 0.0)));
             enemy.effects.push(Effect::Push { radius: enemy.radius * 2.0, power: -6.0 });
             enemies.push(enemy);
@@ -376,7 +387,7 @@ impl Game {
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let mut enemy = Enemy::new(0.0, dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            let mut enemy = Enemy::new(dist, dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: enemy.radius * 2.0 }, (0.0, 0.0)));
             enemy.effects.push(Effect::Push { radius: enemy.radius * 2.0, power: -6.0 });
             enemies.push(enemy);
@@ -384,7 +395,7 @@ impl Game {
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let mut enemy = Enemy::new(-dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            let mut enemy = Enemy::new(-dist, -dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: enemy.radius * 2.0 }, (0.0, 0.0)));
             enemy.effects.push(Effect::Push { radius: enemy.radius * 2.0, power: -6.0 });
             enemies.push(enemy);
@@ -392,9 +403,21 @@ impl Game {
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let mut enemy = Enemy::new(dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            let mut enemy = Enemy::new(-dist, dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: enemy.radius * 2.0 }, (0.0, 0.0)));
             enemy.effects.push(Effect::Push { radius: enemy.radius * 2.0, power: -6.0 });
+            enemies.push(enemy);
+        }
+        // tech area
+        let ids = vec![7];
+        let mut enemies = vec![];
+        for _ in 0..50 * spawn_m {
+            let cap = 0.2 * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let mut enemy = Enemy::new(-20000.0, 0.0, velocity, rand::thread_rng().gen_range(30.0..=30.0), "rgb(25,25,25)");
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,0,0.2)", Shape::Circle { radius: enemy.radius * 30.0 }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Shoot { radius: enemy.radius * 30.0, speed: 10.0 });
+            enemy.view_radius = enemy.radius * 30.0;
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies));
@@ -453,9 +476,13 @@ impl Game {
         let multiplier = 2000.0;
         
         // space area
-        let corners = vec![(-15.0,0.0),(0.0,15.0),(15.0,0.0),(0.0,-15.0)]
+        let corners = vec![(-15.0,0.0),(-10.0,10.0),(0.0,15.0),(10.0,10.0),(15.0,0.0),(10.0,-10.0),(0.0,-15.0),(-10.0,-10.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(20,0,30)", 6);
+        self.spawn_area(corners, "rgb(40,0,60)", 6);
+        // tech area
+        let corners = vec![(-5.0,-3.0),(-5.0,3.0),(-10.0,2.0),(-12.0,1.0),(-12.5,0.0),(-12.0,-1.0),(-10.0,-2.0)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
+        self.spawn_area(corners, "rgb(50,50,50)", 7);
         // fire area
         let corners = vec![(-5.0,-5.0),(5.0,-5.0),(5.0,5.0),(-5.0,5.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
@@ -491,13 +518,8 @@ impl Game {
         // grid
         self.spawn_grid(30000.0, "rgb(255,255,255,0.05)");
     }
-    pub fn spawn_walls(&mut self) {
-        // walls for other stuff
-        // spawn
-        // self.walls.push(Wall::new((-200.0, -200.0), (200.0, -200.0), false, true));
-        // self.walls.push(Wall::new((-200.0, 200.0), (200.0, 200.0), false, true));
-        // self.walls.push(Wall::new((200.0, 200.0), (200.0, -200.0), false, true));
-        // self.walls.push(Wall::new((-200.0, 200.0), (-200.0, -200.0), false, true));
+    pub fn spawn_collectables(&mut self) {
+        self.collectables.push(Collectable::new(0.0, 0.0, "rgb(200,200,0)"));
     }
     pub fn new(sender: Sender<String>, receiver: Receiver<ServerMessage>) -> Game {
         let mut g = Game {
@@ -510,10 +532,11 @@ impl Game {
             grid: Default::default(),
             map: Default::default(),
             walls: Default::default(),
+            collectables: Default::default(),
         };
         g.spawn_enemies();
         g.spawn_map();
-        g.spawn_walls();
+        g.spawn_collectables();
 
         g
     }
@@ -540,7 +563,7 @@ impl Game {
                     },
                     Err(_) => {},
                 }
-                // thread::sleep(Duration::from_millis(1));
+                thread::sleep(Duration::from_millis(1));
                 if !self.running {
                     break;
                 }
@@ -580,6 +603,12 @@ impl Game {
         //     objects.push_str(&acc);
         // }
 
+        // collectables
+        for object in self.collectables.iter() {
+            if vector::distance(camera, (object.x, object.y)).2 > view {continue;}
+            let acc = draw_object(object, &camera, zoom);
+            objects.push_str(&acc);
+        }
         // players
         for object in self.players.iter() {
             if vector::distance(camera, (object.x, object.y)).2 > view {continue;}
@@ -589,7 +618,7 @@ impl Game {
         // enemies
         for group in self.enemies.iter() {
             for object in group.1.iter() {
-                if vector::distance(camera, (object.x, object.y)).2 - object.radius > view {continue;}
+                if vector::distance(camera, (object.x, object.y)).2 - object.view_radius > view {continue;}
                 let acc = draw_object(object, &camera, zoom);
                 objects.push_str(&acc);
             }
@@ -617,10 +646,10 @@ impl Game {
         player.mouse = mouse;
         player.keys_down = keys_down;
         if wheel > 0 {
-            // player.zoom /= 1.1;
+            player.zoom /= 1.1;
         }
         else if wheel < 0 {
-            // player.zoom *= 1.1;
+            player.zoom *= 1.1;
         }
 
         // retrieve object data

@@ -6,6 +6,7 @@ pub enum Effect {
     Crumble,
     Lifetime(usize),
     Push {radius: f32, power: f32},
+    Shoot {radius: f32, speed: f32}
 }
 
 #[derive(Default)]
@@ -17,6 +18,7 @@ pub struct Enemy {
     pub radius: f32,
     pub effects: Vec<Effect>,
     pub just_collided: bool,
+    pub view_radius: f32,
 }
 
 impl_Position!(Enemy);
@@ -29,6 +31,7 @@ impl Enemy {
             x,y,
             velocity,
             radius,
+            view_radius: radius,
             draw_packs: vec![],
             ..Default::default()
         };

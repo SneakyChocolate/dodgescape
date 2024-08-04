@@ -10,6 +10,7 @@ mod math;
 mod action;
 mod inventory;
 mod gametraits;
+mod collectable;
 
 use std::sync::{mpsc::channel, Arc, Mutex};
 

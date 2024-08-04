@@ -7,6 +7,7 @@ pub enum Action {
     SpawnCrumble(usize),
     ReduceLifetime(usize),
     Despawn(usize),
+    SpawnProjectile { group: usize, velocity: (f32, f32), radius: f32, color: String },
 }
 
 impl Action {
@@ -58,6 +59,13 @@ impl Action {
                 for (g, i) in despawn {
                     game.enemies.get_mut(g).unwrap().1.remove(i);
                 }
+            },
+            Action::SpawnProjectile { group, velocity, color, radius } => {
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                // projectile
+                let mut crumble = Enemy::new(enemy.x, enemy.y, *velocity, *radius, color.as_str());
+                crumble.effects.push(Effect::Lifetime(1000));
+                game.enemies.get_mut(*group).unwrap().1.push(crumble);
             },
         }
     }
