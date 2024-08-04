@@ -8,7 +8,7 @@ pub enum Action {
     ReduceLifetime(usize),
     ReduceCooldown(usize),
     Despawn(usize),
-    SpawnProjectile { group: usize, velocity: (f32, f32), radius: f32, color: String },
+    SpawnProjectile { group: usize, velocity: (f32, f32), radius: f32, color: String, lifetime: usize },
 }
 
 impl Action {
@@ -65,7 +65,7 @@ impl Action {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 for effect in enemy.effects.iter_mut() {
                     match effect {
-                        crate::enemy::Effect::Shoot { radius, speed, time_left, cooldown } => {
+                        crate::enemy::Effect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius } => {
                             if *time_left == 0 {
                                 *time_left = *cooldown;
                             }
@@ -77,11 +77,11 @@ impl Action {
                     }
                 }
             },
-            Action::SpawnProjectile { group, velocity, color, radius } => {
+            Action::SpawnProjectile { group, velocity, color, radius, lifetime } => {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 // projectile
                 let mut crumble = Enemy::new(enemy.x, enemy.y, *velocity, *radius, color.as_str());
-                crumble.effects.push(Effect::Lifetime(1000));
+                crumble.effects.push(Effect::Lifetime(*lifetime));
                 game.enemies.get_mut(*group).unwrap().1.push(crumble);
             },
         }

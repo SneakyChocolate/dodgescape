@@ -26,7 +26,7 @@ impl_Drawable!(Player);
 impl Player {
     pub fn new(name: &String) -> Player {
         let mut p = Player {
-            x: -10000.0,
+            x: 10000.0,
             y: 0.0,
             name: name.clone(),
             radius: 30.0,

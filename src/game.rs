@@ -322,7 +322,7 @@ impl Game {
         let amount = 30;
         let speed = 2.0;
         let dist = 15000.0;
-        let ids = vec![4,6,7];
+        let ids = vec![4,6,7,8];
         let color = "black";
         let auracolor = "rgba(0,0,0,0.2)";
         let mut enemies = vec![];
@@ -367,7 +367,20 @@ impl Game {
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-20000.0, 0.0, velocity, rand::thread_rng().gen_range(30.0..=30.0), "rgb(25,25,25)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,255,0,0.05)", Shape::Circle { radius: enemy.radius * 30.0 }, (0.0, 0.0)));
-            enemy.effects.push(Effect::Shoot { radius: enemy.radius * 30.0, speed: 10.0, cooldown: 60, time_left: 0 });
+            enemy.effects.push(Effect::Shoot { radius: enemy.radius * 30.0, speed: 10.0, cooldown: 60, time_left: 0, lifetime: 1000, projectile_radius: 20.0 });
+            enemy.view_radius = enemy.radius * 30.0;
+            enemies.push(enemy);
+        }
+        self.enemies.push((ids, enemies));
+        // snake area
+        let ids = vec![8];
+        let mut enemies = vec![];
+        for _ in 0..50 * spawn_m {
+            let cap = 0.2 * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let mut enemy = Enemy::new(20000.0, 0.0, velocity, rand::thread_rng().gen_range(30.0..=30.0), "rgb(25,25,25)");
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(0,255,255,0.05)", Shape::Circle { radius: enemy.radius * 30.0 }, (0.0, 0.0)));
+            enemy.effects.push(Effect::Shoot { radius: enemy.radius * 30.0, speed: 10.0, cooldown: 5, time_left: 0, lifetime: 200, projectile_radius: 40.0 });
             enemy.view_radius = enemy.radius * 30.0;
             enemies.push(enemy);
         }
@@ -429,11 +442,7 @@ impl Game {
         // space area
         let corners = vec![(-15.0,0.0),(-10.0,10.0),(0.0,15.0),(10.0,10.0),(15.0,0.0),(10.0,-10.0),(0.0,-15.0),(-10.0,-10.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(40,0,60)", 6);
-        // tech area
-        let corners = vec![(-5.0,-3.0),(-5.0,3.0),(-10.0,2.0),(-12.0,1.0),(-12.5,0.0),(-12.0,-1.0),(-10.0,-2.0)]
-            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(50,50,50)", 7);
+        self.spawn_area(corners, "rgb(20,0,30)", 6);
         // fire area
         let corners = vec![(-5.0,-5.0),(5.0,-5.0),(5.0,5.0),(-5.0,5.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
@@ -456,10 +465,14 @@ impl Game {
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(0,0,50)", 3);
 
-        // top right cp
-        let corners = vec![(0.0,0.0),(3.0,-1.0),(4.0,-4.0),(1.0,-3.0)]
+        // tech area
+        let corners = vec![(-5.0,-3.0),(-5.0,3.0),(-10.0,2.0),(-12.0,1.0),(-12.5,0.0),(-12.0,-1.0),(-10.0,-2.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(0,0,50)", 3);
+        self.spawn_area(corners, "rgb(50,50,50)", 7);
+        // snake area
+        let corners = vec![(5.0,-3.0),(5.0,3.0),(10.0,2.0),(12.0,1.0),(12.5,0.0),(12.0,-1.0),(10.0,-2.0)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
+        self.spawn_area(corners, "rgb(40,50,40)", 8);
         
         // spawn area
         let corners = vec![(-0.4,0.0),(0.0,0.4),(0.4,0.0),(0.0,-0.4)]
