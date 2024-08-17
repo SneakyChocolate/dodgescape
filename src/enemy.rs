@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use crate::{action::Action, game::{distance, DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
 use crate::gametraits::*;
 
@@ -7,6 +9,7 @@ pub enum Effect {
     Lifetime(usize),
     Push {radius: f32, power: f32},
     Shoot {lifetime: usize, radius: f32, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize, color: String },
+    Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String},
     Slow {radius: f32, power: f32},
 }
 
@@ -87,6 +90,17 @@ pub fn handle_effects(game: &mut Game) {
                                 }
                                 break;
                             }
+                        }
+                        actions.push((i, Action::ReduceCooldown(g)));
+                    },
+                    Effect::Explode { lifetime, radius, speed, amount, time_left, cooldown, color } => {
+                        if *time_left == 0 {
+                            for _ in 0..*amount {
+                                let v = (rand::thread_rng().gen_range(-*speed..=*speed), rand::thread_rng().gen_range(-*speed..=*speed));
+                                let r = rand::thread_rng().gen_range(radius.0..=radius.1);
+                                actions.push((i, Action::SpawnProjectile { group: g, velocity: v, radius: r, color: color.clone(), lifetime: *lifetime }));
+                            }
+                            actions.push((i, Action::ResetCooldown(g)));
                         }
                         actions.push((i, Action::ReduceCooldown(g)));
                     },

@@ -230,7 +230,7 @@ pub fn handle_movements(game: &mut Game) {
 
 impl Game {
     fn spawn_dirt_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-       let ids = vec![0, 5];
+        let ids = vec![0, 5];
         let mut enemies = vec![];
         for _ in 0..150 * spawn_m {
             let cap = 0.5 * speed_m;
@@ -242,7 +242,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_wind_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-       let ids = vec![1, 5];
+        let ids = vec![1, 5];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 1.0 * speed_m;
@@ -255,7 +255,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_plant_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-       let ids = vec![2, 5];
+        let ids = vec![2, 5];
         let mut enemies = vec![];
         for _ in 0..200 * spawn_m {
             let cap = 0.2 * speed_m;
@@ -268,7 +268,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_water_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-       let ids = vec![3,5];
+        let ids = vec![3,5];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.5 * speed_m;
@@ -287,7 +287,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_fire_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-       let size = 20.0..=50.0;
+        let size = 20.0..=50.0;
         let amount = 300;
         let speed = 1.0;
         let dist = 4500.0;
@@ -320,7 +320,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_space_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-       let size = 200.0..=500.0;
+        let size = 200.0..=500.0;
         let amount = 30;
         let speed = 2.0;
         let dist = 15000.0;
@@ -363,7 +363,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_tech_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-       let ids = vec![7];
+        let ids = vec![7];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.2 * speed_m;
@@ -387,7 +387,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_snake_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-       let ids = vec![8];
+        let ids = vec![8];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.8 * speed_m;
@@ -402,7 +402,17 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_bomb_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-        
+        let ids = vec![9];
+        let mut enemies = vec![];
+        for _ in 0..20 * spawn_m {
+            let cap = 0.1 * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let mut enemy = Enemy::new(0.0, 20000.0, velocity, 90.0, "rgb(25,25,25)");
+            let cd = rand::thread_rng().gen_range(500..=1000);
+            enemy.effects.push(Effect::Explode { lifetime: 500, radius: (10.0, 30.0), speed: 20.0, time_left: 0, cooldown: cd, color: "rgb(255,255,0)".to_owned(), amount: 10 });
+            enemies.push(enemy);
+        }
+        self.enemies.push((ids, enemies)); 
     }
     pub fn spawn_enemies(&mut self) {
         let spawn_m = 3;

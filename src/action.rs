@@ -76,6 +76,11 @@ impl Action {
                                 *time_left -= 1;
                             }
                         },
+                        crate::enemy::Effect::Explode { lifetime, radius, speed, amount, time_left, cooldown, color } => {
+                            if *time_left > 0 {
+                                *time_left -= 1;
+                            }
+                        },
                         _ => {},
                     }
                 }
@@ -85,6 +90,9 @@ impl Action {
                 for effect in enemy.effects.iter_mut() {
                     match effect {
                         crate::enemy::Effect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius, color } => {
+                            *time_left = *cooldown;
+                        },
+                        crate::enemy::Effect::Explode { lifetime, radius, speed, amount, time_left, cooldown, color } => {
                             *time_left = *cooldown;
                         },
                         _ => {},
