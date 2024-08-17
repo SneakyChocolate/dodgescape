@@ -61,7 +61,11 @@ impl Server {
             contents
         );
 
-        stream.write_all(response.as_bytes()).unwrap();
+        // stream.write_all(response.as_bytes()).unwrap();
+        match stream.write_all(response.as_bytes()) {
+            Ok(_) => {},
+            Err(_) => {},
+        };
         stream.flush().unwrap();
     }
     fn receive(stream: &mut TcpStream) -> String {

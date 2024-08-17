@@ -75,6 +75,7 @@
         .then((r) => callback(r))
       }
 
+      let f = 1;
       function circle(x, y, radius, color) {
           ctx.beginPath();
           ctx.arc(
@@ -111,8 +112,13 @@
       let mouse_y = 0;
 
       document.body.onmousemove = function(e) {
-        mouse_x = e.clientX - canvas.width / 2;
-        mouse_y = e.clientY - canvas.height / 2;
+        try {
+          mouse_x = e.clientX - canvas.width / 2;
+          mouse_y = e.clientY - canvas.height / 2;
+        }
+        catch (error) {
+          
+        }
       }
 
       function findClosest(string, words, offset) {
@@ -145,27 +151,27 @@
           let color = data[0].substring(1,data[0].length - 1);
           let shape = data[1];
           let pos = data[2].substring(2,data[2].length - 1).split(", ");
-          let x = Number(pos[0]);
-          let y = Number(pos[1]);
+          let x = Number(pos[0]) * f;
+          let y = Number(pos[1]) * f;
           
           if (shape.includes("Circle")) {
-            let radius = Number(getattribute(shape, "radius"));
+            let radius = Number(getattribute(shape, "radius")) * f;
             circle(x + middle[0], y + middle[1], radius, color);
           }
           else if (shape.includes("Rectangle")) {
-            let width = getattribute(shape, "width");
-            let height = getattribute(shape, "height");
+            let width = getattribute(shape, "width") * f;
+            let height = getattribute(shape, "height") * f;
             rect(x + middle[0], y + middle[1], width, height, color);
           }
           else if (shape.includes("Line")) {
-            let x2 = Number(getattribute(shape, "x"));
-            let y2 = Number(getattribute(shape, "y"));
-            let width = Number(getattribute(shape, "width"));
+            let x2 = Number(getattribute(shape, "x")) * f;
+            let y2 = Number(getattribute(shape, "y")) * f;
+            let width = Number(getattribute(shape, "width")) * f;
             line([x + middle[0], y + middle[1]], [x2 + middle[0], y2 + middle[1]], width, color);
           }
           else if (shape.includes("Text")) {
             let content = getattribute(shape, "content").substring(1,getattribute(shape, "content").length - 1);
-            let size = getattribute(shape, "size");
+            let size = getattribute(shape, "size") * f;
             // console.log(content, size);
             ctx.fillStyle = color;
             ctx.font = size + "px Arial";
@@ -179,8 +185,8 @@
             for (let i = 0; i < corners.length; i ++) {
               let c = corners[i].trim();
               let xy = c.substring(1, c.length - 1).split(", ");
-              let x = Number(xy[0]);
-              let y = Number(xy[1]);
+              let x = Number(xy[0]) * f;
+              let y = Number(xy[1]) * f;
               if (i == 0) {
                 ctx.moveTo(x + middle[0], y + middle[1]);
               }
@@ -206,6 +212,7 @@
           canvas.width = window.innerWidth - 3;
           canvas.height = window.innerHeight - 3;
           document.body.style.margin = "0";
+          f = canvas.width / 1920;
 
           // starting canvas action
           renderLoop = setInterval(function() {
