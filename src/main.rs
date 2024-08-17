@@ -12,7 +12,7 @@ mod inventory;
 mod gametraits;
 mod collectable;
 
-use std::sync::{mpsc::channel, Arc, Mutex};
+use std::sync::mpsc::channel;
 
 use server::Server;
 
@@ -22,7 +22,7 @@ fn main() {
     let (sms, smr) = channel::<ServerMessage>();
     let (gms, gmr) = channel::<String>();
 
-    let mut game = Game::new(gms, smr);
+    let game = Game::new(gms, smr);
     game.start();
     // wsl ip
     let server = Server::new("172.28.37.92:7878", sms, gmr);

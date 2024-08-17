@@ -229,11 +229,8 @@ pub fn handle_movements(game: &mut Game) {
 }
 
 impl Game {
-    pub fn spawn_enemies(&mut self) {
-        let spawn_m = 3;
-        let speed_m = 9.0;
-        // dirt area
-        let ids = vec![0, 5];
+    fn spawn_dirt_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+       let ids = vec![0, 5];
         let mut enemies = vec![];
         for _ in 0..150 * spawn_m {
             let cap = 0.5 * speed_m;
@@ -242,9 +239,10 @@ impl Game {
             enemy.effects.push(Effect::Crumble);
             enemies.push(enemy);
         }
-        self.enemies.push((ids, enemies));
-        // wind area
-        let ids = vec![1, 5];
+        self.enemies.push((ids, enemies)); 
+    }
+    fn spawn_wind_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+       let ids = vec![1, 5];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 1.0 * speed_m;
@@ -254,9 +252,10 @@ impl Game {
             enemy.effects.push(Effect::Push { radius: enemy.radius * 3.0, power: 5.0 });
             enemies.push(enemy);
         }
-        self.enemies.push((ids, enemies));
-        // plant area
-        let ids = vec![2, 5];
+        self.enemies.push((ids, enemies)); 
+    }
+    fn spawn_plant_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+       let ids = vec![2, 5];
         let mut enemies = vec![];
         for _ in 0..200 * spawn_m {
             let cap = 0.2 * speed_m;
@@ -266,9 +265,10 @@ impl Game {
             enemy.effects.push(Effect::Chase { radius: enemy.radius * 5.0, power: 0.2});
             enemies.push(enemy);
         }
-        self.enemies.push((ids, enemies));
-        // water area
-        let ids = vec![3,5];
+        self.enemies.push((ids, enemies)); 
+    }
+    fn spawn_water_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+       let ids = vec![3,5];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.5 * speed_m;
@@ -284,9 +284,10 @@ impl Game {
             enemy.effects.push(Effect::Push { radius: enemy.radius * 1.3, power: -2.0 });
             enemies.push(enemy);
         }
-        self.enemies.push((ids, enemies));
-        // fire area
-        let size = 20.0..=50.0;
+        self.enemies.push((ids, enemies)); 
+    }
+    fn spawn_fire_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+       let size = 20.0..=50.0;
         let amount = 300;
         let speed = 1.0;
         let dist = 4500.0;
@@ -316,9 +317,10 @@ impl Game {
             let enemy = Enemy::new(dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), "red");
             enemies.push(enemy);
         }
-        self.enemies.push((ids, enemies));
-        // space area
-        let size = 200.0..=500.0;
+        self.enemies.push((ids, enemies)); 
+    }
+    fn spawn_space_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+       let size = 200.0..=500.0;
         let amount = 30;
         let speed = 2.0;
         let dist = 15000.0;
@@ -358,9 +360,10 @@ impl Game {
             enemy.effects.push(Effect::Push { radius: enemy.radius * 2.0, power: -6.0 });
             enemies.push(enemy);
         }
-        self.enemies.push((ids, enemies));
-        // tech area
-        let ids = vec![7];
+        self.enemies.push((ids, enemies)); 
+    }
+    fn spawn_tech_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+       let ids = vec![7];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.2 * speed_m;
@@ -381,9 +384,10 @@ impl Game {
             enemy.view_radius = r;
             enemies.push(enemy);
         }
-        self.enemies.push((ids, enemies));
-        // snake area
-        let ids = vec![8];
+        self.enemies.push((ids, enemies)); 
+    }
+    fn spawn_snake_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+       let ids = vec![8];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.8 * speed_m;
@@ -395,7 +399,23 @@ impl Game {
             enemy.view_radius = r;
             enemies.push(enemy);
         }
-        self.enemies.push((ids, enemies));
+        self.enemies.push((ids, enemies)); 
+    }
+    fn spawn_bomb_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+        
+    }
+    pub fn spawn_enemies(&mut self) {
+        let spawn_m = 3;
+        let speed_m = 9.0;
+        self.spawn_dirt_enemies(speed_m, spawn_m);
+        self.spawn_wind_enemies(speed_m, spawn_m);
+        self.spawn_plant_enemies(speed_m, spawn_m);
+        self.spawn_water_enemies(speed_m, spawn_m);
+        self.spawn_fire_enemies(speed_m, spawn_m);
+        self.spawn_space_enemies(speed_m, spawn_m);
+        self.spawn_tech_enemies(speed_m, spawn_m);
+        self.spawn_snake_enemies(speed_m, spawn_m);
+        self.spawn_bomb_enemies(speed_m, spawn_m);
     }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, id: usize) {
         let start = (0.0, 0.0);
