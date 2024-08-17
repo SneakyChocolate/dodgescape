@@ -408,8 +408,8 @@ impl Game {
             let cap = 0.1 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(0.0, 20000.0, velocity, 90.0, "rgb(25,25,25)");
-            let cd = rand::thread_rng().gen_range(500..=1000);
-            enemy.effects.push(Effect::Explode { lifetime: 500, radius: (10.0, 30.0), speed: 20.0, time_left: 0, cooldown: cd, color: "rgb(255,255,0)".to_owned(), amount: 10 });
+            let cd = rand::thread_rng().gen_range(200..=500);
+            enemy.effects.push(Effect::Explode { lifetime: 300, radius: (10.0, 30.0), speed: 15.0, time_left: 0, cooldown: cd, color: "rgb(255,255,0)".to_owned(), amount: 10 });
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
@@ -636,11 +636,11 @@ impl Game {
         for object in self.players.iter() {
             if *name == *object.name && object.inventory.open {
                 let drawpack = DrawPack::new("rgba(200,100,50,0.8)", Shape::Rectangle { width: 400.0, height: 800.0 }, (-900.0, -400.0));
-                let acc = draw(&(object.x, object.y), &drawpack, &camera, zoom);
+                let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
                 objects.push_str(&acc);
 
                 let drawpack = DrawPack::new("white", Shape::Text { content: "Inventory".to_owned(), size: 30.0 }, (-800.0, -350.0));
-                let acc = draw(&(object.x, object.y), &drawpack, &camera, zoom);
+                let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
                 objects.push_str(&acc);
             }
         }
