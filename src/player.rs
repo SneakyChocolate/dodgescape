@@ -17,6 +17,7 @@ pub struct Player {
     pub skip_move: bool,
     pub inventory: Inventory,
     pub zoom: f32,
+    pub zoomlimit: (f32, f32),
 }
 
 impl_Position!(Player);
@@ -33,6 +34,7 @@ impl Player {
             alive: true,
             speed: 8.0,
             zoom: 1.0,
+            zoomlimit: (1.0, 2.0),
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new("blue", Shape::Circle { radius: p.radius }, (0.0, 0.0)));

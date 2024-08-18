@@ -543,9 +543,9 @@ impl Game {
         self.spawn_grid(30000.0, "rgb(255,255,255,0.05)");
     }
     pub fn spawn_collectables(&mut self) {
-        let c = Collectable::new(100.0, 0.0, "rgb(200,200,0)", vec![Item {name: "binoculars".to_owned()}]);
+        let c = Collectable::new(100.0, 0.0, "rgb(200,200,0)", vec![Item::new("binoculars", 1)]);
         self.collectables.push(c);
-        let c = Collectable::new(-100.0, 0.0, "rgb(200,200,0)", vec![Item {name: "telescope".to_owned()}]);
+        let c = Collectable::new(-100.0, 0.0, "rgb(200,200,0)", vec![Item::new("telescope", 1)]);
         self.collectables.push(c);
     }
     pub fn new(sender: Sender<String>, receiver: Receiver<ServerMessage>) -> Game {
@@ -658,12 +658,12 @@ impl Game {
                 let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
                 objects.push_str(&acc);
 
-                let drawpack = DrawPack::new("white", Shape::Text { content: "Inventory".to_owned(), size: 30.0 }, (-800.0, -350.0));
+                let drawpack = DrawPack::new("white", Shape::Text { content: "Inventory".to_owned(), size: 30.0 }, (-850.0, -350.0));
                 let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
                 objects.push_str(&acc);
 
                 for (i, item) in object.inventory.items.iter().enumerate() {
-                    let drawpack = DrawPack::new("black", Shape::Text { content: item.name.clone(), size: 30.0 }, (-800.0, -250.0 + 100.0 * (i as f32)));
+                    let drawpack = DrawPack::new("black", Shape::Text { content: item.name.clone(), size: 30.0 }, (-850.0, -300.0 + 50.0 * (i as f32)));
                     let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
                     objects.push_str(&acc);
                 }
@@ -684,6 +684,12 @@ impl Game {
         }
         else if wheel < 0 {
             player.zoom *= 1.1;
+        }
+        if player.zoom > player.zoomlimit.1 {
+            player.zoom = player.zoomlimit.1;
+        }
+        else if player.zoom < player.zoomlimit.0 {
+            player.zoom = player.zoomlimit.0;
         }
 
         // retrieve object data

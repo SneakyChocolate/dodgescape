@@ -3,16 +3,6 @@ use rand::Rng;
 use crate::{action::Action, game::{distance, DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
 use crate::gametraits::*;
 
-pub enum EnemyEffect {
-    Chase {radius: f32, power: f32},
-    Crumble,
-    Lifetime(usize),
-    Push {radius: f32, power: f32},
-    Shoot {lifetime: usize, radius: f32, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize, color: String },
-    Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String},
-    Slow {radius: f32, power: f32},
-}
-
 #[derive(Default)]
 pub struct Enemy {
     pub velocity: (f32, f32),
@@ -43,6 +33,16 @@ impl Enemy {
 
         p
     }
+}
+
+pub enum EnemyEffect {
+    Chase {radius: f32, power: f32},
+    Crumble,
+    Lifetime(usize),
+    Push {radius: f32, power: f32},
+    Shoot {lifetime: usize, radius: f32, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize, color: String },
+    Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String},
+    Slow {radius: f32, power: f32},
 }
 
 pub fn handle_effects(game: &mut Game) {
