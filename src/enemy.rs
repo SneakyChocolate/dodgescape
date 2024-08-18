@@ -3,7 +3,7 @@ use rand::Rng;
 use crate::{action::Action, game::{distance, DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
 use crate::gametraits::*;
 
-pub enum Effect {
+pub enum EnemyEffect {
     Chase {radius: f32, power: f32},
     Crumble,
     Lifetime(usize),
@@ -20,7 +20,7 @@ pub struct Enemy {
     pub y: f32,
     pub draw_packs: Vec<DrawPack>,
     pub radius: f32,
-    pub effects: Vec<Effect>,
+    pub effects: Vec<EnemyEffect>,
     pub just_collided: bool,
     pub view_radius: f32,
 }
@@ -51,7 +51,7 @@ pub fn handle_effects(game: &mut Game) {
         for (i, enemy) in group.1.iter().enumerate() {
             for effect in enemy.effects.iter() {
                 match effect {
-                    Effect::Chase { radius, power } => {
+                    EnemyEffect::Chase { radius, power } => {
                         for player in game.players.iter() {
                             // if !player.alive {continue;}
                             let dist = distance(enemy, player);
@@ -61,15 +61,15 @@ pub fn handle_effects(game: &mut Game) {
                             }
                         }
                     }
-                    Effect::Crumble => {
+                    EnemyEffect::Crumble => {
                         if enemy.just_collided {
                             actions.push((i, Action::SpawnCrumble(g)));
                         }
                     },
-                    Effect::Lifetime(t) => {
+                    EnemyEffect::Lifetime(t) => {
                         actions.push((i, Action::ReduceLifetime(g)));
                     },
-                    Effect::Push { radius, power } => {
+                    EnemyEffect::Push { radius, power } => {
                         for (p, player) in game.players.iter().enumerate() {
                             let dist = distance(enemy, player);
                             if dist.2 <= *radius + player.radius {
@@ -78,7 +78,7 @@ pub fn handle_effects(game: &mut Game) {
                             }
                         }
                     },
-                    Effect::Shoot { radius, speed, cooldown, time_left, lifetime, projectile_radius, color } => {
+                    EnemyEffect::Shoot { radius, speed, cooldown, time_left, lifetime, projectile_radius, color } => {
                         for player in game.players.iter() {
                             if !player.alive {continue;}
                             let dist = distance(enemy, player);
@@ -93,7 +93,7 @@ pub fn handle_effects(game: &mut Game) {
                         }
                         actions.push((i, Action::ReduceCooldown(g)));
                     },
-                    Effect::Explode { lifetime, radius, speed, amount, time_left, cooldown, color } => {
+                    EnemyEffect::Explode { lifetime, radius, speed, amount, time_left, cooldown, color } => {
                         if *time_left == 0 {
                             for _ in 0..*amount {
                                 let v = (rand::thread_rng().gen_range(-*speed..=*speed), rand::thread_rng().gen_range(-*speed..=*speed));
@@ -104,7 +104,7 @@ pub fn handle_effects(game: &mut Game) {
                         }
                         actions.push((i, Action::ReduceCooldown(g)));
                     },
-                    Effect::Slow { radius, power } => {
+                    EnemyEffect::Slow { radius, power } => {
                         for (p, player) in game.players.iter().enumerate() {
                             if !player.alive {continue;}
                             let dist = distance(enemy, player);

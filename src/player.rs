@@ -27,7 +27,7 @@ impl Player {
     pub fn new(name: &String) -> Player {
         let mut p = Player {
             x: 0.0,
-            y: 10000.0,
+            y: 0.0,
             name: name.clone(),
             radius: 30.0,
             alive: true,

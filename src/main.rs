@@ -11,6 +11,7 @@ mod action;
 mod inventory;
 mod gametraits;
 mod collectable;
+mod item;
 
 use std::sync::mpsc::channel;
 
