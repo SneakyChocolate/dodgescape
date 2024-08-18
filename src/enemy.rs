@@ -117,7 +117,7 @@ pub fn handle_effects(game: &mut Game) {
             }
         }
     }
-    for (i, action) in actions {
-        action.execute(game, i);
+    for (entity, action) in actions {
+        action.execute(game, entity);
     }
 }

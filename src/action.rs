@@ -1,3 +1,5 @@
+use core::panic;
+
 use crate::{enemy::{EnemyEffect, Enemy}, game::{Game}, vector};
 
 pub enum Action {
@@ -50,7 +52,7 @@ impl Action {
                 let enemy = match game.enemies.get_mut(*g).unwrap().1.get_mut(entity) {
                     Some(e) => e,
                     None => {
-                        println!("tried to reduce lifetime of {entity}");
+                        // println!("tried to reduce lifetime of {entity} ({})", game.enemies.get_mut(*g).unwrap().1.len());
                         return;
                     },
                 };
@@ -59,11 +61,10 @@ impl Action {
                         crate::enemy::EnemyEffect::Lifetime(t) => {
                             if *t == 0 {
                                 game.enemies.get_mut(*g).unwrap().1.remove(entity);
-                                println!("deleted number {entity}");
                                 break;
                             }
                             else {
-                                *effect = crate::enemy::EnemyEffect::Lifetime(*t - 1);
+                                *t -= 1;
                             }
                         },
                         _ => {},
