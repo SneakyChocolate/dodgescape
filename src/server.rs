@@ -15,6 +15,7 @@ pub struct Server {
     receiver: mpsc::Receiver<String>,
 }
 
+// TODO websocket
 impl Server {
     pub fn new<T: std::net::ToSocketAddrs>(address: T, sender: mpsc::Sender<ServerMessage>, receiver: mpsc::Receiver<String>) -> Server {
         let server = Server {

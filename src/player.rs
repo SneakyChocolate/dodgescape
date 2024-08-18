@@ -34,7 +34,7 @@ impl Player {
             alive: true,
             speed: 8.0,
             zoom: 1.0,
-            zoomlimit: (1.0, 2.0),
+            zoomlimit: (0.1, 2.0),
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new("blue", Shape::Circle { radius: p.radius }, (0.0, 0.0)));

@@ -49,13 +49,17 @@ impl Action {
                 // let enemy = game.enemies.get_mut(*g).unwrap().1.get_mut(entity).unwrap();
                 let enemy = match game.enemies.get_mut(*g).unwrap().1.get_mut(entity) {
                     Some(e) => e,
-                    None => {return;},
+                    None => {
+                        println!("tried to reduce lifetime of {entity}");
+                        return;
+                    },
                 };
                 for effect in enemy.effects.iter_mut() {
                     match effect {
                         crate::enemy::EnemyEffect::Lifetime(t) => {
                             if *t == 0 {
                                 game.enemies.get_mut(*g).unwrap().1.remove(entity);
+                                println!("deleted number {entity}");
                                 break;
                             }
                             else {

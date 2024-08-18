@@ -247,7 +247,7 @@ impl Game {
     fn spawn_dirt_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![0, 5];
         let mut enemies = vec![];
-        for _ in 0..150 * spawn_m {
+        for _ in 0..100 * spawn_m {
             let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,40,20)");
