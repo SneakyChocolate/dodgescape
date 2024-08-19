@@ -117,7 +117,8 @@ pub fn handle_effects(game: &mut Game) {
             }
         }
     }
-    for (entity, action) in actions {
-        action.execute(game, entity);
+    // reverse order due to deletions and index errors
+    for (entity, action) in actions.iter().rev() {
+        action.execute(game, *entity);
     }
 }

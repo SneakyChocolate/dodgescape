@@ -46,16 +46,7 @@ impl Action {
                 game.enemies.get_mut(*g).unwrap().1.remove(entity);
             },
             Action::ReduceLifetime(g) => {
-                // TODO why does unwrap throw an error?
-                // println!("{} < {}", entity, game.enemies.get_mut(*g).unwrap().1.len());
-                // let enemy = game.enemies.get_mut(*g).unwrap().1.get_mut(entity).unwrap();
-                let enemy = match game.enemies.get_mut(*g).unwrap().1.get_mut(entity) {
-                    Some(e) => e,
-                    None => {
-                        // println!("tried to reduce lifetime of {entity} ({})", game.enemies.get_mut(*g).unwrap().1.len());
-                        return;
-                    },
-                };
+                let enemy = game.enemies.get_mut(*g).unwrap().1.get_mut(entity).unwrap();
                 for effect in enemy.effects.iter_mut() {
                     match effect {
                         crate::enemy::EnemyEffect::Lifetime(t) => {
