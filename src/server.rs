@@ -112,11 +112,14 @@ impl Server {
 
         // getting the output
         let (status_line, response): (&str, Vec<u8>) = match request.request_line.as_str() {
-            "GET / HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("hello.html").unwrap()),
-            "GET /bg.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("bg.png").unwrap()),
             "POST / HTTP/1.1" => ("HTTP/1.1 200 OK", objects.into()),
             "OPTIONS / HTTP/1.1" => ("HTTP/1.1 200 OK", "".to_owned().into()),
-            _ => ("HTTP/1.1 404 NOT FOUND", fs::read("404.html").unwrap()),
+
+            "GET / HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/hello.html").unwrap()),
+            "GET /bg.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/bg.png").unwrap()),
+            "GET /script.js HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/script.js").unwrap()),
+            "GET /styles.css HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/styles.css").unwrap()),
+            _ => ("HTTP/1.1 404 NOT FOUND", fs::read("./res/404.html").unwrap()),
         };
 
         (status_line, response)
