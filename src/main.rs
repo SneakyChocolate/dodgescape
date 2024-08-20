@@ -27,8 +27,6 @@ fn main() {
     game.start();
     // wsl ip
     let server = Server::new("172.28.37.92:7878", sms, gmr);
-    // windows ip
-    // let server = Server::new("192.168.178.66:7878", Arc::clone(&game));
     let server_handle = server.start();
     println!("server started...");
     let _ = server_handle.join();
