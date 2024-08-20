@@ -1,6 +1,6 @@
-use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::{mpsc::{self, Receiver}, Arc, Mutex}, thread::{self, JoinHandle}};
+use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::{mpsc::{self}, Arc}, thread::{self, JoinHandle}};
 
-use crate::{game::Game, http::Http_request, parser::{self, get_variable}, player::Player};
+use crate::{http::Http_request, parser::{self, get_variable}};
 
 #[derive(Debug)]
 pub enum ServerMessage {
@@ -56,17 +56,14 @@ impl Server {
         let (status_line, contents) = self.handle_response(&request);
 
         let response = format!(
-            "{}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n{}",
+            "{}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n",
             status_line,
-            contents.len(),
-            contents
+            contents.len()
         );
 
         // stream.write_all(response.as_bytes()).unwrap();
-        match stream.write_all(response.as_bytes()) {
-            Ok(_) => {},
-            Err(_) => {},
-        };
+        let _r = stream.write_all(response.as_bytes());
+        let _r = stream.write_all(&contents);
         stream.flush().unwrap();
     }
     fn receive(stream: &mut TcpStream) -> String {
@@ -86,7 +83,7 @@ impl Server {
         }
         received
     }
-    fn handle_response(&mut self, request: &Http_request) -> (&str, String) {
+    fn handle_response(&mut self, request: &Http_request) -> (&str, Vec<u8>) {
         let body_string = request.body.join("\n");
         // println!("received: {:#?}", body_string);
 
@@ -99,26 +96,27 @@ impl Server {
         if let Some(mode) = mode_option {
             let username = parser::get_variable(&body_string, "username").unwrap();
             if mode == "login".to_owned() {
-                self.sender.send(ServerMessage::Login(username));
+                self.sender.send(ServerMessage::Login(username)).unwrap();
             }
             else if mode == "game".to_owned() {
                 let mouse = parser::get_mouse(&body_string).unwrap();
                 let keys_down = parser::get_keys_down(&body_string);
                 let wheel: i32 = parser::get_variable(&body_string, "wheel").unwrap().parse().unwrap();
-                self.sender.send(ServerMessage::Input { name: username, mouse , keys: keys_down, wheel });
+                self.sender.send(ServerMessage::Input { name: username, mouse , keys: keys_down, wheel }).unwrap();
             }
             else if mode == "logout".to_owned() {
-                self.sender.send(ServerMessage::Logout(username));
+                self.sender.send(ServerMessage::Logout(username)).unwrap();
             }
             objects = self.receiver.recv().unwrap();
         }
 
         // getting the output
-        let (status_line, response) = match request.request_line.as_str() {
-            "GET / HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read_to_string("hello.html").unwrap()),
-            "POST / HTTP/1.1" => ("HTTP/1.1 200 OK", objects),
-            "OPTIONS / HTTP/1.1" => ("HTTP/1.1 200 OK", "".to_owned()),
-            _ => ("HTTP/1.1 404 NOT FOUND", fs::read_to_string("404.html").unwrap()),
+        let (status_line, response): (&str, Vec<u8>) = match request.request_line.as_str() {
+            "GET / HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("hello.html").unwrap()),
+            "GET /bg.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("bg.png").unwrap()),
+            "POST / HTTP/1.1" => ("HTTP/1.1 200 OK", objects.into()),
+            "OPTIONS / HTTP/1.1" => ("HTTP/1.1 200 OK", "".to_owned().into()),
+            _ => ("HTTP/1.1 404 NOT FOUND", fs::read("404.html").unwrap()),
         };
 
         (status_line, response)
