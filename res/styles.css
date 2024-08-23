@@ -23,6 +23,7 @@ body
 {
   margin: 0;
   background-color: #2f3a6f;
+  overflow: hidden;
 }
 
 .button {
@@ -66,4 +67,15 @@ body
 .button:hover span:after {
   opacity: 1;
   right: 0;
+}
+
+p {
+  position: absolute;
+  z-index: 2;
+  left: 22%;
+  top: 0vw;
+  font-size: 11vw;
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  letter-spacing: 10%;
+  color: #FFFFFF;
 }

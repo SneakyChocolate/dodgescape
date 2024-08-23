@@ -117,6 +117,7 @@ impl Server {
 
             "GET / HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/hello.html").unwrap()),
             "GET /bg.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/bg.png").unwrap()),
+            "GET /icon.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/icon.png").unwrap()),
             "GET /script.js HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/script.js").unwrap()),
             "GET /styles.css HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/styles.css").unwrap()),
             _ => ("HTTP/1.1 404 NOT FOUND", fs::read("./res/404.html").unwrap()),
