@@ -5,6 +5,7 @@ use crate::{enemy::{EnemyEffect, Enemy}, game::{Game}, vector};
 pub enum Action {
     UpdateEnemyVelocity(usize, (f32,f32)),
     SetPlayerVelocity((f32,f32)),
+    SetPlayerZoomlimit((f32,f32)),
     AddPlayerVelocity((f32,f32)),
     MulPlayerVelocity(f32),
     SpawnCrumble(usize),
@@ -25,6 +26,10 @@ impl Action {
             Action::SetPlayerVelocity(v) => {
                 let object = game.players.get_mut(entity).unwrap();
                 object.velocity = *v;
+            },
+            Action::SetPlayerZoomlimit(v) => {
+                let object = game.players.get_mut(entity).unwrap();
+                object.zoomlimit = *v;
             },
             Action::AddPlayerVelocity(v) => {
                 let object = game.players.get_mut(entity).unwrap();

@@ -1,6 +1,6 @@
 use std::{sync::{mpsc::{Receiver, Sender}, Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{action::Action, collectable::Collectable, enemy::{EnemyEffect, Enemy}, gametraits::{Drawable, Moveable, Position}, item::Item, player::Player, server::ServerMessage, vector, wall::Wall};
+use crate::{action::Action, collectable::Collectable, enemy::{Enemy, EnemyEffect}, gametraits::{Drawable, Moveable, Position}, item::{Item, ItemEffect}, player::Player, server::ServerMessage, vector, wall::Wall};
 use rand::prelude::*;
 
 pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
@@ -543,9 +543,13 @@ impl Game {
         self.spawn_grid(30000.0, "rgb(255,255,255,0.05)");
     }
     pub fn spawn_collectables(&mut self) {
-        let c = Collectable::new(100.0, 0.0, "rgb(200,200,0)", vec![Item::new("binoculars", 1)]);
+        let c = Collectable::new(100.0, 0.0, "rgb(200,200,0)", vec![
+            Item::new("binoculars", 1, vec![ItemEffect::Vision((0.7,1.0))])
+        ]);
         self.collectables.push(c);
-        let c = Collectable::new(-100.0, 0.0, "rgb(200,200,0)", vec![Item::new("telescope", 1)]);
+        let c = Collectable::new(-100.0, 0.0, "rgb(200,200,0)", vec![
+            Item::new("telescope", 1, vec![ItemEffect::Vision((0.4,0.6))])
+        ]);
         self.collectables.push(c);
     }
     pub fn new(sender: Sender<String>, receiver: Receiver<ServerMessage>) -> Game {
@@ -597,6 +601,7 @@ impl Game {
 
                 handle_players(&mut self.players);
                 crate::enemy::handle_effects(&mut self);
+                crate::item::handle_effects(&mut self);
                 handle_collision(&mut self);
                 handle_kill_revive(&mut self);
                 handle_collectables(&mut self);
