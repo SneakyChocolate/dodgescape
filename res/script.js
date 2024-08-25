@@ -128,6 +128,8 @@ function getattribute(string, attribute) {
 }
 
 function render(data) {
+  console.log(JSON.parse(data));
+  return;
   let middle = [canvas.width / 2, canvas.height / 2];
   // clear the canvas
   rect(0, 0, canvas.width, canvas.height, "rgb(0,0,0)");

@@ -1,37 +1,17 @@
-use std::{sync::{mpsc::{Receiver, Sender}, Arc, Mutex, MutexGuard}, thread::{self, JoinHandle}, time::Duration};
+use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{action::Action, collectable::Collectable, enemy::{Enemy, EnemyEffect}, gametraits::{Drawable, Moveable, Position}, item::{Item, ItemEffect}, player::Player, server::ServerMessage, vector, wall::Wall};
+use crate::{collectable::Collectable, enemy::{Enemy, EnemyEffect}, gametraits::{Drawable, Moveable, Position}, item::{Item, ItemEffect}, player::Player, server::ServerMessage, vector, wall::Wall};
 use rand::prelude::*;
+use serde::Serialize;
 
 pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
-    let (x, y) = position;
-    let (cx, cy) = camera;
-    let shape = match &draw_pack.shape {
-        Shape::Line { width: lw , x: lx, y: ly } => {
-            Shape::Line { x: (lx - cx) * zoom, y: (ly - cy) * zoom, width: *lw * zoom }
-        },
-        Shape::Poly { corners: c } => {
-            let changed = c.iter().map(|(corx, cory)| { (
-                (corx - cx + x + draw_pack.offset.0) * zoom,
-                (cory - cy + y + draw_pack.offset.1) * zoom
-            )}).collect::<Vec<(f32, f32)>>();
-            Shape::Poly { corners: changed }
-        },
-        Shape::Circle { radius } => {
-            Shape::Circle { radius: radius * zoom }
-        },
-        Shape::Text { content, size } => {
-            Shape::Text { content: content.clone(), size: size * zoom }
-        },
-        Shape::Rectangle { width, height } => {
-            Shape::Rectangle { width: width * zoom, height: height * zoom }
-        },
-    };
-    format!("[(\"{}\", {:?}, ({}, {}))],",
-        draw_pack.color,
-        shape,
-        (x + draw_pack.offset.0 - cx) * zoom,
-        (y + draw_pack.offset.1 - cy) * zoom
+    format!("{{\"position\":{{\"x\":{},\"y\":{}}},\"draw_pack\":{},\"camera\":{{\"x\":{},\"y\":{}}},\"zoom\":{}}},",
+        position.0,
+        position.1,
+        serde_json::to_string(&draw_pack).unwrap(),
+        camera.0,
+        camera.1,
+        zoom,
     )
 }
 pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom: f32) -> String {
@@ -56,7 +36,7 @@ pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {
     vector::distance(a, b)
 }
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, Debug, Clone)]
 pub enum Shape {
     Circle{radius: f32},
     Rectangle{width: f32, height: f32},
@@ -72,6 +52,7 @@ impl Default for Shape {
         // Self::Line {x: 0.0, y: 0.0}
     }
 }
+#[derive(Serialize)]
 pub struct DrawPack {
     color: String,
     shape: Shape,
@@ -611,7 +592,7 @@ impl Game {
     }
     pub fn pack_objects(&mut self, camera: (f32, f32), name: &String, zoom: f32) -> String {
         let view = 1000.0 / zoom;
-        let mut objects = "".to_owned();
+        let mut objects = "{\"objects\":[".to_owned();
         // map
         for shape in self.map.iter() {
             let acc = draw(&shape.0, &shape.1, &camera, zoom);
@@ -675,6 +656,7 @@ impl Game {
             }
         }
 
+        objects.push_str("null]}");
         objects
     }
     pub fn handle_input(&mut self, player_name: &String, mouse: (f32, f32), keys_down: Vec<String>, wheel: i32) -> String {
