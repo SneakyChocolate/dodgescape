@@ -144,7 +144,7 @@ mod test_parser {
 
     #[test]
     fn parse_test() {
-        let expected = (3, 52);
+        let expected = (3.0, 52.0);
         let test_string = "let x: i32 = 3;let y: i32 = 52;".to_owned();
         let result = get_mouse(&test_string).unwrap();
         assert_eq!(expected, result);

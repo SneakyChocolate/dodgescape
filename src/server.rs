@@ -1,12 +1,29 @@
 use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::{mpsc::{self}, Arc}, thread::{self, JoinHandle}};
 
-use crate::{http::Http_request, parser::{self, get_variable}};
+use crate::http::Http_request;
+
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub enum ServerMessage {
     Login(String),
     Logout(String),
     Input{name: String, mouse: (f32, f32), keys: Vec<String>, wheel: i32 },
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ClientMessage {
+    mode: String,
+    username: String,
+    x: Option<f32>,
+    y: Option<f32>,
+    keys_down: Option<Vec<String>>,
+    wheel: Option<i32>,
+}
+impl ClientMessage {
+    pub fn new(mode: String, username: String, x: Option<f32>, y: Option<f32>, keys_down: Option<Vec<String>>, wheel: Option<i32>) -> ClientMessage {
+        ClientMessage { mode, username, x, y, keys_down, wheel }
+    }
 }
 
 pub struct Server {
@@ -88,27 +105,23 @@ impl Server {
         // println!("received: {:#?}", body_string);
 
         // parsing
-        let mode_option = get_variable(&body_string, "mode");
         let mut objects = "".to_owned();
 
-        // if post requeset is normal with mode
-        // handle mode
-        if let Some(mode) = mode_option {
-            let username = parser::get_variable(&body_string, "username").unwrap();
-            if mode == "login".to_owned() {
-                self.sender.send(ServerMessage::Login(username)).unwrap();
-            }
-            else if mode == "game".to_owned() {
-                let mouse = parser::get_mouse(&body_string).unwrap();
-                let keys_down = parser::get_keys_down(&body_string);
-                let wheel: i32 = parser::get_variable(&body_string, "wheel").unwrap().parse().unwrap();
-                self.sender.send(ServerMessage::Input { name: username, mouse , keys: keys_down, wheel }).unwrap();
-            }
-            else if mode == "logout".to_owned() {
-                self.sender.send(ServerMessage::Logout(username)).unwrap();
-            }
-            objects = self.receiver.recv().unwrap();
-        }
+        match serde_json::from_str::<ClientMessage>(&body_string) {
+            Ok(client_message) => {
+                if client_message.mode == "login".to_owned() {
+                    self.sender.send(ServerMessage::Login(client_message.username)).unwrap();
+                }
+                else if client_message.mode == "game".to_owned() {
+                    self.sender.send(ServerMessage::Input { name: client_message.username, mouse: (client_message.x.unwrap(), client_message.y.unwrap()) , keys: client_message.keys_down.unwrap(), wheel: client_message.wheel.unwrap() }).unwrap();
+                }
+                else if client_message.mode == "logout".to_owned() {
+                    self.sender.send(ServerMessage::Logout(client_message.username)).unwrap();
+                }
+                objects = self.receiver.recv().unwrap();
+            },
+            Err(_) => {},
+        };
 
         // getting the output
         let (status_line, response): (&str, Vec<u8>) = match request.request_line.as_str() {
@@ -127,3 +140,16 @@ impl Server {
     }
 }
 
+
+#[cfg(test)]
+mod serde_test {
+    use crate::server::ClientMessage;
+
+    #[test]
+    fn object_with_missing_attribute() {
+        let example = ClientMessage::new("login".to_owned(), "jo; 3".to_owned(), Some(20.0), None, Some(vec!["KeyW".to_owned()]), None);
+        let serialized = serde_json::to_string(&example).unwrap();
+
+        assert_eq!(serialized, "{\"mode\":\"login\",\"username\":\"jo; 3\",\"x\":20.0,\"y\":null,\"keys_down\":[\"KeyW\"],\"wheel\":null}".to_owned());
+    }
+}

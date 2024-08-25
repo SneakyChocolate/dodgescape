@@ -188,7 +188,8 @@ function render(data) {
 }
 
 login_button.onclick = function(e) {
-  let msg = `let mode = login; let username: String = ${username.value}; let x: i32 = ${mouse_x}; let y: i32 = ${mouse_y}; let keys_down = ${keys_down.join(",")};`;
+  let msg = JSON.stringify({mode: "login", username: username.value, x: mouse_x, y: mouse_y, keys_down: keys_down, wheel: wheel});
+  // let msg = `let mode = login; let username: String = ${username.value}; let x: i32 = ${mouse_x}; let y: i32 = ${mouse_y}; let keys_down = ${keys_down.join(",")};`;
   send(msg, (r) => {
     // here comes what happens after login
     // output.innerHTML = "output: " + r
@@ -203,7 +204,8 @@ login_button.onclick = function(e) {
 
     // starting canvas action
     renderLoop = setInterval(function() {
-      let msg = `let mode = game; let username: String = ${username.value}; let x: i32 = ${mouse_x}; let y: i32 = ${mouse_y}; let keys_down = ${keys_down.join(",")}; let wheel = ${wheel};`;
+      let msg = JSON.stringify({mode: "game", username: username.value, x: mouse_x, y: mouse_y, keys_down: keys_down, wheel: wheel});
+      // let msg = `let mode = game; let username: String = ${username.value}; let x: i32 = ${mouse_x}; let y: i32 = ${mouse_y}; let keys_down = ${keys_down.join(",")}; let wheel = ${wheel};`;
       wheel = 0;
       try {
         send(msg, render);
@@ -216,7 +218,8 @@ login_button.onclick = function(e) {
 }
 
 window.onunload = function () {
-  let msg = `let mode = logout; let username: String = ${username.value};`;
+  let msg = JSON.stringify({mode: "logout", username: username.value, x: mouse_x, y: mouse_y, keys_down: keys_down, wheel: wheel});
+  // let msg = `let mode = logout; let username: String = ${username.value};`;
   send(msg, (r) => {
     console.log(r);
   });
