@@ -128,11 +128,55 @@ function getattribute(string, attribute) {
 }
 
 function render(data) {
-  console.log(JSON.parse(data));
-  return;
-  let middle = [canvas.width / 2, canvas.height / 2];
   // clear the canvas
   rect(0, 0, canvas.width, canvas.height, "rgb(0,0,0)");
+  let middle = [canvas.width / 2, canvas.height / 2];
+  let objects = JSON.parse(data).objects;
+  for (o in objects) {
+    let object = objects[o];
+    if (object == null) continue;
+    let x = (object.position.x - object.camera.x + object.draw_pack.offset[0]) * object.zoom + middle[0];
+    let y = (object.position.y - object.camera.y + object.draw_pack.offset[1]) * object.zoom + middle[1];
+
+    for (s in object.draw_pack.shape) {
+      let shape = object.draw_pack.shape[s];
+      if (s == "Circle") {
+        circle(x, y, shape.radius * object.zoom, object.draw_pack.color);
+      }
+      else if (s == "Rectangle") {
+        rect(x, y, shape.width * object.zoom, shape.height * object.zoom, object.draw_pack.color);
+      }
+      else if (s == "Line") {
+        let x2 = (shape.x - object.camera.x) * object.zoom + middle[0];
+        let y2 = (shape.y - object.camera.y) * object.zoom + middle[1];
+        line([x, y], [x2, y2], shape.width * object.zoom, object.draw_pack.color);
+      }
+      else if (s == "Text") {
+        ctx.fillStyle = object.draw_pack.color;
+        ctx.font = shape.size * object.zoom + "px Arial";
+        ctx.fillText(shape.content, x, y);
+      }
+      else if (s == "Poly") {
+        let corners = shape.corners;
+        ctx.fillStyle = object.draw_pack.color;
+        ctx.beginPath();
+        for (c in corners) {
+          let corner = corners[c];
+          let x = (corner[0] - object.camera.x) * object.zoom + middle[0];
+          let y = (corner[1] - object.camera.y) * object.zoom + middle[1];
+          if (c == 0) {
+            ctx.moveTo(x, y);
+          }
+          else {
+            ctx.lineTo(x, y);
+          }
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  }
+  return;
   let shapes = seperate(data, ",");
   // console.log(shapes);
   for (let i = 0; i < shapes.length; i ++) {
