@@ -26,7 +26,8 @@ fn main() {
     let game = Game::new(gms, smr);
     game.start();
     // wsl ip
-    let server = Server::new("172.28.37.92:7878", sms, gmr);
+    // let server = Server::new("172.28.37.92:7878", sms, gmr);
+    let server = Server::new("172.19.241.59:7878", sms, gmr);
     let server_handle = server.start();
     println!("server started...");
     let _ = server_handle.join();
