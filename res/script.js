@@ -52,7 +52,7 @@ function seperate(string, seperator) {
 function send(msg, callback) {
   // fetch("http://100.113.18.48:7878", {
   // fetch("http://192.168.178.66:7878/", {
-  fetch("http://192.168.178.79:7878/", {
+  fetch("http://192.168.178.31:7878/", {
     method: "POST",
     body: msg,
     headers: {
@@ -136,25 +136,25 @@ function render(data) {
   for (o in objects) {
     let object = objects[o];
     if (object == null) continue;
-    let x = (object.position.x - object.camera.x + object.draw_pack.offset[0]) * object.zoom + middle[0];
-    let y = (object.position.y - object.camera.y + object.draw_pack.offset[1]) * object.zoom + middle[1];
+    let x = (object.position.x - object.camera.x + object.draw_pack.offset[0]) * object.zoom * f + middle[0];
+    let y = (object.position.y - object.camera.y + object.draw_pack.offset[1]) * object.zoom * f + middle[1];
 
     for (s in object.draw_pack.shape) {
       let shape = object.draw_pack.shape[s];
       if (s == "Circle") {
-        circle(x, y, shape.radius * object.zoom, object.draw_pack.color);
+        circle(x, y, shape.radius * object.zoom * f, object.draw_pack.color);
       }
       else if (s == "Rectangle") {
-        rect(x, y, shape.width * object.zoom, shape.height * object.zoom, object.draw_pack.color);
+        rect(x, y, shape.width * object.zoom * f, shape.height * object.zoom * f, object.draw_pack.color);
       }
       else if (s == "Line") {
-        let x2 = (shape.x - object.camera.x) * object.zoom + middle[0];
-        let y2 = (shape.y - object.camera.y) * object.zoom + middle[1];
-        line([x, y], [x2, y2], shape.width * object.zoom, object.draw_pack.color);
+        let x2 = (shape.x - object.camera.x) * object.zoom * f + middle[0];
+        let y2 = (shape.y - object.camera.y) * object.zoom * f + middle[1];
+        line([x, y], [x2, y2], shape.width * object.zoom * f, object.draw_pack.color);
       }
       else if (s == "Text") {
         ctx.fillStyle = object.draw_pack.color;
-        ctx.font = shape.size * object.zoom + "px Arial";
+        ctx.font = shape.size * object.zoom * f + "px Arial";
         ctx.fillText(shape.content, x, y);
       }
       else if (s == "Poly") {
@@ -163,8 +163,8 @@ function render(data) {
         ctx.beginPath();
         for (c in corners) {
           let corner = corners[c];
-          let x = (corner[0] - object.camera.x) * object.zoom + middle[0];
-          let y = (corner[1] - object.camera.y) * object.zoom + middle[1];
+          let x = (corner[0] - object.camera.x) * object.zoom * f + middle[0];
+          let y = (corner[1] - object.camera.y) * object.zoom * f + middle[1];
           if (c == 0) {
             ctx.moveTo(x, y);
           }
