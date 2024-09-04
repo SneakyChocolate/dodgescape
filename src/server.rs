@@ -4,7 +4,7 @@ use crate::http::Http_request;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ServerMessage {
     Login(String),
     Logout(String),
@@ -118,6 +118,7 @@ impl Server {
                 else if client_message.mode == "logout".to_owned() {
                     self.sender.send(ServerMessage::Logout(client_message.username)).unwrap();
                 }
+                // TODO better server receiving
                 objects = self.receiver.recv().unwrap();
             },
             Err(_) => {},

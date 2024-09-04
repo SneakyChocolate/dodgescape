@@ -556,24 +556,34 @@ impl Game {
         self.running = true;
         let t = thread::spawn(move || {
             loop {
-                match self.receiver.try_recv() {
-                    Ok(message) => {
-                        match message {
-                            ServerMessage::Login(name) => {
-                                self.players.push(Player::new(&name));
-                                self.sender.send("".to_owned()).unwrap();
-                            },
-                            ServerMessage::Logout(name) => {
-                                let output = self.logout(&name);
-                                self.sender.send(output).unwrap();
-                            },
-                            ServerMessage::Input { name, mouse, keys, wheel } => {
-                                let output = self.handle_input(&name, mouse, keys, wheel);
-                                self.sender.send(output).unwrap();
-                            },
-                        }
-                    },
-                    Err(_) => {},
+                // handle all messages via loop
+                loop {
+                    match self.receiver.try_recv() {
+                        Ok(message) => {
+                            match message {
+                                ServerMessage::Login(name) => {
+                                    self.players.push(Player::new(&name));
+                                    self.sender.send("".to_owned()).unwrap();
+                                },
+                                ServerMessage::Logout(name) => {
+                                    let output = self.logout(&name);
+                                    self.sender.send(output).unwrap();
+                                },
+                                ServerMessage::Input { name, mouse, keys, wheel } => {
+                                    let output = self.handle_input(&name, mouse, keys, wheel);
+                                    self.sender.send(output).unwrap();
+                                },
+                            }
+                        },
+                        Err(error) => {
+                            match error {
+                                std::sync::mpsc::TryRecvError::Empty => {
+                                    break;
+                                },
+                                std::sync::mpsc::TryRecvError::Disconnected => {},
+                            }
+                        },
+                    }
                 }
                 thread::sleep(Duration::from_millis(1));
                 if !self.running {
