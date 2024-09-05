@@ -1,3 +1,4 @@
+// remember firewall inbound and outbound rules for this port
 mod http;
 mod server;
 mod parser;
@@ -21,7 +22,6 @@ use crate::{game::Game, server::ServerMessage};
 
 fn main() {
     let (sms, smr) = channel::<ServerMessage>();
-    let (gms, gmr) = channel::<String>();
 
     let game = Game::new(smr);
     game.start();
