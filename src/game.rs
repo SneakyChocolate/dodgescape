@@ -70,7 +70,6 @@ impl DrawPack {
 
 pub struct Game {
     pub receiver: Receiver<ServerMessage>,
-    pub sender: Sender<String>,
     
     pub players: Vec<Player>,
     pub game_loop: Option<JoinHandle<()>>,
@@ -533,11 +532,10 @@ impl Game {
         ]);
         self.collectables.push(c);
     }
-    pub fn new(sender: Sender<String>, receiver: Receiver<ServerMessage>) -> Game {
+    pub fn new(receiver: Receiver<ServerMessage>) -> Game {
         let mut g = Game {
             game_loop: None,
             running: false,
-            sender,
             receiver,
             players: Default::default(),
             enemies: Default::default(),
@@ -563,15 +561,13 @@ impl Game {
                             match message {
                                 ServerMessage::Login(name) => {
                                     self.players.push(Player::new(&name));
-                                    self.sender.send("".to_owned()).unwrap();
                                 },
                                 ServerMessage::Logout(name) => {
-                                    let output = self.logout(&name);
-                                    self.sender.send(output).unwrap();
+                                    self.logout(&name);
                                 },
-                                ServerMessage::Input { name, mouse, keys, wheel } => {
+                                ServerMessage::Input { name, mouse, keys, wheel, sender } => {
                                     let output = self.handle_input(&name, mouse, keys, wheel);
-                                    self.sender.send(output).unwrap();
+                                    sender.send(output).unwrap();
                                 },
                             }
                         },
@@ -700,17 +696,14 @@ impl Game {
     pub fn get(&mut self, player: &String) -> Option<&Player> {
         self.players.iter().find(|p| {p.name == *player})
     }
-    pub fn logout(&mut self, player: &String) -> String {
+    pub fn logout(&mut self, player: &String) {
         let index = self.players.iter().position(|p| {p.name == *player});
         match index {
             Some(i) => {
                 self.players.remove(i);
-                format!("player {} logged out.", player)
             },
-            None => {
-                format!("failed to log out {}", player)
-            }
-        }
+            None => { }
+        };
     }
 }
 

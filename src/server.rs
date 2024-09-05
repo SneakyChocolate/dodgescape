@@ -1,4 +1,4 @@
-use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::{mpsc::{self}, Arc}, thread::{self, JoinHandle}};
+use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::{mpsc::{self, channel}, Arc}, thread::{self, JoinHandle}};
 
 use crate::http::Http_request;
 
@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 pub enum ServerMessage {
     Login(String),
     Logout(String),
-    Input{name: String, mouse: (f32, f32), keys: Vec<String>, wheel: i32 },
+    Input{name: String, mouse: (f32, f32), keys: Vec<String>, wheel: i32, sender: mpsc::Sender<String>},
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -29,16 +29,14 @@ impl ClientMessage {
 pub struct Server {
     listener: TcpListener,
     sender: mpsc::Sender<ServerMessage>,
-    receiver: mpsc::Receiver<String>,
 }
 
 // TODO websocket
 impl Server {
-    pub fn new<T: std::net::ToSocketAddrs>(address: T, sender: mpsc::Sender<ServerMessage>, receiver: mpsc::Receiver<String>) -> Server {
+    pub fn new<T: std::net::ToSocketAddrs>(address: T, sender: mpsc::Sender<ServerMessage>) -> Server {
         let server = Server {
             listener: TcpListener::bind(address).unwrap(),
             sender,
-            receiver,
         };
         server
     }
@@ -113,13 +111,14 @@ impl Server {
                     self.sender.send(ServerMessage::Login(client_message.username)).unwrap();
                 }
                 else if client_message.mode == "game".to_owned() {
-                    self.sender.send(ServerMessage::Input { name: client_message.username, mouse: (client_message.x.unwrap(), client_message.y.unwrap()) , keys: client_message.keys_down.unwrap(), wheel: client_message.wheel.unwrap() }).unwrap();
+                    let (gms, gmr) = channel::<String>();
+                    self.sender.send(ServerMessage::Input { name: client_message.username, mouse: (client_message.x.unwrap(), client_message.y.unwrap()) , keys: client_message.keys_down.unwrap(), wheel: client_message.wheel.unwrap(), sender: gms }).unwrap();
+                    objects = gmr.recv().unwrap();
                 }
                 else if client_message.mode == "logout".to_owned() {
                     self.sender.send(ServerMessage::Logout(client_message.username)).unwrap();
                 }
                 // TODO better server receiving
-                objects = self.receiver.recv().unwrap();
             },
             Err(_) => {},
         };
