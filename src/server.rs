@@ -52,12 +52,15 @@ impl Server {
                     },
                 };
                 // println!("conntection incoming");
+                let sender = self.sender.clone();
 
-                self.handle_connection(stream);
+                thread::spawn(move || {
+                    Self::handle_connection(sender, stream);
+                });
             }
         })
     }
-    fn handle_connection(&mut self, mut stream: TcpStream) {
+    fn handle_connection(sender: mpsc::Sender<ServerMessage>, mut stream: TcpStream) {
         let received: String = Server::receive(&mut stream);
 
         let request = match Http_request::parse(&received) {
@@ -68,7 +71,7 @@ impl Server {
             },
         };
 
-        let (status_line, contents) = self.handle_response(&request);
+        let (status_line, contents) = Self::handle_response(sender, &request);
 
         let response = format!(
             "{}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n",
@@ -98,7 +101,7 @@ impl Server {
         }
         received
     }
-    fn handle_response(&mut self, request: &Http_request) -> (&str, Vec<u8>) {
+    fn handle_response(sender: mpsc::Sender<ServerMessage>, request: &Http_request) -> (&str, Vec<u8>) {
         let body_string = request.body.join("\n");
         // println!("received: {:#?}", body_string);
 
@@ -108,15 +111,15 @@ impl Server {
         match serde_json::from_str::<ClientMessage>(&body_string) {
             Ok(client_message) => {
                 if client_message.mode == "login".to_owned() {
-                    self.sender.send(ServerMessage::Login(client_message.username)).unwrap();
+                    sender.send(ServerMessage::Login(client_message.username)).unwrap();
                 }
                 else if client_message.mode == "game".to_owned() {
                     let (gms, gmr) = channel::<String>();
-                    self.sender.send(ServerMessage::Input { name: client_message.username, mouse: (client_message.x.unwrap(), client_message.y.unwrap()) , keys: client_message.keys_down.unwrap(), wheel: client_message.wheel.unwrap(), sender: gms }).unwrap();
+                    sender.send(ServerMessage::Input { name: client_message.username, mouse: (client_message.x.unwrap(), client_message.y.unwrap()) , keys: client_message.keys_down.unwrap(), wheel: client_message.wheel.unwrap(), sender: gms }).unwrap();
                     objects = gmr.recv().unwrap();
                 }
                 else if client_message.mode == "logout".to_owned() {
-                    self.sender.send(ServerMessage::Logout(client_message.username)).unwrap();
+                    sender.send(ServerMessage::Logout(client_message.username)).unwrap();
                 }
                 // TODO better server receiving
             },
