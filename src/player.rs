@@ -7,6 +7,7 @@ use crate::gametraits::*;
 #[derive(Default)]
 pub struct Player {
     pub mouse: (f32, f32),
+    pub just_pressed: Vec<String>,
     pub keys_down: Vec<String>,
     pub velocity: (f32, f32),
     pub name: String,
@@ -77,7 +78,7 @@ impl Player {
                             }
                         }
                         let key = "Enter".to_owned();
-                        if self.keys_down.contains(&key) {
+                        if self.just_pressed.contains(&&key) {
                             let item = self.inventory.items.get_mut(*s);
                             match item {
                                 Some(item) => {
@@ -131,6 +132,15 @@ impl Player {
             vy /= 2.0;
         }
         self.velocity = (vx, vy);
+    }
+    pub fn get_just_pressed(&mut self, last_keys_down: &Vec<String>) -> Vec<String> {
+        let mut jp = vec![];
+        for key in self.keys_down.iter() {
+            if !last_keys_down.contains(key) {
+                jp.push(key.clone());
+            }
+        }
+        jp
     }
     pub fn handle_keys(&mut self) {
         self.handle_respawn();

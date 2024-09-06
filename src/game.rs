@@ -655,6 +655,16 @@ impl Game {
                 objects.push_str(&acc);
 
                 for (i, item) in object.inventory.items.iter().enumerate() {
+                    match object.inventory.selected_item {
+                        Some(s) => {
+                            if i == s {
+                                let drawpack = DrawPack::new("rgba(255,255,255,0.3)", Shape::Rectangle { width: 100.0, height: 100.0 }, (-850.0, -300.0 + 50.0 * (i as f32)));
+                                let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
+                                objects.push_str(&acc);
+                            }
+                        },
+                        None => {},
+                    }
                     let color = if item.active {
                         "green"
                     }
@@ -677,6 +687,7 @@ impl Game {
             None => return "".to_owned(),
         };
         player.mouse = mouse;
+        player.just_pressed = player.get_just_pressed(&keys_down);
         player.keys_down = keys_down;
         if wheel > 0 {
             player.zoom /= 1.1;
