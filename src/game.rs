@@ -687,7 +687,6 @@ impl Game {
             None => return "".to_owned(),
         };
         player.mouse = mouse;
-        player.just_pressed = player.get_just_pressed(&keys_down);
         player.keys_down = keys_down;
         if wheel > 0 {
             player.zoom /= 1.1;

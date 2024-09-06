@@ -1,5 +1,4 @@
 
-use std::borrow::BorrowMut;
 
 use crate::{game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
 use crate::gametraits::*;
@@ -9,6 +8,7 @@ pub struct Player {
     pub mouse: (f32, f32),
     pub just_pressed: Vec<String>,
     pub keys_down: Vec<String>,
+    pub old_keys_down: Vec<String>,
     pub velocity: (f32, f32),
     pub name: String,
     pub x: f32,
@@ -134,19 +134,21 @@ impl Player {
         }
         self.velocity = (vx, vy);
     }
-    pub fn get_just_pressed(&mut self, new_keys_down: &Vec<String>) -> Vec<String> {
+    pub fn get_just_pressed(&mut self) -> Vec<String> {
         let mut jp = vec![];
-        for key in new_keys_down.iter() {
-            if !self.keys_down.contains(key) {
+        for key in self.keys_down.iter() {
+            if !self.old_keys_down.contains(key) {
                 jp.push(key.clone());
             }
         }
         jp
     }
     pub fn handle_keys(&mut self) {
+        self.just_pressed = self.get_just_pressed();
         self.handle_respawn();
         self.handle_inventory();
         self.handle_movement();
+        self.old_keys_down = self.keys_down.clone();
     }
 }
 
