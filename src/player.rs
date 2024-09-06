@@ -6,9 +6,9 @@ use crate::gametraits::*;
 #[derive(Default)]
 pub struct Player {
     pub mouse: (f32, f32),
-    pub just_pressed: Vec<String>,
     pub keys_down: Vec<String>,
-    pub old_keys_down: Vec<String>,
+    just_pressed: Vec<String>,
+    old_keys_down: Vec<String>,
     pub velocity: (f32, f32),
     pub name: String,
     pub x: f32,
