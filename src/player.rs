@@ -1,4 +1,6 @@
 
+use std::borrow::BorrowMut;
+
 use crate::{game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
 use crate::gametraits::*;
 
@@ -59,9 +61,38 @@ impl Player {
         let key = "KeyE".to_owned();
         if self.keys_down.contains(&key) {
             self.inventory.open = true;
+            if self.inventory.items.len() > 0 {
+                match &mut self.inventory.selected_item {
+                    None => {
+                        self.inventory.selected_item = Some(0);
+                    },
+                    Some(s) => {
+                        let key = "ArrowDown".to_owned();
+                        if self.keys_down.contains(&key) {
+                            if *s + 1 >= self.inventory.items.len() {
+                                *s = 0;
+                            }
+                            else {
+                                *s += 1;
+                            }
+                        }
+                        let key = "Enter".to_owned();
+                        if self.keys_down.contains(&key) {
+                            let item = self.inventory.items.get_mut(*s);
+                            match item {
+                                Some(item) => {
+                                    item.active = !item.active;
+                                },
+                                None => {},
+                            }
+                        }
+                    },
+                }
+            }
         }
         else {
             self.inventory.open = false;
+            self.inventory.selected_item = None;
         }
     }
     fn handle_movement(&mut self) {

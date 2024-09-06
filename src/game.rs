@@ -655,7 +655,13 @@ impl Game {
                 objects.push_str(&acc);
 
                 for (i, item) in object.inventory.items.iter().enumerate() {
-                    let drawpack = DrawPack::new("black", Shape::Text { content: item.name.clone(), size: 30.0 }, (-850.0, -300.0 + 50.0 * (i as f32)));
+                    let color = if item.active {
+                        "green"
+                    }
+                    else {
+                        "black"
+                    };
+                    let drawpack = DrawPack::new(color, Shape::Text { content: item.name.clone(), size: 30.0 }, (-850.0, -300.0 + 50.0 * (i as f32)));
                     let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
                     objects.push_str(&acc);
                 }

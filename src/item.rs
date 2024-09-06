@@ -18,6 +18,7 @@ pub fn handle_effects(game: &mut Game) {
     let mut actions: Vec<(usize, Action)> = vec![];
     for (p, player) in game.players.iter().enumerate() {
         for item in player.inventory.items.iter() {
+            if !item.active {continue;}
             for effect in item.effects.iter() {
                 match effect {
                     ItemEffect::Vision(zoom) => {
