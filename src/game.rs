@@ -658,7 +658,7 @@ impl Game {
                     match object.inventory.selected_item {
                         Some(s) => {
                             if i == s {
-                                let drawpack = DrawPack::new("rgba(255,255,255,0.3)", Shape::Rectangle { width: 100.0, height: 100.0 }, (-850.0, -300.0 + 50.0 * (i as f32)));
+                                let drawpack = DrawPack::new("rgba(255,255,255,0.3)", Shape::Rectangle { width: 300.0, height: 40.0 }, (-850.0, -330.0 + 50.0 * (i as f32)));
                                 let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
                                 objects.push_str(&acc);
                             }

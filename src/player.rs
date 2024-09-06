@@ -60,8 +60,10 @@ impl Player {
     }
     fn handle_inventory(&mut self) {
         let key = "KeyE".to_owned();
-        if self.keys_down.contains(&key) {
-            self.inventory.open = true;
+        if self.just_pressed.contains(&key) {
+            self.inventory.open = !self.inventory.open;
+        }
+        if self.inventory.open {
             if self.inventory.items.len() > 0 {
                 match &mut self.inventory.selected_item {
                     None => {
@@ -69,7 +71,7 @@ impl Player {
                     },
                     Some(s) => {
                         let key = "ArrowDown".to_owned();
-                        if self.keys_down.contains(&key) {
+                        if self.just_pressed.contains(&key) {
                             if *s + 1 >= self.inventory.items.len() {
                                 *s = 0;
                             }
@@ -92,7 +94,6 @@ impl Player {
             }
         }
         else {
-            self.inventory.open = false;
             self.inventory.selected_item = None;
         }
     }
@@ -133,10 +134,10 @@ impl Player {
         }
         self.velocity = (vx, vy);
     }
-    pub fn get_just_pressed(&mut self, last_keys_down: &Vec<String>) -> Vec<String> {
+    pub fn get_just_pressed(&mut self, new_keys_down: &Vec<String>) -> Vec<String> {
         let mut jp = vec![];
-        for key in self.keys_down.iter() {
-            if !last_keys_down.contains(key) {
+        for key in new_keys_down.iter() {
+            if !self.keys_down.contains(key) {
                 jp.push(key.clone());
             }
         }
