@@ -40,10 +40,9 @@ impl Server {
         };
         server
     }
-    pub fn start(mut self) -> JoinHandle<()> {
-        let listener = Arc::new(self.listener.try_clone().expect("Failed to clone listener"));
+    pub fn start(self) -> JoinHandle<()> {
         thread::spawn(move || {
-            for stream in listener.incoming() {
+            for stream in self.listener.incoming() {
                 let stream = match stream {
                     Ok(result) => result,
                     Err(_) => {
@@ -70,6 +69,8 @@ impl Server {
                 return;
             },
         };
+        // check if ws handshake
+        println!("{:?}", request.get_header("Sec-WebSocket-Key".to_owned()));
 
         let (status_line, contents) = Self::handle_response(sender, &request);
 

@@ -13,6 +13,7 @@ mod inventory;
 mod gametraits;
 mod collectable;
 mod item;
+mod websocket;
 
 use std::sync::mpsc::channel;
 
