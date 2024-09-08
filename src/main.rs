@@ -14,6 +14,7 @@ mod gametraits;
 mod collectable;
 mod item;
 mod websocket;
+mod bits;
 
 use std::sync::mpsc::channel;
 

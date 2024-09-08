@@ -1,4 +1,4 @@
-use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
+use std::{sync::mpsc::Receiver, thread::{self, JoinHandle}, time::Duration};
 
 use crate::{collectable::Collectable, enemy::{Enemy, EnemyEffect}, gametraits::{Drawable, Moveable, Position}, item::{Item, ItemEffect}, player::Player, server::ServerMessage, vector, wall::Wall};
 use rand::prelude::*;

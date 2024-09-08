@@ -1,6 +1,6 @@
-use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::{mpsc::{self, channel}, Arc}, thread::{self, JoinHandle}};
+use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, ops::BitAndAssign, sync::{mpsc::{self, channel}, Arc}, thread::{self, JoinHandle}};
 
-use crate::http::Http_request;
+use crate::{bits::get_bits, http::Http_request};
 
 use serde::{Deserialize, Serialize};
 
@@ -70,20 +70,32 @@ impl Server {
             },
         };
         // check if ws handshake
-        println!("{:?}", request.get_header("Sec-WebSocket-Key".to_owned()));
+        let wskey = request.get_header("Sec-WebSocket-Key".to_owned());
+        let mut ws = false;
+        let (response, contents): (String, Vec<u8>) = match wskey {
+            Some(key) => {
+                ws = true;
+                (crate::websocket::response(key), vec![])
+            },
+            None => {
+                let (status_line, contents) = Self::handle_response(sender, &request);
+                (format!(
+                    "{}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n",
+                    status_line,
+                    contents.len()
+                ), contents)
+            },
+        };
 
-        let (status_line, contents) = Self::handle_response(sender, &request);
+        println!("{}", response);
 
-        let response = format!(
-            "{}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n",
-            status_line,
-            contents.len()
-        );
-
-        // stream.write_all(response.as_bytes()).unwrap();
         let _r = stream.write_all(response.as_bytes());
         let _r = stream.write_all(&contents);
         stream.flush().unwrap();
+
+        if !ws {return;}
+        // continue if its a websocket
+        crate::websocket::handle_websocket(stream);
     }
     fn receive(stream: &mut TcpStream) -> String {
         let mut received: String = "".to_owned();
