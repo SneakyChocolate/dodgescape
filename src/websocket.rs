@@ -25,19 +25,24 @@ pub fn response(key: &str) -> String {
 pub fn handle_websocket(mut stream: TcpStream) {
     println!("ws connection established");
     loop {
-        let mut framebytes: Vec<u8> = vec![0; 10];
-        println!("e");
+        let mut framebytes: Vec<u8> = vec![0; 2];
         stream.read_exact(&mut framebytes).unwrap();
-        println!("e");
-        let bits = get_bits_vec(&framebytes);
-        println!("{bits}");
-        let fin = bits.chars().nth(0).unwrap();
-        if fin == '1' {
-            break;
+        let fin = framebytes.get(0).unwrap();
+        if *fin >= 128 {
+            // message is finished
+            println!("finsi");
         }
-        let payloadlength_bits = &(bits.as_str())[9..15];
-        let payloadlength = u32::from_str_radix(payloadlength_bits, 2).unwrap();
-        println!("{}", payloadlength);
+        let b2 = *framebytes.get(1).unwrap();
+        let length = if b2 >= 128 {
+            b2 - 128
+        }
+        else {
+            b2
+        };
+        println!("length: {length}");
+        let mut payload = vec![0u8; length as usize];
+        stream.read_exact(&mut payload);
+        println!("payload: {:?}", payload);
     }
 }
 
