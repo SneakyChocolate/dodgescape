@@ -3,7 +3,12 @@ pub fn get_bits(byte: u8) -> String {
     let mut bits = "".to_owned();
     for i in 0..8 {
         let mask = 1 << i;
-        let bit = mask & byte;
+        let bit = if (mask & byte) > 0 {
+            '1'
+        }
+        else {
+            '0'
+        };
         bits.push_str(format!("{}", bit).as_str());
     }
     bits

@@ -87,8 +87,6 @@ impl Server {
             },
         };
 
-        println!("{}", response);
-
         let _r = stream.write_all(response.as_bytes());
         let _r = stream.write_all(&contents);
         stream.flush().unwrap();
