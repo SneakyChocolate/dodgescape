@@ -31,7 +31,6 @@ pub struct Server {
     sender: mpsc::Sender<ServerMessage>,
 }
 
-// TODO websocket
 impl Server {
     pub fn new<T: std::net::ToSocketAddrs>(address: T, sender: mpsc::Sender<ServerMessage>) -> Server {
         let server = Server {
@@ -132,7 +131,6 @@ impl Server {
                 else if client_message.mode == "logout".to_owned() {
                     sender.send(ServerMessage::Logout(client_message.username)).unwrap();
                 }
-                // TODO better server receiving
             },
             Err(_) => {},
         };
