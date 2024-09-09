@@ -52,7 +52,7 @@ function seperate(string, seperator) {
 function send(msg, callback) {
   // fetch("http://100.113.18.48:7878", {
   // fetch("http://192.168.178.66:7878/", {
-  fetch("http://192.168.178.31:7878/", {
+  fetch("http://100.111.61.35:7878/", {
     method: "POST",
     body: msg,
     headers: {

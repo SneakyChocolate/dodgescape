@@ -581,7 +581,7 @@ impl Game {
                         },
                     }
                 }
-                thread::sleep(Duration::from_millis(20));
+                thread::sleep(Duration::from_millis(1));
                 if !self.running {
                     break;
                 }
