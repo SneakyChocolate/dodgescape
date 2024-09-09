@@ -1,9 +1,8 @@
 
-use std::hash::RandomState;
 
 use rand::Rng;
 
-use crate::string::substring;
+use crate::string::StringOperations;
 
 
 #[derive(Debug)]
@@ -33,7 +32,7 @@ impl Color {
         let color = color.replace(" ", "");
         let start = color.find("(").unwrap() + 1;
         let end = color.find(")").unwrap() - 1;
-        let rgba = substring(&color, start, end);
+        let rgba = color.substring(start, end);
         let split = rgba.split(",").collect::<Vec<&str>>();
         let rgban = split.iter().map(|e| {
             match e.parse::<f32>() {
