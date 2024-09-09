@@ -13,20 +13,40 @@ pub struct Color {
     a: f32,
 }
 
+pub trait ColorValue {
+    fn value(&self) -> f32;
+}
+
+impl ColorValue for i32 {
+    fn value(&self) -> f32 {
+        *self as f32
+    }
+}
+impl ColorValue for f32 {
+    fn value(&self) -> f32 {
+        *self
+    }
+}
+
 impl Color {
-    pub fn new(r: f32, g: f32, b: f32, a: f32) -> Self {
-        Self { r,g,b,a }
+    pub fn new<T: ColorValue, B: ColorValue>(r: T, g: T, b: T, a: B) -> Self {
+        Self {
+            r: r.value(),
+            g: g.value(),
+            b: b.value(),
+            a: a.value(),
+        }
     }
     pub fn to_string(&self) -> String {
         format!("rgba({},{},{},{})", self.r, self.g, self.b, self.a)
     }
     pub fn random() -> Self {
-        let (r,g,b): (f32, f32, f32) = (
-            rand::thread_rng().gen_range(0.0..=255.0),
-            rand::thread_rng().gen_range(0.0..=255.0),
-            rand::thread_rng().gen_range(0.0..=255.0)
+        let (r,g,b) = (
+            rand::thread_rng().gen_range(0..=255),
+            rand::thread_rng().gen_range(0..=255),
+            rand::thread_rng().gen_range(0..=255)
         );
-        Self::new(r,g,b,1.0)
+        Self::new(r,g,b,1)
     }
     pub fn from_str(color: &str) -> Self {
         let color = color.replace(" ", "");
@@ -70,14 +90,14 @@ mod color_test {
     fn fromstring() {
         let str = "rgb(3,62,21)";
         let result = Color::from_str(str);
-        let exp = Color::new(3.0, 62.0, 21.0, 1.0);
+        let exp = Color::new(3, 62, 21, 1);
         assert_eq!(result, exp);
     }
     #[test]
     fn fromstringalpha() {
         let str = " rgba(93,  62,21, 0.5)";
         let result = Color::from_str(str);
-        let exp = Color::new(93.0, 62.0, 21.0, 0.5);
+        let exp = Color::new(93, 62, 21, 0.5);
         assert_eq!(result, exp);
     }
 }
