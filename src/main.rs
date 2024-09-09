@@ -15,6 +15,8 @@ mod collectable;
 mod item;
 mod websocket;
 mod bits;
+mod color;
+mod string;
 
 use std::sync::mpsc::channel;
 

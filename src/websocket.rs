@@ -3,8 +3,6 @@ use std::{io::Read, net::TcpStream};
 use base64::prelude::*;
 use sha1::{Sha1, Digest};
 
-use crate::bits::get_bits_vec;
-
 pub fn ws_accept_key(key: &str) -> String {
     let magic_string = format!("{}258EAFA5-E914-47DA-95CA-C5AB0DC85B11", key);
 
@@ -46,8 +44,8 @@ pub fn handle_websocket(mut stream: TcpStream) {
         }
         let mut payload = vec![0u8; payloadlength as usize];
         stream.read_exact(&mut payload);
-        let message = String::from_utf8(payload).unwrap();
-        println!("{message}");
+        let message = String::from_utf8(payload);
+        println!("{:?}", message);
     }
 }
 

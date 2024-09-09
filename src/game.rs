@@ -85,7 +85,7 @@ pub fn handle_players(players: &mut Vec<Player>) {
     for object in players {
         object.handle_keys();
         if object.alive {
-            object.draw_packs[0].color = "blue".to_owned();
+            object.draw_packs[0].color = object.color.clone();
         }
         else {
             object.draw_packs[0].color = "red".to_owned();
@@ -581,7 +581,7 @@ impl Game {
                         },
                     }
                 }
-                thread::sleep(Duration::from_millis(10));
+                thread::sleep(Duration::from_millis(20));
                 if !self.running {
                     break;
                 }

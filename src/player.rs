@@ -1,6 +1,6 @@
 
 
-use crate::{game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
+use crate::{color::Color, game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
 use crate::gametraits::*;
 
 #[derive(Default)]
@@ -21,6 +21,7 @@ pub struct Player {
     pub inventory: Inventory,
     pub zoom: f32,
     pub zoomlimit: (f32, f32),
+    pub color: String,
 }
 
 impl_Position!(Player);
@@ -29,6 +30,7 @@ impl_Drawable!(Player);
 
 impl Player {
     pub fn new(name: &String) -> Player {
+        let color = Color::random().to_string();
         let mut p = Player {
             x: 0.0,
             y: 0.0,
@@ -38,9 +40,10 @@ impl Player {
             speed: 8.0,
             zoom: 1.0,
             zoomlimit: (1.0, 1.0),
+            color: color.clone(),
             ..Default::default()
         };
-        p.draw_packs.push(DrawPack::new("blue", Shape::Circle { radius: p.radius }, (0.0, 0.0)));
+        p.draw_packs.push(DrawPack::new(p.color.as_str(), Shape::Circle { radius: p.radius }, (0.0, 0.0)));
         p.draw_packs.push(DrawPack::new("white", Shape::Text { content: name.clone(), size: 20.0 }, (-20.0, -40.0)));
         // p.draw_packs.push(DrawPack::new("red", Shape::Line { x: 0.0, y: 0.0, width: 10.0 }, (0.0, 0.0)));
 
