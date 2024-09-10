@@ -1,4 +1,4 @@
-use std::{io::{Read, Write}, net::TcpStream};
+use std::{io::{Read, Write}, net::TcpStream, thread};
 
 use base64::prelude::*;
 use sha1::{Sha1, Digest};
@@ -23,17 +23,25 @@ pub fn response(key: &str) -> String {
 // after handshake
 pub fn handle_websocket(mut stream: TcpStream) {
     println!("ws connection established");
-    loop {
-        let message = match read(&mut stream) {
-            Ok(m) => {
-                m
-            },
-            Err(_) => {
-                break;
-            },
-        };
-        send(&mut stream, "111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000".to_owned());
-    }
+
+    let mut send_stream = stream.try_clone().unwrap();
+    let send_handle = thread::spawn(move || {
+        loop {
+            send(&mut send_stream, "111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000".to_owned());
+        }
+    });
+    let read_handle = thread::spawn(move || {
+        loop {
+            let message = match read(&mut stream) {
+                Ok(m) => {
+                    m
+                },
+                Err(_) => {
+                    break;
+                },
+            };
+        }
+    });
 }
 
 fn read(stream: &mut TcpStream) -> Result<String, ()> {
