@@ -51,8 +51,8 @@ function seperate(string, seperator) {
 
 function send(msg, callback) {
   // fetch("http://100.113.18.48:7878", {
-  // fetch("http://192.168.178.66:7878/", {
-  fetch("http://100.111.61.35:7878/", {
+  fetch("http://192.168.178.66:7878/", {
+  // fetch("http://100.111.61.35:7878/", {
     method: "POST",
     body: msg,
     headers: {
@@ -178,60 +178,6 @@ function render(data) {
     }
   }
   return;
-  let shapes = seperate(data, ",");
-  // console.log(shapes);
-  for (let i = 0; i < shapes.length; i ++) {
-    let data = seperate(shapes[i], ",");
-    let color = data[0].substring(1,data[0].length - 1);
-    let shape = data[1];
-    let pos = data[2].substring(2,data[2].length - 1).split(", ");
-    let x = Number(pos[0]) * f;
-    let y = Number(pos[1]) * f;
-    
-    if (shape.includes("Circle")) {
-      let radius = Number(getattribute(shape, "radius")) * f;
-      circle(x + middle[0], y + middle[1], radius, color);
-    }
-    else if (shape.includes("Rectangle")) {
-      let width = getattribute(shape, "width") * f;
-      let height = getattribute(shape, "height") * f;
-      rect(x + middle[0], y + middle[1], width, height, color);
-    }
-    else if (shape.includes("Line")) {
-      let x2 = Number(getattribute(shape, "x")) * f;
-      let y2 = Number(getattribute(shape, "y")) * f;
-      let width = Number(getattribute(shape, "width")) * f;
-      line([x + middle[0], y + middle[1]], [x2 + middle[0], y2 + middle[1]], width, color);
-    }
-    else if (shape.includes("Text")) {
-      let content = getattribute(shape, "content").substring(1,getattribute(shape, "content").length - 1);
-      let size = getattribute(shape, "size") * f;
-      // console.log(content, size);
-      ctx.fillStyle = color;
-      ctx.font = size + "px Arial";
-      ctx.fillText(content,x + middle[0], y + middle[1]);
-    }
-    else if (shape.includes("Poly")) {
-      let corners = shape.substring(shape.indexOf("corners: "));
-      corners = seperate(corners, ",");
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      for (let i = 0; i < corners.length; i ++) {
-        let c = corners[i].trim();
-        let xy = c.substring(1, c.length - 1).split(", ");
-        let x = Number(xy[0]) * f;
-        let y = Number(xy[1]) * f;
-        if (i == 0) {
-          ctx.moveTo(x + middle[0], y + middle[1]);
-        }
-        else {
-          ctx.lineTo(x + middle[0], y + middle[1]);
-        }
-      }
-      ctx.closePath();
-      ctx.fill();
-    }
-  }
 }
 
 login_button.onclick = function(e) {
