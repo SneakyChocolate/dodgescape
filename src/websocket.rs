@@ -1,4 +1,4 @@
-use std::{io::{Read, Write}, net::TcpStream, thread};
+use std::{io::{Read, Write}, net::TcpStream, sync::mpsc::channel, thread};
 
 use base64::prelude::*;
 use sha1::{Sha1, Digest};
@@ -24,24 +24,45 @@ pub fn response(key: &str) -> String {
 pub fn handle_websocket(mut stream: TcpStream) {
     println!("ws connection established");
 
+    let (quit_message_sender, quit_message_receiver) = channel::<()>();
+
     let mut send_stream = stream.try_clone().unwrap();
     let send_handle = thread::spawn(move || {
+        send(&mut send_stream, "111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000".to_owned());
         loop {
-            send(&mut send_stream, "111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000".to_owned());
+            match quit_message_receiver.try_recv() {
+                Ok(_) => {
+                    println!("erfolgreich geschlossen");
+                    break;
+                },
+                Err(e) => {
+                    match e {
+                        std::sync::mpsc::TryRecvError::Empty => {},
+                        std::sync::mpsc::TryRecvError::Disconnected => {
+                            break;
+                        },
+                    }
+                },
+            }
+            // send(&mut send_stream, "111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000".to_owned());
         }
     });
     let read_handle = thread::spawn(move || {
         loop {
-            let message = match read(&mut stream) {
-                Ok(m) => {
-                    m
+            match read(&mut stream) {
+                Ok(message) => {
+                    println!("message: {message}");
                 },
                 Err(_) => {
+                    quit_message_sender.send(()).unwrap();
                     break;
                 },
             };
         }
     });
+
+    send_handle.join().unwrap();
+    read_handle.join().unwrap();
 }
 
 fn read(stream: &mut TcpStream) -> Result<String, ()> {
@@ -60,20 +81,17 @@ fn read(stream: &mut TcpStream) -> Result<String, ()> {
     let mut payloadlength = secondbyte & 0x7F;
     let mut extended_payloadlength = 0;
 
-    println!("length: {payloadlength}");
 
     if payloadlength == 126 {
         let mut extended_len_bytes = [0u8; 2];
         stream.read_exact(&mut extended_len_bytes).unwrap();
         extended_payloadlength = u16::from_be_bytes(extended_len_bytes) as usize;
         payloadlength = 126; // Updating it to flag 126
-        println!("Extended payload length: {}", extended_payloadlength);
     }
     else if payloadlength == 127 {
         let mut extended_len_bytes = [0u8; 8];
         stream.read_exact(&mut extended_len_bytes).unwrap();
         extended_payloadlength = u64::from_be_bytes(extended_len_bytes) as usize;
-        println!("Large payload length: {}", extended_payloadlength);
     }
 
     let total_payload_len = if extended_payloadlength > 0 {
@@ -91,7 +109,6 @@ fn read(stream: &mut TcpStream) -> Result<String, ()> {
 
     let decoded = crate::websocket::decode(&encoded, &maskingkey);
     let message = String::from_utf8(decoded).unwrap();
-    println!("{message}");
     Ok(message)
 }
 
