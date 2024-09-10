@@ -25,10 +25,10 @@ pub fn handle_websocket(mut stream: TcpStream) {
     println!("ws connection established");
     loop {
         let message = match read(&mut stream) {
-            Some(m) => {
+            Ok(m) => {
                 m
             },
-            None => {
+            Err(_) => {
                 break;
             },
         };
@@ -36,38 +36,55 @@ pub fn handle_websocket(mut stream: TcpStream) {
     }
 }
 
-fn read(stream: &mut TcpStream) -> Option<String> {
+fn read(stream: &mut TcpStream) -> Result<String, ()> {
     let mut framebytes: Vec<u8> = vec![0; 2];
     stream.read_exact(&mut framebytes).unwrap();
 
     let firstbyte = framebytes.get(0).unwrap();
     let secondbyte = framebytes.get(1).unwrap();
 
-    if *firstbyte >= 128 {
-    }
     let opcode = firstbyte & 0x0F;
     if opcode == 0x8 {
         println!("verbindung wird geschlossen");
-        return None;
+        return Err(());
     }
 
     let mut payloadlength = secondbyte & 0x7F;
+    let mut extended_payloadlength = 0;
+
     println!("length: {payloadlength}");
+
     if payloadlength == 126 {
-        // handle next byte
-        println!("------------");
+        let mut extended_len_bytes = [0u8; 2];
+        stream.read_exact(&mut extended_len_bytes).unwrap();
+        extended_payloadlength = u16::from_be_bytes(extended_len_bytes) as usize;
+        payloadlength = 126; // Updating it to flag 126
+        println!("Extended payload length: {}", extended_payloadlength);
     }
+    else if payloadlength == 127 {
+        let mut extended_len_bytes = [0u8; 8];
+        stream.read_exact(&mut extended_len_bytes).unwrap();
+        extended_payloadlength = u64::from_be_bytes(extended_len_bytes) as usize;
+        println!("Large payload length: {}", extended_payloadlength);
+    }
+
+    let total_payload_len = if extended_payloadlength > 0 {
+        extended_payloadlength
+    } else {
+        payloadlength as usize
+    };
+
     // masking key
     let mut maskingkey = vec![0u8; 4];
     stream.read_exact(&mut maskingkey);
 
-    let mut encoded = vec![0u8; payloadlength as usize];
+    let mut encoded = vec![0u8; total_payload_len];
     stream.read_exact(&mut encoded);
 
     let decoded = crate::websocket::decode(&encoded, &maskingkey);
     let message = String::from_utf8(decoded).unwrap();
     println!("{message}");
-    Some(message)
+    Ok(message)
 }
 
 fn decode(encoded: &Vec<u8>, mask: &Vec<u8>) -> Vec<u8> {
