@@ -102,10 +102,10 @@ fn read(stream: &mut TcpStream) -> Result<String, ()> {
 
     // masking key
     let mut maskingkey = vec![0u8; 4];
-    stream.read_exact(&mut maskingkey);
+    stream.read_exact(&mut maskingkey).unwrap();
 
     let mut encoded = vec![0u8; total_payload_len];
-    stream.read_exact(&mut encoded);
+    stream.read_exact(&mut encoded).unwrap();
 
     let decoded = crate::websocket::decode(&encoded, &maskingkey);
     let message = String::from_utf8(decoded).unwrap();
@@ -123,17 +123,23 @@ fn send(stream: &mut TcpStream, message: String) {
     let message_bytes = message.as_bytes();
     let length = message_bytes.len();
 
-    stream.write_all(&[0x81]); // Text-Frame and FIN flag
+    // Text-Frame and FIN flag
+    stream.write_all(&[0x81]).unwrap();
 
     if length <= 125 {
-        stream.write_all(&[length as u8]); // Payload length for small messages
+        // Payload length for small messages
+        stream.write_all(&[length as u8]).unwrap();
     } else if length <= 65535 {
-        stream.write_all(&[126]); // Payload length indicator for messages between 126 and 65535
-        stream.write_all(&[(length >> 8) as u8, (length & 0xFF) as u8]); // Write length in two bytes
+        // Payload length indicator for messages between 126 and 65535
+        stream.write_all(&[126]).unwrap();
+        // Write length in two bytes
+        stream.write_all(&[(length >> 8) as u8, (length & 0xFF) as u8]).unwrap();
     }
 
-    stream.write_all(message_bytes); // Write the message bytes
-    stream.flush(); // Ensure all data is sent
+    // Write the message bytes
+    stream.write_all(message_bytes).unwrap();
+    // Ensure all data is sent
+    stream.flush().unwrap();
 
     println!("Message sent: {}", message);
 }

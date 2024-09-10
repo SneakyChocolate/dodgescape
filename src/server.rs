@@ -1,6 +1,6 @@
-use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, ops::BitAndAssign, sync::{mpsc::{self, channel}, Arc}, thread::{self, JoinHandle}};
+use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::mpsc::{self, channel}, thread::{self, JoinHandle}};
 
-use crate::{bits::get_bits, http::Http_request};
+use crate::http::Http_request;
 
 use serde::{Deserialize, Serialize};
 
