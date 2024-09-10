@@ -1,4 +1,4 @@
-use std::{io::Read, net::TcpStream};
+use std::{io::{Read, Write}, net::TcpStream};
 
 use base64::prelude::*;
 use sha1::{Sha1, Digest};
@@ -23,7 +23,7 @@ pub fn response(key: &str) -> String {
 pub fn handle_websocket(mut stream: TcpStream) {
     println!("ws connection established");
     loop {
-    let mut framebytes: Vec<u8> = vec![0; 2];
+        let mut framebytes: Vec<u8> = vec![0; 2];
         stream.read_exact(&mut framebytes).unwrap();
 
         let firstbyte = framebytes.get(0).unwrap();
@@ -41,11 +41,45 @@ pub fn handle_websocket(mut stream: TcpStream) {
         println!("length: {payloadlength}");
         if payloadlength == 126 {
             // handle next byte
+            println!("------------");
         }
-        let mut payload = vec![0u8; payloadlength as usize];
-        stream.read_exact(&mut payload);
-        let message = String::from_utf8(payload);
+        // masking key
+        let mut maskingkey = vec![0u8; 4];
+        stream.read_exact(&mut maskingkey);
+
+        let mut encoded = vec![0u8; payloadlength as usize];
+        stream.read_exact(&mut encoded);
+
+        let decoded = crate::websocket::decode(&encoded, &maskingkey);
+        let message = String::from_utf8(decoded);
         println!("{:?}", message);
+        send(&mut stream, "111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000".to_owned());
     }
+}
+
+fn decode(encoded: &Vec<u8>, mask: &Vec<u8>) -> Vec<u8> {
+    encoded.iter()
+        .enumerate()
+        .map(|(i, &elt)| elt ^ mask[i % mask.len()])
+        .collect()
+}
+
+fn send(stream: &mut TcpStream, message: String) {
+    let message_bytes = message.as_bytes();
+    let length = message_bytes.len();
+
+    stream.write_all(&[0x81]); // Text-Frame and FIN flag
+
+    if length <= 125 {
+        stream.write_all(&[length as u8]); // Payload length for small messages
+    } else if length <= 65535 {
+        stream.write_all(&[126]); // Payload length indicator for messages between 126 and 65535
+        stream.write_all(&[(length >> 8) as u8, (length & 0xFF) as u8]); // Write length in two bytes
+    }
+
+    stream.write_all(message_bytes); // Write the message bytes
+    stream.flush(); // Ensure all data is sent
+
+    println!("Message sent: {}", message);
 }
 
