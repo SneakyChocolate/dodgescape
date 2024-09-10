@@ -19,42 +19,55 @@ pub fn response(key: &str) -> String {
     let acckey = ws_accept_key(key);
     format!("HTTP/1.1 101 Switching Protocols\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Accept: {}\n\n", acckey)
 }
+
 // after handshake
 pub fn handle_websocket(mut stream: TcpStream) {
     println!("ws connection established");
     loop {
-        let mut framebytes: Vec<u8> = vec![0; 2];
-        stream.read_exact(&mut framebytes).unwrap();
-
-        let firstbyte = framebytes.get(0).unwrap();
-        let secondbyte = framebytes.get(1).unwrap();
-
-        if *firstbyte >= 128 {
-        }
-        let opcode = firstbyte & 0x0F;
-        if opcode == 0x8 {
-            println!("verbindung wird geschlossen");
-            break;
-        }
-
-        let mut payloadlength = secondbyte & 0x7F;
-        println!("length: {payloadlength}");
-        if payloadlength == 126 {
-            // handle next byte
-            println!("------------");
-        }
-        // masking key
-        let mut maskingkey = vec![0u8; 4];
-        stream.read_exact(&mut maskingkey);
-
-        let mut encoded = vec![0u8; payloadlength as usize];
-        stream.read_exact(&mut encoded);
-
-        let decoded = crate::websocket::decode(&encoded, &maskingkey);
-        let message = String::from_utf8(decoded);
-        println!("{:?}", message);
+        let message = match read(&mut stream) {
+            Some(m) => {
+                m
+            },
+            None => {
+                break;
+            },
+        };
         send(&mut stream, "111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000".to_owned());
     }
+}
+
+fn read(stream: &mut TcpStream) -> Option<String> {
+    let mut framebytes: Vec<u8> = vec![0; 2];
+    stream.read_exact(&mut framebytes).unwrap();
+
+    let firstbyte = framebytes.get(0).unwrap();
+    let secondbyte = framebytes.get(1).unwrap();
+
+    if *firstbyte >= 128 {
+    }
+    let opcode = firstbyte & 0x0F;
+    if opcode == 0x8 {
+        println!("verbindung wird geschlossen");
+        return None;
+    }
+
+    let mut payloadlength = secondbyte & 0x7F;
+    println!("length: {payloadlength}");
+    if payloadlength == 126 {
+        // handle next byte
+        println!("------------");
+    }
+    // masking key
+    let mut maskingkey = vec![0u8; 4];
+    stream.read_exact(&mut maskingkey);
+
+    let mut encoded = vec![0u8; payloadlength as usize];
+    stream.read_exact(&mut encoded);
+
+    let decoded = crate::websocket::decode(&encoded, &maskingkey);
+    let message = String::from_utf8(decoded).unwrap();
+    println!("{message}");
+    Some(message)
 }
 
 fn decode(encoded: &Vec<u8>, mask: &Vec<u8>) -> Vec<u8> {
