@@ -13,12 +13,12 @@ pub enum ServerMessage {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ClientMessage {
-    mode: String,
-    username: String,
-    x: Option<f32>,
-    y: Option<f32>,
-    keys_down: Option<Vec<String>>,
-    wheel: Option<i32>,
+    pub mode: String,
+    pub username: String,
+    pub x: Option<f32>,
+    pub y: Option<f32>,
+    pub keys_down: Option<Vec<String>>,
+    pub wheel: Option<i32>,
 }
 impl ClientMessage {
     pub fn new(mode: String, username: String, x: Option<f32>, y: Option<f32>, keys_down: Option<Vec<String>>, wheel: Option<i32>) -> ClientMessage {
@@ -77,7 +77,7 @@ impl Server {
                 (crate::websocket::response(key), vec![])
             },
             None => {
-                let (status_line, contents) = Self::handle_response(sender, &request);
+                let (status_line, contents) = Self::handle_response(&sender, &request);
                 (format!(
                     "{}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n",
                     status_line,
@@ -92,7 +92,7 @@ impl Server {
 
         if !ws {return;}
         // continue if its a websocket
-        crate::websocket::handle_websocket(stream);
+        crate::websocket::handle_websocket(sender, stream);
     }
     fn receive(stream: &mut TcpStream) -> String {
         let mut received: String = "".to_owned();
@@ -111,7 +111,7 @@ impl Server {
         }
         received
     }
-    fn handle_response(sender: mpsc::Sender<ServerMessage>, request: &Http_request) -> (&str, Vec<u8>) {
+    fn handle_response(sender: &mpsc::Sender<ServerMessage>, request: &Http_request) -> (String, Vec<u8>) {
         let body_string = request.body.join("\n");
         // println!("received: {:#?}", body_string);
 
@@ -148,7 +148,7 @@ impl Server {
             _ => ("HTTP/1.1 404 NOT FOUND", fs::read("./res/404.html").unwrap()),
         };
 
-        (status_line, response)
+        (status_line.to_owned(), response)
     }
 }
 

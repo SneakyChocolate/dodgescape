@@ -1,7 +1,9 @@
-use std::{io::{Read, Write}, net::TcpStream, sync::mpsc::channel, thread};
+use std::{io::{Read, Write}, net::TcpStream, sync::mpsc::{self, channel}, thread};
 
 use base64::prelude::*;
 use sha1::{Sha1, Digest};
+
+use crate::server::{ClientMessage, ServerMessage};
 
 pub fn ws_accept_key(key: &str) -> String {
     let magic_string = format!("{}258EAFA5-E914-47DA-95CA-C5AB0DC85B11", key);
@@ -21,7 +23,7 @@ pub fn response(key: &str) -> String {
 }
 
 // after handshake
-pub fn handle_websocket(mut stream: TcpStream) {
+pub fn handle_websocket(sender: mpsc::Sender<ServerMessage>, mut stream: TcpStream) {
     println!("ws connection established");
 
     let (quit_message_sender, quit_message_receiver) = channel::<()>();
@@ -52,6 +54,24 @@ pub fn handle_websocket(mut stream: TcpStream) {
             match read(&mut stream) {
                 Ok(message) => {
                     println!("message: {message}");
+                    match serde_json::from_str::<ClientMessage>(&message) {
+                        Ok(client_message) => {
+                            if client_message.mode == "login".to_owned() {
+                                sender.send(ServerMessage::Login(client_message.username)).unwrap();
+                            }
+                            else if client_message.mode == "game".to_owned() {
+                                let (gms, gmr) = channel::<String>();
+                                sender.send(ServerMessage::Input { name: client_message.username, mouse: (client_message.x.unwrap(), client_message.y.unwrap()) , keys: client_message.keys_down.unwrap(), wheel: client_message.wheel.unwrap(), sender: gms }).unwrap();
+                                let objects = gmr.recv().unwrap();
+                            }
+                            else if client_message.mode == "logout".to_owned() {
+                                sender.send(ServerMessage::Logout(client_message.username)).unwrap();
+                            }
+                        },
+                        Err(_) => {
+                            println!("wrong message format was irgnored");
+                        },
+                    };
                 },
                 Err(_) => {
                     quit_message_sender.send(()).unwrap();
