@@ -1,4 +1,4 @@
-use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::mpsc::{self, channel}, thread::{self, JoinHandle}};
+use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::mpsc::{self, channel, Sender}, thread::{self, JoinHandle}};
 
 use crate::http::Http_request;
 
@@ -6,9 +6,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
 pub enum ServerMessage {
-    Login(String),
+    Login(String, Sender<String>),
     Logout(String),
-    Input{name: String, mouse: (f32, f32), keys: Vec<String>, wheel: i32, sender: mpsc::Sender<String>},
+    Input{name: String, mouse: (f32, f32), keys: Vec<String>, wheel: i32},
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -77,7 +77,7 @@ impl Server {
                 (crate::websocket::response(key), vec![])
             },
             None => {
-                let (status_line, contents) = Self::handle_response(&sender, &request);
+                let (status_line, contents) = Self::handle_response(&request);
                 (format!(
                     "{}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n",
                     status_line,
@@ -111,33 +111,11 @@ impl Server {
         }
         received
     }
-    fn handle_response(sender: &mpsc::Sender<ServerMessage>, request: &Http_request) -> (String, Vec<u8>) {
-        let body_string = request.body.join("\n");
-        // println!("received: {:#?}", body_string);
-
-        // parsing
-        let mut objects = "".to_owned();
-
-        match serde_json::from_str::<ClientMessage>(&body_string) {
-            Ok(client_message) => {
-                if client_message.mode == "login".to_owned() {
-                    sender.send(ServerMessage::Login(client_message.username)).unwrap();
-                }
-                else if client_message.mode == "game".to_owned() {
-                    let (gms, gmr) = channel::<String>();
-                    sender.send(ServerMessage::Input { name: client_message.username, mouse: (client_message.x.unwrap(), client_message.y.unwrap()) , keys: client_message.keys_down.unwrap(), wheel: client_message.wheel.unwrap(), sender: gms }).unwrap();
-                    objects = gmr.recv().unwrap();
-                }
-                else if client_message.mode == "logout".to_owned() {
-                    sender.send(ServerMessage::Logout(client_message.username)).unwrap();
-                }
-            },
-            Err(_) => {},
-        };
+    fn handle_response(request: &Http_request) -> (String, Vec<u8>) {
 
         // getting the output
         let (status_line, response): (&str, Vec<u8>) = match request.request_line.as_str() {
-            "POST / HTTP/1.1" => ("HTTP/1.1 200 OK", objects.into()),
+            // "POST / HTTP/1.1" => ("HTTP/1.1 200 OK", objects.into()),
             "OPTIONS / HTTP/1.1" => ("HTTP/1.1 200 OK", "".to_owned().into()),
 
             "GET / HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/hello.html").unwrap()),

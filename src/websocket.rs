@@ -27,10 +27,10 @@ pub fn handle_websocket(sender: mpsc::Sender<ServerMessage>, mut stream: TcpStre
     println!("ws connection established");
 
     let (quit_message_sender, quit_message_receiver) = channel::<()>();
+    let (gms, gmr) = channel::<String>();
 
     let mut send_stream = stream.try_clone().unwrap();
     let send_handle = thread::spawn(move || {
-        send(&mut send_stream, "111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000".to_owned());
         loop {
             match quit_message_receiver.try_recv() {
                 Ok(_) => {
@@ -46,7 +46,12 @@ pub fn handle_websocket(sender: mpsc::Sender<ServerMessage>, mut stream: TcpStre
                     }
                 },
             }
-            // send(&mut send_stream, "111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000111111111112222222222244444444444555555555556666666666677777777777888888888889999999999900000000000".to_owned());
+            match gmr.try_recv() {
+                Ok(message) => {
+                    send(&mut send_stream, message);
+                },
+                Err(_) => { },
+            }
         }
     });
     let read_handle = thread::spawn(move || {
@@ -57,12 +62,10 @@ pub fn handle_websocket(sender: mpsc::Sender<ServerMessage>, mut stream: TcpStre
                     match serde_json::from_str::<ClientMessage>(&message) {
                         Ok(client_message) => {
                             if client_message.mode == "login".to_owned() {
-                                sender.send(ServerMessage::Login(client_message.username)).unwrap();
+                                sender.send(ServerMessage::Login(client_message.username, gms.clone())).unwrap();
                             }
                             else if client_message.mode == "game".to_owned() {
-                                let (gms, gmr) = channel::<String>();
-                                sender.send(ServerMessage::Input { name: client_message.username, mouse: (client_message.x.unwrap(), client_message.y.unwrap()) , keys: client_message.keys_down.unwrap(), wheel: client_message.wheel.unwrap(), sender: gms }).unwrap();
-                                let objects = gmr.recv().unwrap();
+                                sender.send(ServerMessage::Input { name: client_message.username, mouse: (client_message.x.unwrap(), client_message.y.unwrap()) , keys: client_message.keys_down.unwrap(), wheel: client_message.wheel.unwrap()}).unwrap();
                             }
                             else if client_message.mode == "logout".to_owned() {
                                 sender.send(ServerMessage::Logout(client_message.username)).unwrap();

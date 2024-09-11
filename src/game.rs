@@ -1,4 +1,4 @@
-use std::{sync::mpsc::Receiver, thread::{self, JoinHandle}, time::Duration};
+use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
 use crate::{collectable::Collectable, enemy::{Enemy, EnemyEffect}, gametraits::{Drawable, Moveable, Position}, item::{Item, ItemEffect}, player::Player, server::ServerMessage, vector, wall::Wall};
 use rand::prelude::*;
@@ -554,20 +554,21 @@ impl Game {
         self.running = true;
         let t = thread::spawn(move || {
             loop {
+                let mut connections: Vec<(String, Sender<String>)> = vec![];
                 // handle all messages via loop
                 loop {
                     match self.receiver.try_recv() {
                         Ok(message) => {
                             match message {
-                                ServerMessage::Login(name) => {
+                                ServerMessage::Login(name, sender) => {
                                     self.players.push(Player::new(&name));
+                                    connections.push((name, sender));
                                 },
                                 ServerMessage::Logout(name) => {
                                     self.logout(&name);
                                 },
-                                ServerMessage::Input { name, mouse, keys, wheel, sender } => {
-                                    let output = self.handle_input(&name, mouse, keys, wheel);
-                                    sender.send(output).unwrap();
+                                ServerMessage::Input { name, mouse, keys, wheel } => {
+                                    self.handle_input(&name, mouse, keys, wheel);
                                 },
                             }
                         },
@@ -581,6 +582,12 @@ impl Game {
                         },
                     }
                 }
+                for connection in connections.iter() {
+                    let name = &connection.0;
+                    let sender = &connection.1;
+                    sender.send(self.pack_objects(name)).unwrap();
+                }
+
                 thread::sleep(Duration::from_millis(1));
                 if !self.running {
                     break;
@@ -596,7 +603,14 @@ impl Game {
             }
         });
     }
-    pub fn pack_objects(&mut self, camera: (f32, f32), name: &String, zoom: f32) -> String {
+    pub fn pack_objects(&mut self, name: &String) -> String {
+        let player = match self.get_mut(name) {
+            Some(p) => p,
+            None => return "".to_owned(),
+        };
+        let camera = (player.x, player.y);
+        let zoom = player.zoom;
+
         let view = 1000.0 / zoom;
         let mut objects = "{\"objects\":[".to_owned();
         // map
@@ -681,10 +695,10 @@ impl Game {
         objects.push_str("null]}");
         objects
     }
-    pub fn handle_input(&mut self, player_name: &String, mouse: (f32, f32), keys_down: Vec<String>, wheel: i32) -> String {
+    pub fn handle_input(&mut self, player_name: &String, mouse: (f32, f32), keys_down: Vec<String>, wheel: i32) {
         let player = match self.get_mut(player_name) {
             Some(p) => p,
-            None => return "".to_owned(),
+            None => return,
         };
         player.mouse = mouse;
         player.keys_down = keys_down;
@@ -700,11 +714,6 @@ impl Game {
         else if player.zoom < player.zoomlimit.0 {
             player.zoom = player.zoomlimit.0;
         }
-
-        // retrieve object data
-        let camera = (player.x, player.y);
-        let zoom = player.zoom;
-        self.pack_objects(camera, &player_name, zoom)
     }
     pub fn get_mut(&mut self, player: &String) -> Option<&mut Player> {
         self.players.iter_mut().find(|p| {p.name == *player})
