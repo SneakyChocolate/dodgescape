@@ -130,7 +130,6 @@ function getattribute(string, attribute) {
 
 function render(data) {
   // clear the canvas
-  console.log(data);
   rect(0, 0, canvas.width, canvas.height, "rgb(0,0,0)");
   let middle = [canvas.width / 2, canvas.height / 2];
   let objects = "";
