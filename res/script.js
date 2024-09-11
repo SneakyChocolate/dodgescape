@@ -49,20 +49,6 @@ function seperate(string, seperator) {
 	return elements;
 }
 
-function send(msg, callback) {
-  // fetch("http://100.113.18.48:7878", {
-  fetch("http://192.168.178.66:7878/", {
-  // fetch("http://100.111.61.35:7878/", {
-    method: "POST",
-    body: msg,
-    headers: {
-        "Content-type": "application/json"
-    }
-  })
-  .then((r) => r.text())
-  .then((r) => callback(r))
-}
-
 let f = 1;
 function circle(x, y, radius, color) {
     ctx.beginPath();
@@ -205,6 +191,9 @@ login_button.onclick = function(_e) {
     ws.onmessage = function(e) {
       render(e.data);
     };
+    ws.onclose = function() {
+      clearInterval(renderLoop);
+    }
 
     // starting canvas action
     renderLoop = setInterval(function() {

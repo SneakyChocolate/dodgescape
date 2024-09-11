@@ -566,8 +566,15 @@ impl Game {
                                 },
                                 ServerMessage::Logout(name) => {
                                     self.logout(&name);
-                                    let r = connections.iter().position(|e| {e.0 == name}).unwrap();
-                                    connections.remove(r);
+                                    let r = connections.iter().position(|e| {e.0 == name});
+                                    match r {
+                                        Some(i) => {
+                                            connections.remove(i);
+                                        },
+                                        None => {
+                                            println!("tried to delete connection, but connection wasnt there");
+                                        },
+                                    }
                                 },
                                 ServerMessage::Input { name, mouse, keys, wheel } => {
                                     self.handle_input(&name, mouse, keys, wheel);
