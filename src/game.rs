@@ -584,10 +584,22 @@ impl Game {
                         },
                     }
                 }
-                for connection in connections.iter() {
+                let mut deprecated_connections = vec![];
+                for (i, connection) in connections.iter().enumerate() {
                     let name = &connection.0;
                     let sender = &connection.1;
-                    sender.send(self.pack_objects(name)).unwrap();
+                    let r = sender.send(self.pack_objects(name));
+                    match r {
+                        Ok(_) => {},
+                        Err(_) => {
+                            // remove from connections request
+                            deprecated_connections.push(i);
+                        },
+                    };
+                }
+                // remove in reverse order
+                for i in deprecated_connections.iter().rev() {
+                    connections.remove(*i);
                 }
 
                 thread::sleep(Duration::from_millis(1));

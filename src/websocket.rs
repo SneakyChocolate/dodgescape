@@ -54,14 +54,15 @@ pub fn handle_websocket(sender: mpsc::Sender<ServerMessage>, mut stream: TcpStre
             }
         }
     });
+    let mut username: Option<String> = None;
     let read_handle = thread::spawn(move || {
         loop {
             match read(&mut stream) {
                 Ok(message) => {
-                    println!("message: {message}");
                     match serde_json::from_str::<ClientMessage>(&message) {
                         Ok(client_message) => {
                             if client_message.mode == "login".to_owned() {
+                                username = Some(client_message.username.clone());
                                 sender.send(ServerMessage::Login(client_message.username, gms.clone())).unwrap();
                             }
                             else if client_message.mode == "game".to_owned() {
@@ -78,6 +79,12 @@ pub fn handle_websocket(sender: mpsc::Sender<ServerMessage>, mut stream: TcpStre
                 },
                 Err(_) => {
                     quit_message_sender.send(()).unwrap();
+                    match username {
+                        Some(username) => {
+                            sender.send(ServerMessage::Logout(username)).unwrap();
+                        },
+                        None => { },
+                    }
                     break;
                 },
             };
@@ -149,7 +156,7 @@ fn send(stream: &mut TcpStream, message: String) {
     // Text-Frame and FIN flag
     stream.write_all(&[0x81]).unwrap();
 
-    if length <= 126 {
+    if length <= 125 {
         // Payload length for small messages
         stream.write_all(&[length as u8]).unwrap();
     } else if length <= 65535 {
@@ -157,6 +164,19 @@ fn send(stream: &mut TcpStream, message: String) {
         stream.write_all(&[126]).unwrap();
         // Write length in two bytes
         stream.write_all(&[(length >> 8) as u8, (length & 0xFF) as u8]).unwrap();
+    }
+    else {
+        // Payload length indicator for messages larger than 65535
+        stream.write_all(&[127]).unwrap();
+        // Write length in eight bytes (64-bit length)
+        // Sending 8 bytes, so pad the first 4 bytes with zeros as length is 64-bit
+        stream.write_all(&[
+            0, 0, 0, 0, // 32 most significant bits, zeroed out (assuming messages < 4GB)
+            (length >> 24) as u8,
+            (length >> 16) as u8,
+            (length >> 8) as u8,
+            (length & 0xFF) as u8,
+        ]).unwrap();
     }
 
     // Write the message bytes
