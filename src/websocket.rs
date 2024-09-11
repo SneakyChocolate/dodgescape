@@ -149,7 +149,7 @@ fn send(stream: &mut TcpStream, message: String) {
     // Text-Frame and FIN flag
     stream.write_all(&[0x81]).unwrap();
 
-    if length <= 125 {
+    if length <= 126 {
         // Payload length for small messages
         stream.write_all(&[length as u8]).unwrap();
     } else if length <= 65535 {
@@ -163,7 +163,5 @@ fn send(stream: &mut TcpStream, message: String) {
     stream.write_all(message_bytes).unwrap();
     // Ensure all data is sent
     stream.flush().unwrap();
-
-    println!("Message sent: {}", message);
 }
 

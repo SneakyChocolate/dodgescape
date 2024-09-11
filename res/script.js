@@ -130,9 +130,17 @@ function getattribute(string, attribute) {
 
 function render(data) {
   // clear the canvas
+  console.log(data);
   rect(0, 0, canvas.width, canvas.height, "rgb(0,0,0)");
   let middle = [canvas.width / 2, canvas.height / 2];
-  let objects = JSON.parse(data).objects;
+  let objects = "";
+  try {
+    objects = JSON.parse(data).objects; 
+  }
+  catch (e) {
+    console.log("panic");
+    return;
+  }
   for (o in objects) {
     let object = objects[o];
     if (object == null) continue;
@@ -180,12 +188,12 @@ function render(data) {
   return;
 }
 
-login_button.onclick = function(e) {
-  let msg = JSON.stringify({mode: "login", username: username.value, x: mouse_x, y: mouse_y, keys_down: keys_down, wheel: wheel});
-  // let msg = `let mode = login; let username: String = ${username.value}; let x: i32 = ${mouse_x}; let y: i32 = ${mouse_y}; let keys_down = ${keys_down.join(",")};`;
-  send(msg, (r) => {
+login_button.onclick = function(_e) {
+  let ws = new WebSocket("ws://192.168.178.66:7878/");
+  ws.onopen = function() {
     // here comes what happens after login
-    // output.innerHTML = "output: " + r
+    let loginmsg = JSON.stringify({mode: "login", username: username.value, x: mouse_x, y: mouse_y, keys_down: keys_down, wheel: wheel});
+    ws.send(loginmsg);
     document.body.innerHTML = "";
     canvas = document.createElement("canvas");
     ctx = canvas.getContext("2d");
@@ -195,26 +203,22 @@ login_button.onclick = function(e) {
     document.body.style.margin = "0";
     f = canvas.width / 1920;
 
+    ws.onmessage = function(e) {
+      render(e.data);
+    };
+
     // starting canvas action
     renderLoop = setInterval(function() {
-      let msg = JSON.stringify({mode: "game", username: username.value, x: mouse_x, y: mouse_y, keys_down: keys_down, wheel: wheel});
+      let gamemsg = JSON.stringify({mode: "game", username: username.value, x: mouse_x, y: mouse_y, keys_down: keys_down, wheel: wheel});
       // let msg = `let mode = game; let username: String = ${username.value}; let x: i32 = ${mouse_x}; let y: i32 = ${mouse_y}; let keys_down = ${keys_down.join(",")}; let wheel = ${wheel};`;
       wheel = 0;
       try {
-        send(msg, render);
+        ws.send(gamemsg);
       }
       catch (e) {
         clearInterval(renderLoop);
       }
     }, 30);
-  });
-}
-
-window.onunload = function () {
-  let msg = JSON.stringify({mode: "logout", username: username.value, x: mouse_x, y: mouse_y, keys_down: keys_down, wheel: wheel});
-  // let msg = `let mode = logout; let username: String = ${username.value};`;
-  send(msg, (r) => {
-    console.log(r);
-  });
+  }
 }
 

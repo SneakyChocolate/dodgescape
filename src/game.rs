@@ -553,8 +553,8 @@ impl Game {
     pub fn start(mut self) {
         self.running = true;
         let t = thread::spawn(move || {
+            let mut connections: Vec<(String, Sender<String>)> = vec![];
             loop {
-                let mut connections: Vec<(String, Sender<String>)> = vec![];
                 // handle all messages via loop
                 loop {
                     match self.receiver.try_recv() {
@@ -566,6 +566,8 @@ impl Game {
                                 },
                                 ServerMessage::Logout(name) => {
                                     self.logout(&name);
+                                    let r = connections.iter().position(|e| {e.0 == name}).unwrap();
+                                    connections.remove(r);
                                 },
                                 ServerMessage::Input { name, mouse, keys, wheel } => {
                                     self.handle_input(&name, mouse, keys, wheel);
