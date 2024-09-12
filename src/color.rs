@@ -48,6 +48,9 @@ impl Color {
         );
         Self::new(r,g,b,1)
     }
+    pub fn mul(&self, f: f32) -> Self {
+        Self::new(self.r * f, self.g * f, self.b * f, self.a)
+    }
     pub fn from_str(color: &str) -> Self {
         let color = color.replace(" ", "");
         let start = color.find("(").unwrap() + 1;

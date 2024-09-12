@@ -1,4 +1,4 @@
-use crate::{game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position, item::Item, player::Player};
+use crate::{color::Color, game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position, item::Item, player::Player};
 use crate::gametraits::*;
 
 #[derive(Default)]
@@ -17,7 +17,7 @@ impl_Movable!(Collectable);
 impl_Drawable!(Collectable);
 
 impl Collectable {
-    pub fn new(x: f32, y: f32, color: &str, items: Vec<Item>) -> Self {
+    pub fn new(x: f32, y: f32, color: Color, items: Vec<Item>) -> Self {
         let mut p = Self {
             x,y,
             velocity: (0.0, 0.0),
@@ -26,9 +26,9 @@ impl Collectable {
             items,
             ..Default::default()
         };
-        p.draw_packs.push(DrawPack::new("rgb(150,120,0)", Shape::Circle { radius: p.radius }, (0.0, 0.0)));
-        p.draw_packs.push(DrawPack::new("rgb(200,170,0)", Shape::Circle { radius: p.radius * 0.8 }, (0.0, 0.0)));
-        p.draw_packs.push(DrawPack::new("rgb(255,255,0)", Shape::Text { content: "B".to_owned(), size: 20.0 }, (-5.0, 7.0)));
+        p.draw_packs.push(DrawPack::new(color.mul(0.8).to_string().as_str(), Shape::Circle { radius: p.radius }, (0.0, 0.0)));
+        p.draw_packs.push(DrawPack::new(color.mul(0.5).to_string().as_str(), Shape::Circle { radius: p.radius * 0.8 }, (0.0, 0.0)));
+        p.draw_packs.push(DrawPack::new(color.to_string().as_str(), Shape::Text { content: "B".to_owned(), size: 20.0 }, (-5.0, 7.0)));
 
         p
     }

@@ -52,7 +52,7 @@ impl Player {
     fn handle_respawn(&mut self) {
         let key = "KeyR".to_owned();
         if self.keys_down.contains(&key) {
-            self.x = -25000.0;
+            self.x = 0.0;
             self.y = 0.0;
             self.alive = true;
         }
