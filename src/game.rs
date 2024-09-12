@@ -1,6 +1,6 @@
 use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{collectable::Collectable, color::Color, enemy::{Enemy, EnemyEffect}, gametraits::{Drawable, Moveable, Position}, item::{Item, ItemEffect}, player::Player, server::ServerMessage, vector, wall::{Wall, WallType}};
+use crate::{collectable::Collectable, color::Color, enemy::{Enemy, EnemyEffect}, gametraits::{Drawable, Moveable, Position}, item::{Item, ItemEffect}, player::Player, server::ServerMessage, vector::{self, point_from_angle, random_point}, wall::{Wall, WallType}};
 use rand::prelude::*;
 use serde::Serialize;
 
@@ -570,7 +570,9 @@ impl Game {
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, -2000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("microscope", 1, vec![ItemEffect::Vision((1.0,5.0))])
+            Item::new("microscope", 1, vec![
+                ItemEffect::Vision((1.0,5.0)),
+            ])
         ]);
         self.collectables.push(c);
         let c = Collectable::new(4000.0, -4000.0, Color::new(255, 255, 255, 1), vec![
@@ -582,9 +584,25 @@ impl Game {
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
-            Item::new("megascope", 1, vec![ItemEffect::Vision((0.05,1.0))])
+            Item::new("megascope", 1, vec![
+                ItemEffect::Vision((0.05,1.0)),
+            ])
         ]);
         self.collectables.push(c);
+        let cords = vec![(8,0),(-8,0),(0,8),(0,-8)];
+        for c in cords {
+            for i in 0..10 {
+                let center = (c.0 as f32 * 1000.0, c.1 as f32 * 1000.0);
+                let distance = (0.0, 2000.0);
+                let point = random_point(center, distance);
+                let c = Collectable::new(point.0, point.1, Color::new(255,0,0,1), vec![
+                    Item::new("dragonfire rune", 1, vec![
+                        ItemEffect::Speed(1.1),
+                    ])
+                ]);
+                self.collectables.push(c);
+            }
+        }
     }
     pub fn new(receiver: Receiver<ServerMessage>) -> Game {
         let mut g = Game {

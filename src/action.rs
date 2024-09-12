@@ -14,6 +14,8 @@ pub enum Action {
     Despawn(usize),
     SpawnProjectile { group: usize, velocity: (f32, f32), radius: f32, color: String, lifetime: usize },
     SetEnemyRadius(usize, f32),
+    SetPlayerSpeed(f32),
+    MulPlayerSpeed(f32),
 }
 
 impl Action {
@@ -119,6 +121,14 @@ impl Action {
                         _ => {}
                     }
                 }
+            },
+            Action::SetPlayerSpeed(s) => {
+                let player = game.players.get_mut(entity).unwrap();
+                player.speed = *s;
+            },
+            Action::MulPlayerSpeed(s) => {
+                let player = game.players.get_mut(entity).unwrap();
+                player.speed *= *s;
             },
         }
     }

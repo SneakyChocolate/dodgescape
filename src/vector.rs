@@ -1,5 +1,7 @@
 use std::f32::consts::PI;
 
+use rand::Rng;
+
 pub fn abs(a: (f32, f32)) -> f32 {
     f32::sqrt(f32::powi(a.0, 2) + f32::powi(a.1, 2))
 }
@@ -39,6 +41,11 @@ pub fn collision(position: (f32, f32), velocity: (f32, f32), point: (f32, f32)) 
     let new_angle = 180.0 + 2.0 * angle - angle_from_point(velocity);
     let new_velocity = point_from_angle(new_angle);
     new_velocity
+}
+pub fn random_point(center: (f32, f32), distance: (f32, f32)) -> (f32, f32) {
+    let angle = rand::thread_rng().gen_range(0.0..360.0);
+    let distance = rand::thread_rng().gen_range(distance.0..distance.1);
+    (center.0 + point_from_angle(angle).0 * distance, center.1 + point_from_angle(angle).1 * distance)
 }
 
 #[cfg(test)]
