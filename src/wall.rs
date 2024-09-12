@@ -1,5 +1,21 @@
 use crate::vector;
 
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub enum WallType {
+    Dirt,
+    Wind,
+    Flower,
+    Water,
+    Fire,
+    SpawnM,
+    Blackhole,
+    Shooting,
+    Explosion,
+    Snake,
+    Ice,
+}
+
+
 #[derive(Default)]
 pub struct Wall {
     pub a: (f32, f32),

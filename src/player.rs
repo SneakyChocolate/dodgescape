@@ -33,7 +33,7 @@ impl Player {
         let color = Color::random().to_string();
         let mut p = Player {
             x: 0.0,
-            y: 0.0,
+            y: -15000.0,
             name: name.clone(),
             radius: 30.0,
             alive: true,
@@ -75,19 +75,38 @@ impl Player {
                     Some(s) => {
                         let key = "ArrowDown".to_owned();
                         if self.just_pressed.contains(&key) {
-                            if *s + 1 >= self.inventory.items.len() {
+                            if *s == self.inventory.items.len() - 1 {
                                 *s = 0;
                             }
                             else {
                                 *s += 1;
                             }
                         }
-                        let key = "Enter".to_owned();
+                        let key = "ArrowUp".to_owned();
+                        if self.just_pressed.contains(&key) {
+                            if *s == 0 {
+                                *s = self.inventory.items.len() - 1;
+                            }
+                            else {
+                                *s -= 1;
+                            }
+                        }
+                        let key = "ArrowRight".to_owned();
                         if self.just_pressed.contains(&&key) {
                             let item = self.inventory.items.get_mut(*s);
                             match item {
                                 Some(item) => {
-                                    item.active = !item.active;
+                                    item.active = true;
+                                },
+                                None => {},
+                            }
+                        }
+                        let key = "ArrowLeft".to_owned();
+                        if self.just_pressed.contains(&&key) {
+                            let item = self.inventory.items.get_mut(*s);
+                            match item {
+                                Some(item) => {
+                                    item.active = false;
                                 },
                                 None => {},
                             }

@@ -1,6 +1,6 @@
 use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{collectable::Collectable, enemy::{Enemy, EnemyEffect}, gametraits::{Drawable, Moveable, Position}, item::{Item, ItemEffect}, player::Player, server::ServerMessage, vector, wall::Wall};
+use crate::{collectable::Collectable, enemy::{Enemy, EnemyEffect}, gametraits::{Drawable, Moveable, Position}, item::{Item, ItemEffect}, player::Player, server::ServerMessage, vector, wall::{Wall, WallType}};
 use rand::prelude::*;
 use serde::Serialize;
 
@@ -54,9 +54,9 @@ impl Default for Shape {
 }
 #[derive(Serialize)]
 pub struct DrawPack {
-    color: String,
-    shape: Shape,
-    offset: (f32, f32),
+    pub color: String,
+    pub shape: Shape,
+    pub offset: (f32, f32),
 }
 impl DrawPack {
     pub fn new(color: &str, shape: Shape, offset: (f32, f32)) -> Self {
@@ -74,10 +74,10 @@ pub struct Game {
     pub players: Vec<Player>,
     pub game_loop: Option<JoinHandle<()>>,
     pub running: bool,
-    pub enemies: Vec<(Vec<usize>, Vec<Enemy>)>,
+    pub enemies: Vec<(Vec<WallType>, Vec<Enemy>)>,
     pub grid: Vec<((f32, f32), DrawPack, bool)>,
     pub map: Vec<((f32, f32), DrawPack)>,
-    pub walls: Vec<(usize, Vec<Wall>)>,
+    pub walls: Vec<(WallType, Vec<Wall>)>,
     pub collectables: Vec<Collectable>,
 }
 
@@ -225,7 +225,7 @@ pub fn handle_movements(game: &mut Game) {
 
 impl Game {
     fn spawn_dirt_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-        let ids = vec![0, 5];
+        let ids = vec![WallType::Dirt, WallType::SpawnM];
         let mut enemies = vec![];
         for _ in 0..100 * spawn_m {
             let cap = 0.5 * speed_m;
@@ -237,7 +237,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_wind_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-        let ids = vec![1, 5];
+        let ids = vec![WallType::Wind, WallType::SpawnM];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 1.0 * speed_m;
@@ -250,7 +250,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_plant_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-        let ids = vec![2, 5];
+        let ids = vec![WallType::Flower, WallType::SpawnM];
         let mut enemies = vec![];
         for _ in 0..200 * spawn_m {
             let cap = 0.2 * speed_m;
@@ -263,7 +263,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_water_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-        let ids = vec![3,5];
+        let ids = vec![WallType::Water, WallType::SpawnM];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.5 * speed_m;
@@ -286,7 +286,7 @@ impl Game {
         let amount = 200;
         let speed = 1.0;
         let dist = 4500.0;
-        let ids = vec![0,1,2,3,4,5];
+        let ids = vec![WallType::Dirt,WallType::Wind,WallType::Flower,WallType::Water,WallType::Fire,WallType::SpawnM];
         let mut enemies = vec![];
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
@@ -319,7 +319,7 @@ impl Game {
         let amount = 30;
         let speed = 2.0;
         let dist = 15000.0;
-        let ids = vec![4,6,7,8,9];
+        let ids = vec![WallType::Fire,WallType::Shooting,WallType::Explosion,WallType::Snake,WallType::Ice,WallType::Blackhole];
         let color = "black";
         let auracolor = "rgba(0,0,0,0.2)";
         let mut enemies = vec![];
@@ -358,7 +358,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_tech_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-        let ids = vec![7];
+        let ids = vec![WallType::Shooting];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.2 * speed_m;
@@ -381,8 +381,39 @@ impl Game {
         }
         self.enemies.push((ids, enemies)); 
     }
+    fn spawn_ice_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+        let ids = vec![WallType::Ice];
+        let mut enemies = vec![];
+        // snowballs
+        for _ in 0..20 * spawn_m {
+            let cap = 0.5 * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let mut enemy = Enemy::new(0.0, -20000.0, velocity, rand::thread_rng().gen_range(50.0..=70.0), "rgb(255,255,255)");
+            let r = enemy.radius * 2.0;
+            enemy.effects.push(EnemyEffect::Grow { size: 0.2, maxsize: 10.0 * enemy.radius, defaultsize: enemy.radius });
+            enemy.view_radius = r;
+            enemies.push(enemy);
+        }
+        // snowmans
+        for _ in 0..20 * spawn_m {
+            let cap = 0.5 * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let mut enemy = Enemy::new(0.0, -20000.0, velocity, rand::thread_rng().gen_range(50.0..=70.0), "rgb(255,255,255)");
+            enemy.draw_packs.push(DrawPack::new("rgb(255,150,0)", Shape::Circle { radius: enemy.radius * 0.8}, (0.0, 0.0)));
+            enemy.draw_packs.push(DrawPack::new("rgb(0,0,0)", Shape::Circle { radius: enemy.radius * 0.1}, (-10.0, -10.0)));
+            enemy.draw_packs.push(DrawPack::new("rgb(0,0,0)", Shape::Circle { radius: enemy.radius * 0.1}, (10.0, -10.0)));
+            let r = enemy.radius * 10.0;
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(0,0,255,0.05)", Shape::Circle { radius: enemy.radius * 10.0 }, (0.0, 0.0)));
+            enemy.effects.push(EnemyEffect::Chase { radius: r, power: 0.03 });
+            enemy.effects.push(EnemyEffect::Slow { radius: r, power: 0.8 });
+            enemy.effects.push(EnemyEffect::Shoot { lifetime: 200, radius: r, projectile_radius: 20.0, speed: 8.0, time_left: 0, cooldown: 100, color: "rgb(200,200,200)".to_owned() });
+            enemy.view_radius = r;
+            enemies.push(enemy);
+        }
+        self.enemies.push((ids, enemies)); 
+    }
     fn spawn_snake_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-        let ids = vec![8];
+        let ids = vec![WallType::Snake];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.8 * speed_m;
@@ -397,7 +428,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
     fn spawn_bomb_enemies(&mut self, speed_m: f32, spawn_m: i32) {
-        let ids = vec![9];
+        let ids = vec![WallType::Explosion];
         let mut enemies = vec![];
         for _ in 0..20 * spawn_m {
             let cap = 0.1 * speed_m;
@@ -421,8 +452,9 @@ impl Game {
         self.spawn_tech_enemies(speed_m, spawn_m);
         self.spawn_snake_enemies(speed_m, spawn_m);
         self.spawn_bomb_enemies(speed_m, spawn_m);
+        self.spawn_ice_enemies(speed_m, spawn_m);
     }
-    pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, id: usize) {
+    pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, walltype: WallType) {
         let start = (0.0, 0.0);
         for c in 0..corners.len() {
             let a = corners[c];
@@ -433,13 +465,13 @@ impl Game {
                 corners[c + 1]
             };
             let addition = Wall::new(a, b, false, true);
-            let group = self.walls.iter_mut().find(|(i, _)| {*i == id});
+            let group = self.walls.iter_mut().find(|(i, _)| {*i == walltype});
             match group {
                 Some(g) => {
                     g.1.push(addition);
                 },
                 None => {
-                    self.walls.push((id, vec![addition]));
+                    self.walls.push((walltype, vec![addition]));
                 },
             }
         }
@@ -478,46 +510,50 @@ impl Game {
         // space area
         let corners = vec![(-15.0,0.0),(-10.0,10.0),(0.0,15.0),(10.0,10.0),(15.0,0.0),(10.0,-10.0),(0.0,-15.0),(-10.0,-10.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(20,0,30)", 6);
+        self.spawn_area(corners, "rgb(20,0,30)", WallType::Blackhole);
         // fire area
         let corners = vec![(-5.0,-5.0),(5.0,-5.0),(5.0,5.0),(-5.0,5.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(50,20,30)", 4);
+        self.spawn_area(corners, "rgb(50,20,30)", WallType::Fire);
 
         // dirt area
         let corners = vec![(0.0,0.0),(3.0,1.0),(4.0,4.0),(1.0,3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(80,70,50)", 0);
+        self.spawn_area(corners, "rgb(80,70,50)", WallType::Dirt);
         // wind area
         let corners = vec![(0.0,0.0),(-3.0,1.0),(-4.0,4.0),(-1.0,3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(100,100,150)", 1);
+        self.spawn_area(corners, "rgb(120,150,150)", WallType::Wind);
         // plant area
         let corners = vec![(0.0,0.0),(-3.0,-1.0),(-4.0,-4.0),(-1.0,-3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(10,50,20)", 2);
+        self.spawn_area(corners, "rgb(10,50,20)", WallType::Flower);
         // water area
         let corners = vec![(0.0,0.0),(3.0,-1.0),(4.0,-4.0),(1.0,-3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(0,0,50)", 3);
+        self.spawn_area(corners, "rgb(0,0,50)", WallType::Water);
 
         // tech area
         let corners = vec![(-5.0,-3.0),(-5.0,3.0),(-10.0,2.0),(-12.0,1.0),(-12.5,0.0),(-12.0,-1.0),(-10.0,-2.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(50,50,50)", 7);
+        self.spawn_area(corners, "rgb(50,50,50)", WallType::Shooting);
         // snake area
         let corners = vec![(5.0,-3.0),(5.0,3.0),(10.0,2.0),(12.0,1.0),(12.5,0.0),(12.0,-1.0),(10.0,-2.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(40,50,40)", 8);
+        self.spawn_area(corners, "rgb(40,50,40)", WallType::Snake);
         // bomb area
         let corners = vec![(-3.0,5.0),(3.0,5.0),(2.0,10.0),(1.0,12.0),(0.0,12.5),(-1.0,12.0),(-2.0,10.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(90,70,50)", 9);
+        self.spawn_area(corners, "rgb(90,70,50)", WallType::Explosion);
+        // ice area
+        let corners = vec![(-3.0,-5.0),(3.0,-5.0),(2.0,-10.0),(1.0,-12.0),(0.0,-12.5),(-1.0,-12.0),(-2.0,-10.0)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
+        self.spawn_area(corners, "rgb(100,100,150)", WallType::Ice);
         
-        // spawn area
+        // starting spawn area
         let corners = vec![(-0.4,0.0),(0.0,0.4),(0.4,0.0),(0.0,-0.4)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "black", 5);
+        self.spawn_area(corners, "black", WallType::SpawnM);
         
         // grid
         self.spawn_grid(30000.0, "rgb(255,255,255,0.05)");
@@ -529,6 +565,14 @@ impl Game {
         self.collectables.push(c);
         let c = Collectable::new(-100.0, 0.0, "rgb(200,200,0)", vec![
             Item::new("telescope", 1, vec![ItemEffect::Vision((0.4,0.6))])
+        ]);
+        self.collectables.push(c);
+        let c = Collectable::new(0.0, 100.0, "rgb(200,200,0)", vec![
+            Item::new("monocle", 1, vec![ItemEffect::Vision((0.9,0.9))])
+        ]);
+        self.collectables.push(c);
+        let c = Collectable::new(0.0, -100.0, "rgb(200,200,0)", vec![
+            Item::new("microscope", 1, vec![ItemEffect::Vision((1.0,5.0))])
         ]);
         self.collectables.push(c);
     }

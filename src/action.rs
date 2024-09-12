@@ -13,6 +13,7 @@ pub enum Action {
     ResetCooldown(usize),
     Despawn(usize),
     SpawnProjectile { group: usize, velocity: (f32, f32), radius: f32, color: String, lifetime: usize },
+    SetEnemyRadius(usize, f32),
 }
 
 impl Action {
@@ -104,6 +105,20 @@ impl Action {
                 let mut crumble = Enemy::new(enemy.x, enemy.y, *velocity, *radius, color.as_str());
                 crumble.effects.push(EnemyEffect::Lifetime(*lifetime));
                 game.enemies.get_mut(*group).unwrap().1.push(crumble);
+            },
+            Action::SetEnemyRadius(group, radius) => {
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                enemy.radius = *radius;
+                enemy.view_radius = *radius;
+                for dp in enemy.draw_packs.iter_mut().rev() {
+                    match &mut dp.shape {
+                        crate::game::Shape::Circle { radius: r } => {
+                            *r = *radius;
+                            break;
+                        },
+                        _ => {}
+                    }
+                }
             },
         }
     }

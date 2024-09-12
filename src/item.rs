@@ -27,6 +27,7 @@ pub fn handle_effects(game: &mut Game) {
                 }
             }
         }
+        actions.push((p, Action::SetPlayerZoomlimit((1.0, 1.0))));
     }
     for (entity, action) in actions.iter().rev() {
         action.execute(game, *entity);

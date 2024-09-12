@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::{action::Action, game::{distance, DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
+use crate::{action::{self, Action}, game::{distance, DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
 use crate::gametraits::*;
 
 #[derive(Default)]
@@ -43,6 +43,7 @@ pub enum EnemyEffect {
     Shoot {lifetime: usize, radius: f32, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize, color: String },
     Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String},
     Slow {radius: f32, power: f32},
+    Grow {size: f32, maxsize: f32, defaultsize: f32},
 }
 
 pub fn handle_effects(game: &mut Game) {
@@ -111,6 +112,14 @@ pub fn handle_effects(game: &mut Game) {
                             if dist.2 <= *radius + player.radius {
                                 actions.push((p, Action::MulPlayerVelocity(*power)));
                             }
+                        }
+                    },
+                    EnemyEffect::Grow { size, maxsize, defaultsize } => {
+                        if enemy.just_collided {
+                            actions.push((i, Action::SetEnemyRadius(g, *defaultsize)));
+                        }
+                        else if enemy.radius < *maxsize {
+                            actions.push((i, Action::SetEnemyRadius(g, enemy.radius + size)));
                         }
                     },
                 }
