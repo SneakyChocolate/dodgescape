@@ -316,7 +316,7 @@ impl Game {
     }
     fn spawn_space_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let size = 200.0..=500.0;
-        let amount = 30;
+        let amount = 50;
         let speed = 2.0;
         let dist = 15000.0;
         let ids = vec![WallType::Fire,WallType::Shooting,WallType::Explosion,WallType::Snake,WallType::Ice,WallType::Blackhole];
@@ -427,7 +427,7 @@ impl Game {
         }
         self.enemies.push((ids, enemies)); 
     }
-    fn spawn_bomb_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    fn spawn_explosion_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Explosion];
         let mut enemies = vec![];
         for _ in 0..20 * spawn_m {
@@ -451,7 +451,7 @@ impl Game {
         self.spawn_space_enemies(speed_m, spawn_m);
         self.spawn_tech_enemies(speed_m, spawn_m);
         self.spawn_snake_enemies(speed_m, spawn_m);
-        self.spawn_bomb_enemies(speed_m, spawn_m);
+        self.spawn_explosion_enemies(speed_m, spawn_m);
         self.spawn_ice_enemies(speed_m, spawn_m);
     }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, walltype: WallType) {
@@ -508,7 +508,7 @@ impl Game {
         let multiplier = 2000.0;
         
         // space area
-        let corners = vec![(-15.0,0.0),(-10.0,10.0),(0.0,15.0),(10.0,10.0),(15.0,0.0),(10.0,-10.0),(0.0,-15.0),(-10.0,-10.0)]
+        let corners = vec![(-20.0,0.0),(-10.0,10.0),(0.0,20.0),(10.0,10.0),(20.0,0.0),(10.0,-10.0),(0.0,-20.0),(-10.0,-10.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(20,0,30)", WallType::Blackhole);
         // fire area
@@ -556,7 +556,7 @@ impl Game {
         self.spawn_area(corners, "black", WallType::SpawnM);
         
         // grid
-        self.spawn_grid(30000.0, "rgb(255,255,255,0.05)");
+        self.spawn_grid(40000.0, "rgb(255,255,255,0.05)");
     }
     pub fn spawn_collectables(&mut self) {
         let c = Collectable::new(100.0, 0.0, "rgb(200,200,0)", vec![

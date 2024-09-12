@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::{action::{self, Action}, game::{distance, DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
+use crate::{action::{Action}, game::{distance, DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
 use crate::gametraits::*;
 
 #[derive(Default)]
