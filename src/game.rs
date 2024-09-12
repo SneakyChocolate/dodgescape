@@ -570,7 +570,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         let c = Collectable::new(-100.0, 0.0, Color::new(200, 200, 0, 1), vec![
-            Item::new("telescope", 1, vec![ItemEffect::Vision((4.0,0.6))])
+            Item::new("telescope", 1, vec![ItemEffect::Vision((0.4,0.6))])
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, 100.0, Color::new(200, 200, 100, 1), vec![
