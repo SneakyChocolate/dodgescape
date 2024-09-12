@@ -124,8 +124,8 @@ impl Player {
         let mut vy = 0.0;
         let key = "Space".to_owned();
         if self.keys_down.contains(&key) {
-            vx = self.mouse.0 as f32 / 200.0 * self.speed;
-            vy = self.mouse.1 as f32 / 200.0 * self.speed;
+            vx = self.mouse.0 as f32 / 50.0 * self.speed;
+            vy = self.mouse.1 as f32 / 50.0 * self.speed;
         }
         else {
             let key = "KeyW".to_owned();
