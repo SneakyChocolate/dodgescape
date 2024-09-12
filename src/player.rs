@@ -1,6 +1,6 @@
 
 
-use crate::{color::Color, game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
+use crate::{collectable::Collectable, color::Color, game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
 use crate::gametraits::*;
 
 #[derive(Default)]
@@ -61,10 +61,28 @@ impl Player {
             self.alive = true;
         }
     }
-    fn handle_inventory(&mut self) {
+    fn handle_inventory(&mut self, collectables: &mut Vec<Collectable>) {
         let key = "KeyE".to_owned();
         if self.just_pressed.contains(&key) {
             self.inventory.open = !self.inventory.open;
+        }
+        let key = "KeyG".to_owned();
+        if self.just_pressed.contains(&key) {
+            match &mut self.inventory.selected_item {
+                Some(i) => {
+                    let mut item = self.inventory.items.remove(*i);
+                    if self.inventory.items.len() == 0 {
+                        self.inventory.selected_item = None;
+                    }
+                    else if *i == self.inventory.items.len() {
+                        *i -= 1;
+                    }
+                    item.active = false;
+                    let collectable = Collectable::new(self.x, self.y + 50.0, Color::new(0, 0, 255, 1), vec![item]);
+                    collectables.push(collectable);
+                },
+                None => {},
+            };
         }
         if self.inventory.open {
             if self.inventory.items.len() > 0 {
@@ -165,10 +183,10 @@ impl Player {
         }
         jp
     }
-    pub fn handle_keys(&mut self) {
+    pub fn handle_keys(&mut self, collectables: &mut Vec<Collectable>) {
         self.just_pressed = self.get_just_pressed();
         self.handle_respawn();
-        self.handle_inventory();
+        self.handle_inventory(collectables);
         self.handle_movement();
         self.old_keys_down = self.keys_down.clone();
     }

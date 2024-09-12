@@ -81,9 +81,9 @@ pub struct Game {
     pub collectables: Vec<Collectable>,
 }
 
-pub fn handle_players(players: &mut Vec<Player>) {
+pub fn handle_players(players: &mut Vec<Player>, collectables: &mut Vec<Collectable>) {
     for object in players {
-        object.handle_keys();
+        object.handle_keys(collectables);
         if object.alive {
             object.draw_packs[0].color = object.color.clone();
         }
@@ -565,23 +565,23 @@ impl Game {
         self.spawn_grid(40000.0, "rgb(255,255,255,0.05)", 500.0, 10.0);
     }
     pub fn spawn_collectables(&mut self) {
-        let c = Collectable::new(100.0, 0.0, Color::new(255, 255, 255, 1), vec![
-            Item::new("binoculars", 1, vec![ItemEffect::Vision((0.7,1.0))])
-        ]);
-        self.collectables.push(c);
-        let c = Collectable::new(-100.0, 0.0, Color::new(200, 200, 0, 1), vec![
-            Item::new("telescope", 1, vec![ItemEffect::Vision((0.4,0.6))])
-        ]);
-        self.collectables.push(c);
-        let c = Collectable::new(0.0, 100.0, Color::new(200, 200, 100, 1), vec![
+        let c = Collectable::new(2000.0, 2000.0, Color::new(200, 200, 100, 1), vec![
             Item::new("monocle", 1, vec![ItemEffect::Vision((0.9,0.9))])
         ]);
         self.collectables.push(c);
-        let c = Collectable::new(0.0, -100.0, Color::new(200, 200, 0, 1), vec![
+        let c = Collectable::new(0.0, -2000.0, Color::new(200, 200, 100, 1), vec![
             Item::new("microscope", 1, vec![ItemEffect::Vision((1.0,5.0))])
         ]);
         self.collectables.push(c);
-        let c = Collectable::new(-200.0, 0.0, Color::new(255,0,0,1), vec![
+        let c = Collectable::new(4000.0, -4000.0, Color::new(255, 255, 255, 1), vec![
+            Item::new("binoculars", 1, vec![ItemEffect::Vision((0.7,1.0))])
+        ]);
+        self.collectables.push(c);
+        let c = Collectable::new(-6000.0, 0.0, Color::new(200, 200, 0, 1), vec![
+            Item::new("telescope", 1, vec![ItemEffect::Vision((0.4,0.6))])
+        ]);
+        self.collectables.push(c);
+        let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("megascope", 1, vec![ItemEffect::Vision((0.05,1.0))])
         ]);
         self.collectables.push(c);
@@ -668,7 +668,7 @@ impl Game {
                     break;
                 }
 
-                handle_players(&mut self.players);
+                handle_players(&mut self.players, &mut self.collectables);
                 crate::enemy::handle_effects(&mut self);
                 crate::item::handle_effects(&mut self);
                 handle_collision(&mut self);
