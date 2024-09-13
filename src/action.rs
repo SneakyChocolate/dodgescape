@@ -16,6 +16,7 @@ pub enum Action {
     SetEnemyRadius(usize, f32),
     SetPlayerSpeed(f32),
     MulPlayerSpeed(f32),
+    RemoveEnemyEffect {group: usize, effect: usize},
 }
 
 impl Action {
@@ -129,6 +130,10 @@ impl Action {
             Action::MulPlayerSpeed(s) => {
                 let player = game.players.get_mut(entity).unwrap();
                 player.speed *= *s;
+            },
+            Action::RemoveEnemyEffect { group, effect } => {
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                enemy.effects.remove(*effect);
             },
         }
     }

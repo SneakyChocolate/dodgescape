@@ -1,4 +1,4 @@
-use crate::{action::Action, game::Game};
+use crate::{action::Action, game::Game, vector};
 
 
 #[derive(Debug)]
@@ -12,6 +12,7 @@ pub struct Item {
 pub enum ItemEffect {
     Vision((f32,f32)),
     Speed(f32),
+    SlowEnemies(f32, f32),
 }
 
 pub fn handle_effects(game: &mut Game) {
@@ -26,6 +27,16 @@ pub fn handle_effects(game: &mut Game) {
                     },
                     ItemEffect::Speed(s) => {
                         actions.push((p, Action::MulPlayerSpeed(*s)));
+                    },
+                    ItemEffect::SlowEnemies(s, radius) => {
+                        for group in game.enemies.iter_mut() {
+                            for enemy in group.1.iter_mut() {
+                                if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.radius <= *radius {
+                                    let original = vector::abs(enemy.velocity);
+                                    enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { original, new: original * *s, ease: 0 });
+                                }
+                            }
+                        }
                     },
                 }
             }

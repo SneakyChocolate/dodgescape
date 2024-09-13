@@ -22,6 +22,17 @@ pub fn normalize(a: (f32, f32), value: f32) -> (f32, f32) {
 
     (a.0 / dd * value, a.1 / dd * value)
 }
+pub fn normalize_mut(a: &mut (f32, f32), value: f32) {
+    let dd = distance(*a, (0.0, 0.0)).2;
+    if dd == 0.0 {
+        a.0 = 0.0;
+        a.1 = 0.0;
+        return;
+    }
+
+    a.0 = a.0 / dd * value;
+    a.1 = a.1 / dd * value;
+}
 pub fn point_from_angle(angle: f32) -> (f32, f32) {
     (f32::cos(angle * PI / 180.0), f32::sin(angle * PI / 180.0))
 }

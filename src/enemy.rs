@@ -44,18 +44,19 @@ pub enum EnemyEffect {
     Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String},
     Slow {radius: f32, power: f32},
     Grow {size: f32, maxsize: f32, defaultsize: f32},
+    SpeedAlter {original: f32, new: f32, ease: usize},
 }
 
 pub fn handle_effects(game: &mut Game) {
     let mut actions: Vec<(usize, Action)> = vec![];
-    for (g, group) in game.enemies.iter().enumerate() {
-        for (i, enemy) in group.1.iter().enumerate() {
-            for effect in enemy.effects.iter() {
+    for (g, group) in game.enemies.iter_mut().enumerate() {
+        for (i, enemy) in group.1.iter_mut().enumerate() {
+            for (e, effect) in enemy.effects.iter_mut().enumerate() {
                 match effect {
                     EnemyEffect::Chase { radius, power } => {
                         for player in game.players.iter() {
                             // if !player.alive {continue;}
-                            let dist = distance(enemy, player);
+                            let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
                             if dist.2 <= *radius + player.radius {
                                 let add = vector::normalize((dist.0, dist.1), *power);
                                 actions.push((i, Action::UpdateEnemyVelocity(g, (enemy.velocity.0 + add.0, enemy.velocity.1 + add.1))));
@@ -72,7 +73,7 @@ pub fn handle_effects(game: &mut Game) {
                     },
                     EnemyEffect::Push { radius, power } => {
                         for (p, player) in game.players.iter().enumerate() {
-                            let dist = distance(enemy, player);
+                            let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
                             if dist.2 <= *radius + player.radius {
                                 let add = vector::normalize((dist.0, dist.1), *power);
                                 actions.push((p, Action::AddPlayerVelocity(add)));
@@ -82,7 +83,7 @@ pub fn handle_effects(game: &mut Game) {
                     EnemyEffect::Shoot { radius, speed, cooldown, time_left, lifetime, projectile_radius, color } => {
                         for player in game.players.iter() {
                             if !player.alive {continue;}
-                            let dist = distance(enemy, player);
+                            let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
                             if dist.2 <= *radius + player.radius {
                                 let v = vector::normalize((dist.0, dist.1), *speed);
                                 if *time_left == 0 {
@@ -108,7 +109,7 @@ pub fn handle_effects(game: &mut Game) {
                     EnemyEffect::Slow { radius, power } => {
                         for (p, player) in game.players.iter().enumerate() {
                             if !player.alive {continue;}
-                            let dist = distance(enemy, player);
+                            let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
                             if dist.2 <= *radius + player.radius {
                                 actions.push((p, Action::MulPlayerVelocity(*power)));
                             }
@@ -119,7 +120,19 @@ pub fn handle_effects(game: &mut Game) {
                             actions.push((i, Action::SetEnemyRadius(g, *defaultsize)));
                         }
                         else if enemy.radius < *maxsize {
-                            actions.push((i, Action::SetEnemyRadius(g, enemy.radius + size)));
+                            actions.push((i, Action::SetEnemyRadius(g, enemy.radius + *size)));
+                        }
+                    },
+                    EnemyEffect::SpeedAlter { original, new, ease } => {
+                        if *ease == 0 {
+                            // remove this effect
+                            vector::normalize_mut(&mut enemy.velocity, *original);
+                            actions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
+                        }
+                        else {
+                            *ease -= 1;
+                            // slow this enemy
+                            vector::normalize_mut(&mut enemy.velocity, *new);
                         }
                     },
                 }
