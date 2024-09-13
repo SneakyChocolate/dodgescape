@@ -745,7 +745,10 @@ impl Game {
         }
         // TODO item effects
         for player in self.players.iter() {
-            
+            for item in player.inventory.items.iter() {
+                if item.active {
+                }
+            }
         }
         // enemies
         for group in self.enemies.iter() {
