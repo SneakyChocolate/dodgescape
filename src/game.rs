@@ -586,7 +586,7 @@ impl Game {
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("megascope", vec![
                 ItemEffect::Vision((0.05,1.0)),
-                ItemEffect::SlowEnemies { slow: 0.3, radius: 200.0 },
+                ItemEffect::SlowEnemies { slow: 0.001, radius: 200.0, duration: 100 },
             ])
         ]);
         self.collectables.push(c);
@@ -742,6 +742,10 @@ impl Game {
             if vector::distance(camera, (object.x, object.y)).2 > view {continue;}
             let acc = draw_object(object, &camera, zoom);
             objects.push_str(&acc);
+        }
+        // TODO item effects
+        for player in self.players.iter() {
+            
         }
         // enemies
         for group in self.enemies.iter() {

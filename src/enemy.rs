@@ -124,7 +124,6 @@ pub fn handle_effects(game: &mut Game) {
                         }
                     },
                     EnemyEffect::SpeedAlter { original, new, ease } => {
-                        println!("{}", *ease);
                         if *ease == 0 {
                             // remove this effect
                             vector::normalize_mut(&mut enemy.velocity, *original);

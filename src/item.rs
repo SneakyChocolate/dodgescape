@@ -12,7 +12,7 @@ pub struct Item {
 pub enum ItemEffect {
     Vision((f32,f32)),
     Speed(f32),
-    SlowEnemies{slow: f32, radius: f32},
+    SlowEnemies{slow: f32, radius: f32, duration: usize},
 }
 
 pub fn handle_effects(game: &mut Game) {
@@ -28,7 +28,7 @@ pub fn handle_effects(game: &mut Game) {
                     ItemEffect::Speed(s) => {
                         actions.push((p, Action::MulPlayerSpeed(*s)));
                     },
-                    ItemEffect::SlowEnemies{slow, radius} => {
+                    ItemEffect::SlowEnemies{slow, radius, duration } => {
                         for group in game.enemies.iter_mut() {
                             for enemy in group.1.iter_mut() {
                                 if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.radius <= *radius {
@@ -37,7 +37,7 @@ pub fn handle_effects(game: &mut Game) {
                                     if enemy.effects.iter_mut().all(|e| {
                                         match e {
                                             crate::enemy::EnemyEffect::SpeedAlter { original, new, ease } => {
-                                                *ease = 1;
+                                                *ease = *duration;
                                                 false
                                             },
                                             _ => {
@@ -45,7 +45,7 @@ pub fn handle_effects(game: &mut Game) {
                                             }
                                         }
                                     }) {
-                                        enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { original, new: original * *slow, ease: 1 });
+                                        enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { original, new: original * *slow, ease: *duration });
                                     }
                                 }
                             }
