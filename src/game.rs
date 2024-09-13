@@ -566,26 +566,27 @@ impl Game {
     }
     pub fn spawn_collectables(&mut self) {
         let c = Collectable::new(2000.0, 2000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("monocle", 1, vec![ItemEffect::Vision((0.9,0.9))])
+            Item::new("monocle", vec![ItemEffect::Vision((0.9,0.9))])
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, -2000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("microscope", 1, vec![
+            Item::new("microscope", vec![
                 ItemEffect::Vision((1.0,5.0)),
             ])
         ]);
         self.collectables.push(c);
         let c = Collectable::new(4000.0, -4000.0, Color::new(255, 255, 255, 1), vec![
-            Item::new("binoculars", 1, vec![ItemEffect::Vision((0.7,1.0))])
+            Item::new("binoculars", vec![ItemEffect::Vision((0.7,1.0))])
         ]);
         self.collectables.push(c);
         let c = Collectable::new(-6000.0, 0.0, Color::new(200, 200, 0, 1), vec![
-            Item::new("telescope", 1, vec![ItemEffect::Vision((0.4,0.6))])
+            Item::new("telescope", vec![ItemEffect::Vision((0.4,0.6))])
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
-            Item::new("megascope", 1, vec![
+            Item::new("megascope", vec![
                 ItemEffect::Vision((0.05,1.0)),
+                ItemEffect::SlowEnemies { slow: 0.3, radius: 200.0 },
             ])
         ]);
         self.collectables.push(c);
@@ -596,7 +597,7 @@ impl Game {
                 let distance = (0.0, 2000.0);
                 let point = random_point(center, distance);
                 let c = Collectable::new(point.0, point.1, Color::new(255,0,0,1), vec![
-                    Item::new("dragonfire rune", 1, vec![
+                    Item::new("dragonfire rune", vec![
                         ItemEffect::Speed(1.1),
                     ])
                 ]);

@@ -12,7 +12,7 @@ pub struct Item {
 pub enum ItemEffect {
     Vision((f32,f32)),
     Speed(f32),
-    SlowEnemies(f32, f32),
+    SlowEnemies{slow: f32, radius: f32},
 }
 
 pub fn handle_effects(game: &mut Game) {
@@ -28,12 +28,25 @@ pub fn handle_effects(game: &mut Game) {
                     ItemEffect::Speed(s) => {
                         actions.push((p, Action::MulPlayerSpeed(*s)));
                     },
-                    ItemEffect::SlowEnemies(s, radius) => {
+                    ItemEffect::SlowEnemies{slow, radius} => {
                         for group in game.enemies.iter_mut() {
                             for enemy in group.1.iter_mut() {
                                 if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.radius <= *radius {
                                     let original = vector::abs(enemy.velocity);
-                                    enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { original, new: original * *s, ease: 0 });
+                                    // if enemy doesnt have effect already, else set ease to 1
+                                    if enemy.effects.iter_mut().all(|e| {
+                                        match e {
+                                            crate::enemy::EnemyEffect::SpeedAlter { original, new, ease } => {
+                                                *ease = 1;
+                                                false
+                                            },
+                                            _ => {
+                                                true
+                                            }
+                                        }
+                                    }) {
+                                        enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { original, new: original * *slow, ease: 1 });
+                                    }
                                 }
                             }
                         }
@@ -50,7 +63,7 @@ pub fn handle_effects(game: &mut Game) {
 }
 
 impl Item {
-    pub fn new(name: &str, amount: usize, effects: Vec<ItemEffect>) -> Self {
+    pub fn new(name: &str, effects: Vec<ItemEffect>) -> Self {
         Item {
             name: name.to_owned(),
             active: false,
