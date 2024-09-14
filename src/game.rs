@@ -227,7 +227,7 @@ impl Game {
     fn spawn_dirt_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Dirt, WallType::SpawnA];
         let mut enemies = vec![];
-        for _ in 0..100 * spawn_m {
+        for _ in 0..80 * spawn_m {
             let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,40,20)");
@@ -239,8 +239,8 @@ impl Game {
     fn spawn_wind_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Wind, WallType::SpawnA];
         let mut enemies = vec![];
-        for _ in 0..50 * spawn_m {
-            let cap = 1.0 * speed_m;
+        for _ in 0..40 * spawn_m {
+            let cap = 0.8 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgb(200,200,255)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,255,255,0.1)", Shape::Circle { radius: enemy.radius * 3.0 }, (0.0, 0.0)));
@@ -249,10 +249,10 @@ impl Game {
         }
         self.enemies.push((ids, enemies)); 
     }
-    fn spawn_plant_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    fn spawn_flower_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Flower, WallType::SpawnA];
         let mut enemies = vec![];
-        for _ in 0..200 * spawn_m {
+        for _ in 0..150 * spawn_m {
             let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
@@ -283,7 +283,7 @@ impl Game {
     }
     fn spawn_fire_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let size = 20.0..=50.0;
-        let amount = 200;
+        let amount = 150;
         let speed = 1.0;
         let dist = 4500.0;
         let ids = vec![WallType::Dirt,WallType::Wind,WallType::Flower,WallType::Water,WallType::Fire,WallType::SpawnA,WallType::SpawnB];
@@ -385,7 +385,7 @@ impl Game {
         let ids = vec![WallType::Ice];
         let mut enemies = vec![];
         // snowballs
-        for _ in 0..20 * spawn_m {
+        for _ in 0..25 * spawn_m {
             let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(0.0, -20000.0, velocity, rand::thread_rng().gen_range(50.0..=70.0), "rgb(255,255,255)");
@@ -395,7 +395,7 @@ impl Game {
             enemies.push(enemy);
         }
         // snowmans
-        for _ in 0..20 * spawn_m {
+        for _ in 0..25 * spawn_m {
             let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(0.0, -20000.0, velocity, rand::thread_rng().gen_range(50.0..=70.0), "rgb(255,255,255)");
@@ -434,18 +434,18 @@ impl Game {
             let cap = 0.1 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(0.0, 20000.0, velocity, 90.0, "rgb(25,25,25)");
-            let cd = rand::thread_rng().gen_range(200..=500);
-            enemy.effects.push(EnemyEffect::Explode { lifetime: 300, radius: (10.0, 30.0), speed: 15.0, time_left: 0, cooldown: cd, color: "rgb(255,255,0)".to_owned(), amount: 10 });
+            let cd = rand::thread_rng().gen_range(200..=400);
+            enemy.effects.push(EnemyEffect::Explode { lifetime: 400, radius: (10.0, 30.0), speed: 10.0, time_left: 0, cooldown: cd, color: "rgb(255,255,0)".to_owned(), amount: 10 });
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
     }
     pub fn spawn_enemies(&mut self) {
         let spawn_m = 3;
-        let speed_m = 9.0;
+        let speed_m = 8.0;
         self.spawn_dirt_enemies(speed_m, spawn_m);
         self.spawn_wind_enemies(speed_m, spawn_m);
-        self.spawn_plant_enemies(speed_m, spawn_m);
+        self.spawn_flower_enemies(speed_m, spawn_m);
         self.spawn_water_enemies(speed_m, spawn_m);
         self.spawn_fire_enemies(speed_m, spawn_m);
         self.spawn_space_enemies(speed_m, spawn_m);
@@ -586,7 +586,7 @@ impl Game {
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("megascope", vec![
                 ItemEffect::Vision((0.05,1.0)),
-                ItemEffect::SlowEnemies { slow: 0.001, radius: 200.0, duration: 100 },
+                ItemEffect::SlowEnemies { slow: 0.5, radius: 200.0, duration: 100 },
             ])
         ]);
         self.collectables.push(c);
@@ -682,7 +682,7 @@ impl Game {
                     connections.remove(*i);
                 }
 
-                thread::sleep(Duration::from_millis(1));
+                thread::sleep(Duration::from_millis(5));
                 if !self.running {
                     break;
                 }
