@@ -682,7 +682,7 @@ impl Game {
                     connections.remove(*i);
                 }
 
-                thread::sleep(Duration::from_millis(5));
+                thread::sleep(Duration::from_millis(1));
                 if !self.running {
                     break;
                 }

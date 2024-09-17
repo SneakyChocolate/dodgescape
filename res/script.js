@@ -174,7 +174,7 @@ function render(data) {
 }
 
 login_button.onclick = function(_e) {
-  let ws = new WebSocket("ws://192.168.1.9:7878/");
+  let ws = new WebSocket("ws://127.0.0.1:7878/");
   ws.onopen = function() {
     // here comes what happens after login
     let loginmsg = JSON.stringify({mode: "login", username: username.value, x: mouse_x, y: mouse_y, keys_down: keys_down, wheel: wheel});
