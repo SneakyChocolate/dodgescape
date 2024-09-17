@@ -52,7 +52,7 @@ impl Default for Shape {
         // Self::Line {x: 0.0, y: 0.0}
     }
 }
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct DrawPack {
     pub color: String,
     pub shape: Shape,
@@ -566,27 +566,29 @@ impl Game {
     }
     pub fn spawn_collectables(&mut self) {
         let c = Collectable::new(2000.0, 2000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("monocle", vec![ItemEffect::Vision((0.9,0.9))])
+            Item::new("monocle", vec![ItemEffect::Vision((0.9,0.9))], vec![])
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, -2000.0, Color::new(200, 200, 100, 1), vec![
             Item::new("microscope", vec![
                 ItemEffect::Vision((1.0,5.0)),
-            ])
+            ], vec![])
         ]);
         self.collectables.push(c);
         let c = Collectable::new(4000.0, -4000.0, Color::new(255, 255, 255, 1), vec![
-            Item::new("binoculars", vec![ItemEffect::Vision((0.7,1.0))])
+            Item::new("binoculars", vec![ItemEffect::Vision((0.7,1.0))], vec![])
         ]);
         self.collectables.push(c);
         let c = Collectable::new(-6000.0, 0.0, Color::new(200, 200, 0, 1), vec![
-            Item::new("telescope", vec![ItemEffect::Vision((0.4,0.6))])
+            Item::new("telescope", vec![ItemEffect::Vision((0.4,0.6))], vec![])
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("megascope", vec![
                 ItemEffect::Vision((0.05,1.0)),
                 ItemEffect::SlowEnemies { slow: 0.5, radius: 200.0, duration: 100 },
+            ], vec![
+                DrawPack::new("rgba(255,0,0,0.2)", Shape::Circle { radius: 200.0 }, (0.0, 0.0))
             ])
         ]);
         self.collectables.push(c);
@@ -599,7 +601,7 @@ impl Game {
                 let c = Collectable::new(point.0, point.1, Color::new(255,0,0,1), vec![
                     Item::new("dragonfire rune", vec![
                         ItemEffect::Speed(1.1),
-                    ])
+                    ], vec![])
                 ]);
                 self.collectables.push(c);
             }
@@ -737,18 +739,22 @@ impl Game {
             let acc = draw_object(object, &camera, zoom);
             objects.push_str(&acc);
         }
+        // TODO item effects
+        for player in self.players.iter() {
+            for item in player.inventory.items.iter() {
+                if item.active {
+                    for dp in item.drawpacks.iter() {
+                        let acc = draw(&(player.x, player.y), &dp, &camera, zoom);
+                        objects.push_str(&acc);
+                    }
+                }
+            }
+        }
         // players
         for object in self.players.iter() {
             if vector::distance(camera, (object.x, object.y)).2 > view {continue;}
             let acc = draw_object(object, &camera, zoom);
             objects.push_str(&acc);
-        }
-        // TODO item effects
-        for player in self.players.iter() {
-            for item in player.inventory.items.iter() {
-                if item.active {
-                }
-            }
         }
         // enemies
         for group in self.enemies.iter() {

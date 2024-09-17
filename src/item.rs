@@ -1,11 +1,12 @@
-use crate::{action::Action, game::Game, vector};
+use crate::{action::Action, game::{DrawPack, Game}, vector};
 
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Item {
     pub name: String,
     pub active: bool,
     pub effects: Vec<ItemEffect>,
+    pub drawpacks: Vec<DrawPack>,
 }
 
 #[derive(Debug)]
@@ -63,11 +64,12 @@ pub fn handle_effects(game: &mut Game) {
 }
 
 impl Item {
-    pub fn new(name: &str, effects: Vec<ItemEffect>) -> Self {
+    pub fn new(name: &str, effects: Vec<ItemEffect>, drawpacks: Vec<DrawPack>) -> Self {
         Item {
             name: name.to_owned(),
             active: false,
             effects,
+            drawpacks,
         }
     }
 }
