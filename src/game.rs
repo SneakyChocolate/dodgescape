@@ -584,12 +584,23 @@ impl Game {
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
-            Item::new("megascope", vec![
-                ItemEffect::Vision((0.05,1.0)),
+            Item::new("heatwave", vec![
                 ItemEffect::SlowEnemies { slow: 0.5, radius: 200.0, duration: 100 },
             ], vec![
                 DrawPack::new("rgba(255,0,0,0.2)", Shape::Circle { radius: 200.0 }, (0.0, 0.0))
             ])
+        ]);
+        self.collectables.push(c);
+        let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
+            Item::new("blizzard", vec![
+                ItemEffect::SlowEnemies { slow: 0.8, radius: 600.0, duration: 100 },
+            ], vec![
+                DrawPack::new("rgba(100,100,255,0.1)", Shape::Circle { radius: 600.0 }, (0.0, 0.0))
+            ])
+        ]);
+        self.collectables.push(c);
+        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+            Item::new("megascope", vec![ ItemEffect::Vision((0.05,1.0)), ], vec![ ])
         ]);
         self.collectables.push(c);
         let cords = vec![(8,0),(-8,0),(0,8),(0,-8)];
@@ -684,7 +695,7 @@ impl Game {
                     connections.remove(*i);
                 }
 
-                thread::sleep(Duration::from_millis(1));
+                thread::sleep(Duration::from_millis(10));
                 if !self.running {
                     break;
                 }
