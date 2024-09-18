@@ -26,8 +26,8 @@ pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom
 }
 pub fn move_object<T: Moveable>(object: &mut T) {
     let (vx, vy) = object.get_velocity().clone();
-    *(object.get_x()) += vx;
-    *(object.get_y()) += vy;
+    *(object.get_x()) += vx * *object.get_speed_multiplier();
+    *(object.get_y()) += vy * *object.get_speed_multiplier();
 }
 
 pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {

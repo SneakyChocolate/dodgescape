@@ -35,6 +35,7 @@ pub trait Moveable {
     fn get_x(&mut self) -> &mut f32;
     fn get_y(&mut self) -> &mut f32;
     fn get_velocity(&mut self) -> &mut (f32, f32);
+    fn get_speed_multiplier(&mut self) -> &mut f32;
 }
 #[macro_export]
 macro_rules! impl_Movable {
@@ -48,6 +49,9 @@ macro_rules! impl_Movable {
             }
             fn get_velocity(&mut self) -> &mut (f32, f32) {
                 &mut self.velocity
+            }
+            fn get_speed_multiplier(&mut self) -> &mut f32 {
+                &mut self.speed_multiplier
             }
         }
     };

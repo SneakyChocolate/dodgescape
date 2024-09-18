@@ -4,6 +4,7 @@ use crate::gametraits::*;
 #[derive(Default)]
 pub struct Collectable {
     pub velocity: (f32, f32),
+    pub speed_multiplier: f32,
     pub x: f32,
     pub y: f32,
     pub draw_packs: Vec<DrawPack>,

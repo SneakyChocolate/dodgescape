@@ -10,6 +10,7 @@ pub struct Player {
     just_pressed: Vec<String>,
     old_keys_down: Vec<String>,
     pub velocity: (f32, f32),
+    pub speed_multiplier: f32,
     pub name: String,
     pub x: f32,
     pub y: f32,

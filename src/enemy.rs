@@ -6,6 +6,7 @@ use crate::gametraits::*;
 #[derive(Default)]
 pub struct Enemy {
     pub velocity: (f32, f32),
+    pub speed_multiplier: f32,
     pub x: f32,
     pub y: f32,
     pub draw_packs: Vec<DrawPack>,
@@ -44,7 +45,7 @@ pub enum EnemyEffect {
     Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String},
     Slow {radius: f32, power: f32},
     Grow {size: f32, maxsize: f32, defaultsize: f32},
-    SpeedAlter {original: f32, slow: f32, ease: usize},
+    SpeedAlter {slow: f32, ease: usize},
 }
 
 pub fn handle_effects(game: &mut Game) {
@@ -123,16 +124,14 @@ pub fn handle_effects(game: &mut Game) {
                             actions.push((i, Action::SetEnemyRadius(g, enemy.radius + *size)));
                         }
                     },
-                    EnemyEffect::SpeedAlter { original, slow, ease } => {
+                    EnemyEffect::SpeedAlter { slow, ease } => {
                         if *ease == 0 {
                             // remove this effect
-                            vector::normalize_mut(&mut enemy.velocity, *original);
                             actions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
                         }
                         else {
                             *ease -= 1;
-                            // slow this enemy
-                            vector::normalize_mut(&mut enemy.velocity, *original * *slow);
+                            // slow happens in movement
                         }
                     },
                 }
