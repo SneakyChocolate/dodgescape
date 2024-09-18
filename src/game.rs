@@ -565,30 +565,31 @@ impl Game {
         self.spawn_grid(40000.0, "rgb(255,255,255,0.05)", 500.0, 10.0);
     }
     pub fn spawn_collectables(&mut self) {
+        let mut item_counter = 0;
         let c = Collectable::new(2000.0, 2000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("monocle", vec![ItemEffect::Vision((0.9,0.9))], vec![])
+            Item::new("monocle", vec![ItemEffect::Vision((0.9,0.9))], vec![], &mut item_counter)
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, -2000.0, Color::new(200, 200, 100, 1), vec![
             Item::new("microscope", vec![
                 ItemEffect::Vision((1.0,5.0)),
-            ], vec![])
+            ], vec![], &mut item_counter)
         ]);
         self.collectables.push(c);
         let c = Collectable::new(4000.0, -4000.0, Color::new(255, 255, 255, 1), vec![
-            Item::new("binoculars", vec![ItemEffect::Vision((0.7,1.0))], vec![])
+            Item::new("binoculars", vec![ItemEffect::Vision((0.7,1.0))], vec![], &mut item_counter)
         ]);
         self.collectables.push(c);
         let c = Collectable::new(-6000.0, 0.0, Color::new(200, 200, 0, 1), vec![
-            Item::new("telescope", vec![ItemEffect::Vision((0.4,0.6))], vec![])
+            Item::new("telescope", vec![ItemEffect::Vision((0.4,0.6))], vec![], &mut item_counter)
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("heatwave", vec![
-                ItemEffect::SlowEnemies { slow: 0.95, radius: 200.0, duration: 100 },
+                ItemEffect::SlowEnemies { slow: 0.5, radius: 200.0, duration: 100 },
             ], vec![
                 DrawPack::new("rgba(255,0,0,0.2)", Shape::Circle { radius: 200.0 }, (0.0, 0.0))
-            ])
+            ], &mut item_counter)
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
@@ -596,11 +597,11 @@ impl Game {
                 ItemEffect::SlowEnemies { slow: 0.5, radius: 600.0, duration: 1 },
             ], vec![
                 DrawPack::new("rgba(100,100,255,0.1)", Shape::Circle { radius: 600.0 }, (0.0, 0.0))
-            ])
+            ], &mut item_counter)
         ]);
         self.collectables.push(c);
         let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
-            Item::new("megascope", vec![ ItemEffect::Vision((0.05,1.0)), ], vec![ ])
+            Item::new("megascope", vec![ ItemEffect::Vision((0.05,1.0)), ], vec![ ], &mut item_counter)
         ]);
         self.collectables.push(c);
         let cords = vec![(8,0),(-8,0),(0,8),(0,-8)];
@@ -612,7 +613,7 @@ impl Game {
                 let c = Collectable::new(point.0, point.1, Color::new(255,0,0,1), vec![
                     Item::new("dragonfire rune", vec![
                         ItemEffect::Speed(1.1),
-                    ], vec![])
+                    ], vec![], &mut item_counter)
                 ]);
                 self.collectables.push(c);
             }

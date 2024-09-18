@@ -46,7 +46,7 @@ pub enum EnemyEffect {
     Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String},
     Slow {radius: f32, power: f32},
     Grow {size: f32, maxsize: f32, defaultsize: f32},
-    SpeedAlter {slow: f32, ease: usize},
+    SpeedAlter {origin: usize, slow: f32, ease: usize},
 }
 
 pub fn handle_effects(game: &mut Game) {
@@ -125,7 +125,7 @@ pub fn handle_effects(game: &mut Game) {
                             actions.push((i, Action::SetEnemyRadius(g, enemy.radius + *size)));
                         }
                     },
-                    EnemyEffect::SpeedAlter { slow, ease } => {
+                    EnemyEffect::SpeedAlter { slow, ease, origin } => {
                         if *ease == 0 {
                             // remove this effect
                             actions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));

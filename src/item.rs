@@ -3,6 +3,7 @@ use crate::{action::Action, game::{DrawPack, Game}, vector};
 
 #[derive(Debug, Default)]
 pub struct Item {
+    pub id: usize,
     pub name: String,
     pub active: bool,
     pub effects: Vec<ItemEffect>,
@@ -33,7 +34,32 @@ pub fn handle_effects(game: &mut Game) {
                         for group in game.enemies.iter_mut() {
                             for enemy in group.1.iter_mut() {
                                 if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.radius <= *radius {
-                                    enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { slow: *slow, ease: *duration });
+                                    // check if effect of this item id is already applied
+                                    let effect = enemy.effects.iter_mut().find(|e| {
+                                        match e {
+                                            crate::enemy::EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                                                *origin == item.id
+                                            },
+                                            _ => {
+                                                false
+                                            }
+                                        }
+                                    });
+                                    match effect {
+                                        Some(e) => {
+                                            match e {
+                                                crate::enemy::EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                                                    *ease = *duration;
+                                                },
+                                                _ => {
+                                                    // do nothing
+                                                }
+                                            }
+                                        },
+                                        None => {
+                                            enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { slow: *slow, ease: *duration, origin: item.id });
+                                        },
+                                    }
                                 }
                             }
                         }
@@ -50,12 +76,15 @@ pub fn handle_effects(game: &mut Game) {
 }
 
 impl Item {
-    pub fn new(name: &str, effects: Vec<ItemEffect>, drawpacks: Vec<DrawPack>) -> Self {
-        Item {
+    pub fn new(name: &str, effects: Vec<ItemEffect>, drawpacks: Vec<DrawPack>, item_counter: &mut usize) -> Self {
+        let item = Item {
             name: name.to_owned(),
             active: false,
             effects,
             drawpacks,
-        }
+            id: *item_counter,
+        };
+        *item_counter += 1;
+        item
     }
 }
