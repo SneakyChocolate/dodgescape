@@ -28,6 +28,7 @@ impl Enemy {
             radius,
             view_radius: radius,
             draw_packs: vec![],
+            speed_multiplier: 1.0,
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new(color, Shape::Circle { radius: p.radius }, (0.0, 0.0)));
@@ -131,7 +132,7 @@ pub fn handle_effects(game: &mut Game) {
                         }
                         else {
                             *ease -= 1;
-                            // slow happens in movement
+                            actions.push((i, Action::MulEnemySpeedMultiplier { group: g, f: *slow }));
                         }
                     },
                 }

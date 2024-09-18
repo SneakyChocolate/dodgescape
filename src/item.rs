@@ -33,7 +33,6 @@ pub fn handle_effects(game: &mut Game) {
                         for group in game.enemies.iter_mut() {
                             for enemy in group.1.iter_mut() {
                                 if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.radius <= *radius {
-                                    let original = vector::abs(enemy.velocity);
                                     // if enemy doesnt have effect already, else set ease to 1
                                     if enemy.effects.iter_mut().all(|e| {
                                         match e {
@@ -49,7 +48,7 @@ pub fn handle_effects(game: &mut Game) {
                                             }
                                         }
                                     }) {
-                                        enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { original, slow: *slow, ease: *duration });
+                                        enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { slow: *slow, ease: *duration });
                                     }
                                 }
                             }

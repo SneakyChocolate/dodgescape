@@ -42,6 +42,7 @@ impl Player {
             zoom: 1.0,
             zoomlimit: (1.0, 1.0),
             color: color.clone(),
+            speed_multiplier: 1.0,
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new(p.color.as_str(), Shape::Circle { radius: p.radius }, (0.0, 0.0)));
