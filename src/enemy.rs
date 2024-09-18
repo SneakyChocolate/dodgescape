@@ -139,6 +139,12 @@ pub fn handle_effects(game: &mut Game) {
             }
         }
     }
+    // reset enemy speed multiplier to 1.0
+    for group in game.enemies.iter_mut() {
+        for enemy in group.1.iter_mut() {
+            enemy.speed_multiplier = 1.0;
+        }
+    }
     // reverse order due to deletions and index errors
     for (entity, action) in actions.iter().rev() {
         action.execute(game, *entity);
