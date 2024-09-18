@@ -37,8 +37,11 @@ pub fn handle_effects(game: &mut Game) {
                                     // if enemy doesnt have effect already, else set ease to 1
                                     if enemy.effects.iter_mut().all(|e| {
                                         match e {
-                                            crate::enemy::EnemyEffect::SpeedAlter { original, new, ease } => {
+                                            crate::enemy::EnemyEffect::SpeedAlter { original, slow: applied_slow, ease } => {
                                                 *ease = *duration;
+                                                if *slow < *applied_slow {
+                                                    *applied_slow = *slow;
+                                                }
                                                 false
                                             },
                                             _ => {
@@ -46,7 +49,7 @@ pub fn handle_effects(game: &mut Game) {
                                             }
                                         }
                                     }) {
-                                        enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { original, new: original * *slow, ease: *duration });
+                                        enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { original, slow: *slow, ease: *duration });
                                     }
                                 }
                             }
