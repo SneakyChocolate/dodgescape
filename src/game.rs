@@ -594,7 +594,7 @@ impl Game {
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("blizzard", vec![
-                ItemEffect::SlowEnemies { slow: 0.5, radius: 600.0, duration: 1 },
+                ItemEffect::SlowEnemies { slow: 0.8, radius: 600.0, duration: 1 },
             ], vec![
                 DrawPack::new("rgba(100,100,255,0.1)", Shape::Circle { radius: 600.0 }, (0.0, 0.0))
             ], &mut item_counter)
