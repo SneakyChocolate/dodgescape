@@ -53,9 +53,9 @@ pub enum EnemyEffect {
 
 pub fn handle_effects(game: &mut Game) {
     let mut actions: Vec<(usize, Action)> = vec![];
-    for (g, group) in game.enemies.iter_mut().enumerate() {
-        for (i, enemy) in group.1.iter_mut().enumerate() {
-            for (e, effect) in enemy.effects.iter_mut().enumerate() {
+    for (g, group) in game.enemies.iter().enumerate() {
+        for (i, enemy) in group.1.iter().enumerate() {
+            for (e, effect) in enemy.effects.iter().enumerate() {
                 match effect {
                     EnemyEffect::Chase { radius, power } => {
                         for player in game.players.iter() {
@@ -116,10 +116,10 @@ pub fn handle_effects(game: &mut Game) {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
                             if dist.2 <= *radius + player.radius {
-                                let id = enemy as *mut Enemy as usize;
+                                let id = enemy.id;
                                 // actions.push((p, Action::MulPlayerVelocity(*power)));
                                 // check if effect of this item id is already applied
-                                let effect = enemy.effects.iter_mut().find(|e| {
+                                let position = enemy.effects.iter().position(|e| {
                                     match e {
                                         crate::enemy::EnemyEffect::SpeedAlter { origin, slow, ease } => {
                                             *origin == id
@@ -129,19 +129,21 @@ pub fn handle_effects(game: &mut Game) {
                                         }
                                     }
                                 });
-                                match effect {
+                                match position {
                                     Some(e) => {
-                                        match e {
+                                        let effect = enemy.effects.get(e).unwrap();
+                                        match effect {
                                             crate::enemy::EnemyEffect::SpeedAlter { origin, slow, ease } => {
-                                                *ease = *duration;
+                                                // ease = *duration;
                                             },
                                             _ => {
                                                 // do nothing
                                             }
-                                        }
+                                        };
                                     },
                                     None => {
-                                        player.effects.push(crate::player::PlayerEffect::SpeedAlter { slow: *slow, ease: *duration, origin: id });
+                                        // TODO make action for player effect
+                                        // player.effects.push(crate::player::PlayerEffect::SpeedAlter { slow: *slow, ease: *duration, origin: id });
                                     },
                                 }
                             }
@@ -161,7 +163,8 @@ pub fn handle_effects(game: &mut Game) {
                             actions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
                         }
                         else {
-                            *ease -= 1;
+                            // TODO action for line below
+                            // *ease -= 1;
                             actions.push((i, Action::MulEnemySpeedMultiplier { group: g, f: *slow }));
                         }
                     },
