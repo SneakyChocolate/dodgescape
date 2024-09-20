@@ -45,7 +45,7 @@ pub enum EnemyEffect {
     Push {radius: f32, power: f32},
     Shoot {lifetime: usize, radius: f32, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize, color: String },
     Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String},
-    Slow {radius: f32, power: f32},
+    SlowPlayers {radius: f32, power: f32},
     Grow {size: f32, maxsize: f32, defaultsize: f32},
     SpeedAlter {origin: usize, slow: f32, ease: usize},
 }
@@ -109,7 +109,7 @@ pub fn handle_effects(game: &mut Game) {
                         }
                         actions.push((i, Action::ReduceCooldown(g)));
                     },
-                    EnemyEffect::Slow { radius, power } => {
+                    EnemyEffect::SlowPlayers { radius, power } => {
                         for (p, player) in game.players.iter().enumerate() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));

@@ -1,7 +1,11 @@
 
 
-use crate::{collectable::Collectable, color::Color, game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
+use crate::{action::Action, collectable::Collectable, color::Color, game::{DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
 use crate::gametraits::*;
+
+pub enum PlayerEffect {
+    SpeedAlter {origin: usize, slow: f32, ease: usize},
+}
 
 #[derive(Default)]
 pub struct Player {
@@ -24,6 +28,7 @@ pub struct Player {
     pub zoomlimit: (f32, f32),
     pub color: String,
     pub invincible: bool,
+    pub effects: Vec<PlayerEffect>,
 }
 
 impl_Position!(Player);
@@ -44,7 +49,6 @@ impl Player {
             zoomlimit: (1.0, 1.0),
             color: color.clone(),
             speed_multiplier: 1.0,
-            invincible: true,
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new(p.color.as_str(), Shape::Circle { radius: p.radius }, (0.0, 0.0)));
@@ -196,4 +200,24 @@ impl Player {
     }
 }
 
-
+pub fn handle_effects(game: &mut Game) {
+    let mut actions: Vec<(usize, Action)> = vec![];
+    // convert effects to actions
+    for player in game.players.iter_mut() {
+        for effect in player.effects.iter_mut() {
+            match effect {
+                PlayerEffect::SpeedAlter { origin, slow, ease } => {
+                    // TODO :)
+                },
+            }
+        }
+    }
+    // reset enemy speed multiplier to 1.0
+    for player in game.players.iter_mut() {
+        player.speed_multiplier = 1.0;
+    }
+    // reverse order due to deletions and index errors
+    for (entity, action) in actions.iter().rev() {
+        action.execute(game, *entity);
+    }
+}

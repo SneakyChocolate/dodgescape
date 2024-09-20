@@ -379,7 +379,7 @@ impl Game {
             let mut enemy = Enemy::new(-20000.0, 0.0, velocity, rand::thread_rng().gen_range(30.0..=70.0), "rgb(255,125,125)");
             let r = enemy.radius * 5.0;
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,0,0.1)", Shape::Circle { radius: r }, (0.0, 0.0)));
-            enemy.effects.push(EnemyEffect::Slow { radius: r, power: 0.5 });
+            enemy.effects.push(EnemyEffect::SlowPlayers { radius: r, power: 0.5 });
             enemy.view_radius = r;
             enemies.push(enemy);
         }
@@ -409,7 +409,7 @@ impl Game {
             let r = enemy.radius * 10.0;
             enemy.draw_packs.insert(0, DrawPack::new("rgba(0,0,255,0.05)", Shape::Circle { radius: enemy.radius * 10.0 }, (0.0, 0.0)));
             enemy.effects.push(EnemyEffect::Chase { radius: r, power: 0.03 });
-            enemy.effects.push(EnemyEffect::Slow { radius: r, power: 0.8 });
+            enemy.effects.push(EnemyEffect::SlowPlayers { radius: r, power: 0.8 });
             enemy.effects.push(EnemyEffect::Shoot { lifetime: 200, radius: r, projectile_radius: 20.0, speed: 8.0, time_left: 0, cooldown: 100, color: "rgb(200,200,200)".to_owned() });
             enemy.view_radius = r;
             enemies.push(enemy);
@@ -755,7 +755,7 @@ impl Game {
             let acc = draw_object(object, &camera, zoom);
             objects.push_str(&acc);
         }
-        // TODO item effects
+        // item effects
         for player in self.players.iter() {
             for item in player.inventory.items.iter() {
                 if item.active {
