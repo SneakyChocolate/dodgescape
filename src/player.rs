@@ -203,11 +203,18 @@ impl Player {
 pub fn handle_effects(game: &mut Game) {
     let mut actions: Vec<(usize, Action)> = vec![];
     // convert effects to actions
-    for player in game.players.iter_mut() {
-        for effect in player.effects.iter_mut() {
+    for (i, player) in game.players.iter_mut().enumerate() {
+        for (e, effect) in player.effects.iter_mut().enumerate() {
             match effect {
                 PlayerEffect::SpeedAlter { origin, slow, ease } => {
-                    // TODO :)
+                    if *ease == 0 {
+                        // remove this effect
+                        actions.push((i, Action::RemovePlayerEffect { effect: e }));
+                    }
+                    else {
+                        *ease -= 1;
+                        actions.push((i, Action::MulPlayerSpeedMultiplier { f: *slow }));
+                    }
                 },
             }
         }

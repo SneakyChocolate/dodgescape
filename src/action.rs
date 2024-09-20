@@ -17,6 +17,7 @@ pub enum Action {
     SetPlayerSpeed(f32),
     MulPlayerSpeed(f32),
     RemoveEnemyEffect {group: usize, effect: usize},
+    RemovePlayerEffect {effect: usize},
     MulEnemySpeedMultiplier {group: usize, f: f32},
     MulPlayerSpeedMultiplier {f: f32},
 }
@@ -144,6 +145,10 @@ impl Action {
             Action::MulPlayerSpeedMultiplier { f } => {
                 let player = game.players.get_mut(entity).unwrap();
                 player.speed_multiplier *= *f;
+            },
+            Action::RemovePlayerEffect { effect } => {
+                let player = game.players.get_mut(entity).unwrap();
+                player.effects.remove(*effect);
             },
         }
     }

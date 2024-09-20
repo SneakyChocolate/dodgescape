@@ -110,6 +110,7 @@ pub fn handle_effects(game: &mut Game) {
                         actions.push((i, Action::ReduceCooldown(g)));
                     },
                     EnemyEffect::SlowPlayers { radius, power } => {
+                        // TODO switch to alterspeed effect on player for more duration control
                         for (p, player) in game.players.iter().enumerate() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
