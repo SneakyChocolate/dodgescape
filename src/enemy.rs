@@ -5,6 +5,7 @@ use crate::gametraits::*;
 
 #[derive(Default)]
 pub struct Enemy {
+    pub id: usize,
     pub velocity: (f32, f32),
     pub speed_multiplier: f32,
     pub x: f32,
@@ -45,7 +46,7 @@ pub enum EnemyEffect {
     Push {radius: f32, power: f32},
     Shoot {lifetime: usize, radius: f32, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize, color: String },
     Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String},
-    SlowPlayers {radius: f32, power: f32},
+    SlowPlayers {radius: f32, slow: f32, duration: usize},
     Grow {size: f32, maxsize: f32, defaultsize: f32},
     SpeedAlter {origin: usize, slow: f32, ease: usize},
 }
@@ -109,13 +110,40 @@ pub fn handle_effects(game: &mut Game) {
                         }
                         actions.push((i, Action::ReduceCooldown(g)));
                     },
-                    EnemyEffect::SlowPlayers { radius, power } => {
+                    EnemyEffect::SlowPlayers { radius, slow, duration } => {
                         // TODO switch to alterspeed effect on player for more duration control
                         for (p, player) in game.players.iter().enumerate() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
                             if dist.2 <= *radius + player.radius {
-                                actions.push((p, Action::MulPlayerVelocity(*power)));
+                                let id = enemy as *mut Enemy as usize;
+                                // actions.push((p, Action::MulPlayerVelocity(*power)));
+                                // check if effect of this item id is already applied
+                                let effect = enemy.effects.iter_mut().find(|e| {
+                                    match e {
+                                        crate::enemy::EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                                            *origin == id
+                                        },
+                                        _ => {
+                                            false
+                                        }
+                                    }
+                                });
+                                match effect {
+                                    Some(e) => {
+                                        match e {
+                                            crate::enemy::EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                                                *ease = *duration;
+                                            },
+                                            _ => {
+                                                // do nothing
+                                            }
+                                        }
+                                    },
+                                    None => {
+                                        player.effects.push(crate::player::PlayerEffect::SpeedAlter { slow: *slow, ease: *duration, origin: id });
+                                    },
+                                }
                             }
                         }
                     },
