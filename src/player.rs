@@ -23,6 +23,7 @@ pub struct Player {
     pub zoom: f32,
     pub zoomlimit: (f32, f32),
     pub color: String,
+    pub invincible: bool,
 }
 
 impl_Position!(Player);
@@ -43,6 +44,7 @@ impl Player {
             zoomlimit: (1.0, 1.0),
             color: color.clone(),
             speed_multiplier: 1.0,
+            invincible: true,
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new(p.color.as_str(), Shape::Circle { radius: p.radius }, (0.0, 0.0)));

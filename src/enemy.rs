@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::{action::{Action}, game::{distance, DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
+use crate::{action::{Action}, game::{DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
 use crate::gametraits::*;
 
 #[derive(Default)]
@@ -14,6 +14,7 @@ pub struct Enemy {
     pub effects: Vec<EnemyEffect>,
     pub just_collided: bool,
     pub view_radius: f32,
+    pub harmless: bool,
 }
 
 impl_Position!(Enemy);

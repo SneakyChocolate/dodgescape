@@ -115,6 +115,9 @@ pub fn handle_kill_revive(game: &mut Game) {
     for (i, player) in game.players.iter().enumerate() {
         for group in game.enemies.iter() {
             for enemy in group.1.iter() {
+                if enemy.harmless || player.invincible {
+                    continue;
+                }
                 let dd = distance(player, enemy).2;
                 if dd <= (player.radius + enemy.radius) {
                     deaths.push(i);
@@ -258,6 +261,7 @@ impl Game {
             let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,255,0.2)", Shape::Circle { radius: enemy.radius * 5.0 }, (0.0, 0.0)));
             enemy.effects.push(EnemyEffect::Chase { radius: enemy.radius * 5.0, power: 0.2});
+            // enemy.harmless = true;
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
