@@ -14,6 +14,7 @@ pub enum WallType {
     Explosion,
     Snake,
     Ice,
+    Poison,
 }
 
 

@@ -546,6 +546,11 @@ impl Game {
         let corners = vec![(-3.0,-5.0),(3.0,-5.0),(2.0,-10.0),(1.0,-12.0),(0.0,-12.5),(-1.0,-12.0),(-2.0,-10.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(100,100,150)", WallType::Ice);
+
+        // space spikes
+        let corners = vec![(15.0,15.0),(10.0,15.0 + 5.0 / 3.0),(10.0,10.0),(15.0 + 5.0 / 3.0,10.0)]
+            .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
+        self.spawn_area(corners, "rgb(100,200,100)", WallType::Poison);
         
         // spawns
         let corners = vec![(-0.4,0.0),(0.0,0.4),(0.4,0.0),(0.0,-0.4)]
@@ -605,7 +610,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
-            Item::new("megascope", vec![ ItemEffect::Vision((0.05,1.0)), ], vec![ ], &mut item_counter)
+            Item::new("megascope", vec![ ItemEffect::Vision((0.01,1.0)), ], vec![ ], &mut item_counter)
         ]);
         self.collectables.push(c);
         let cords = vec![(8,0),(-8,0),(0,8),(0,-8)];
