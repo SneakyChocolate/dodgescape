@@ -456,6 +456,19 @@ impl Game {
         }
         self.enemies.push((ids, enemies)); 
     }
+    fn spawn_lightning_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+        let ids = vec![WallType::Lightning];
+        let mut enemies = vec![];
+        for _ in 0..20 * spawn_m {
+            let cap = 0.1 * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let mut enemy = Enemy::new(-25000.0, 25000.0, velocity, 90.0, "rgb(200,200,220)");
+            let cd = rand::thread_rng().gen_range(200..=400);
+            enemy.effects.push(EnemyEffect::Explode { lifetime: 400, radius: (10.0, 30.0), speed: 10.0, time_left: 0, cooldown: cd, color: "rgb(255,255,255)".to_owned(), amount: 10 });
+            enemies.push(enemy);
+        }
+        self.enemies.push((ids, enemies)); 
+    }
     pub fn spawn_enemies(&mut self) {
         let spawn_m = 3;
         let speed_m = 8.0;
@@ -469,6 +482,7 @@ impl Game {
         self.spawn_snake_enemies(speed_m, spawn_m);
         self.spawn_explosion_enemies(speed_m, spawn_m);
         self.spawn_ice_enemies(speed_m, spawn_m);
+        self.spawn_lightning_enemies(speed_m, spawn_m);
     }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, walltype: WallType) {
         let start = (0.0, 0.0);
