@@ -15,6 +15,9 @@ pub enum WallType {
     Snake,
     Ice,
     Poison,
+    Lightning,
+    Candy,
+    Hell,
 }
 
 
