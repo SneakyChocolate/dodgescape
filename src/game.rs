@@ -323,7 +323,19 @@ impl Game {
         let amount = 50;
         let speed = 2.0;
         let dist = 15000.0;
-        let ids = vec![WallType::Fire,WallType::Shooting,WallType::Explosion,WallType::Snake,WallType::Ice,WallType::Blackhole,WallType::SpawnB];
+        let ids = vec![
+            WallType::Fire,
+            WallType::Shooting,
+            WallType::Explosion,
+            WallType::Snake,
+            WallType::Ice,
+            WallType::Blackhole,
+            WallType::SpawnB,
+            WallType::Poison,
+            WallType::Hell,
+            WallType::Candy,
+            WallType::Lightning,
+        ];
         let color = "black";
         let auracolor = "rgba(0,0,0,0.2)";
         let mut enemies = vec![];
