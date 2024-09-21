@@ -379,7 +379,7 @@ impl Game {
             let mut enemy = Enemy::new(-20000.0, 0.0, velocity, rand::thread_rng().gen_range(30.0..=70.0), "rgb(255,125,125)");
             let r = enemy.radius * 5.0;
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,0,0.1)", Shape::Circle { radius: r }, (0.0, 0.0)));
-            enemy.effects.push(EnemyEffect::SlowPlayers { radius: r, slow: 0.0, duration: 100 });
+            enemy.effects.push(EnemyEffect::SlowPlayers { radius: r, slow: 0.5, duration: 1 });
             enemy.view_radius = r;
             enemies.push(enemy);
         }
