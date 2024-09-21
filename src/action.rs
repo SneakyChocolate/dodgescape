@@ -8,7 +8,7 @@ pub enum Action {
     AddPlayerVelocity((f32,f32)),
     MulPlayerVelocity(f32),
     SpawnCrumble(usize),
-    ReduceLifetime(usize),
+    ReduceLifetime{group: usize, effect: usize},
     ReduceCooldown(usize),
     ResetCooldown(usize),
     Despawn(usize),
@@ -21,22 +21,23 @@ pub enum Action {
     MulEnemySpeedMultiplier {group: usize, f: f32},
     MulPlayerSpeedMultiplier {f: f32},
     PushPlayerEffect(PlayerEffect),
+    DecrementEnemySpeedAlterEase{group: usize, effect: usize},
 }
 
 impl Action {
-    pub fn execute(self, game: &mut Game, entity: usize) {
+    pub fn execute(&self, game: &mut Game, entity: usize) {
         match self {
             Action::UpdateEnemyVelocity(g, v) => {
-                let enemy = game.enemies.get_mut(g).unwrap().1.get_mut(entity).unwrap();
-                enemy.velocity = v;
+                let enemy = game.enemies.get_mut(*g).unwrap().1.get_mut(entity).unwrap();
+                enemy.velocity = *v;
             },
             Action::SetPlayerVelocity(v) => {
                 let object = game.players.get_mut(entity).unwrap();
-                object.velocity = v;
+                object.velocity = *v;
             },
             Action::SetPlayerZoomlimit(v) => {
                 let object = game.players.get_mut(entity).unwrap();
-                object.zoomlimit = v;
+                object.zoomlimit = *v;
             },
             Action::AddPlayerVelocity(v) => {
                 let object = game.players.get_mut(entity).unwrap();
@@ -47,35 +48,33 @@ impl Action {
                 object.velocity = (object.velocity.0 * factor, object.velocity.1 * factor);
             },
             Action::SpawnCrumble(g) => {
-                let enemy = game.enemies.get_mut(g).unwrap().1.get_mut(entity).unwrap();
+                let enemy = game.enemies.get_mut(*g).unwrap().1.get_mut(entity).unwrap();
                 let (x, y, v, r) = (enemy.x, enemy.y, enemy.velocity.clone(), enemy.radius / 2.0);
                 // cumble
                 let mut crumble = Enemy::new(x, y, vector::normalize(v, 0.5), r, "rgb(0,0,0)");
                 crumble.effects.push(EnemyEffect::Lifetime(2000));
-                game.enemies.get_mut(g).unwrap().1.push(crumble);
+                game.enemies.get_mut(*g).unwrap().1.push(crumble);
             },
             Action::Despawn(g) => {
-                game.enemies.get_mut(g).unwrap().1.remove(entity);
+                game.enemies.get_mut(*g).unwrap().1.remove(entity);
             },
-            Action::ReduceLifetime(g) => {
-                let enemy = game.enemies.get_mut(g).unwrap().1.get_mut(entity).unwrap();
-                for effect in enemy.effects.iter_mut() {
-                    match effect {
-                        crate::enemy::EnemyEffect::Lifetime(t) => {
-                            if *t == 0 {
-                                game.enemies.get_mut(g).unwrap().1.remove(entity);
-                                break;
-                            }
-                            else {
-                                *t -= 1;
-                            }
-                        },
-                        _ => {},
-                    }
+            Action::ReduceLifetime { group, effect } => {
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                let effect = enemy.effects.get_mut(*effect).unwrap();
+                match effect {
+                    EnemyEffect::Lifetime(t) => {
+                        if *t == 0 {
+                            game.enemies.get_mut(*group).unwrap().1.remove(entity);
+                        }
+                        else {
+                            *t -= 1;
+                        }
+                    },
+                    _ => {},
                 }
             },
             Action::ReduceCooldown(group) => {
-                let enemy = game.enemies.get_mut(group).unwrap().1.get_mut(entity).unwrap();
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 for effect in enemy.effects.iter_mut() {
                     match effect {
                         crate::enemy::EnemyEffect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius, color } => {
@@ -93,7 +92,7 @@ impl Action {
                 }
             },
             Action::ResetCooldown(group) => {
-                let enemy = game.enemies.get_mut(group).unwrap().1.get_mut(entity).unwrap();
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 for effect in enemy.effects.iter_mut() {
                     match effect {
                         crate::enemy::EnemyEffect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius, color } => {
@@ -107,20 +106,20 @@ impl Action {
                 }
             },
             Action::SpawnProjectile { group, velocity, color, radius, lifetime } => {
-                let enemy = game.enemies.get_mut(group).unwrap().1.get_mut(entity).unwrap();
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 // projectile
-                let mut crumble = Enemy::new(enemy.x, enemy.y, velocity, radius, color.as_str());
-                crumble.effects.push(EnemyEffect::Lifetime(lifetime));
-                game.enemies.get_mut(group).unwrap().1.push(crumble);
+                let mut crumble = Enemy::new(enemy.x, enemy.y, *velocity, *radius, color.as_str());
+                crumble.effects.push(EnemyEffect::Lifetime(*lifetime));
+                game.enemies.get_mut(*group).unwrap().1.push(crumble);
             },
             Action::SetEnemyRadius(group, radius) => {
-                let enemy = game.enemies.get_mut(group).unwrap().1.get_mut(entity).unwrap();
-                enemy.radius = radius;
-                enemy.view_radius = radius;
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                enemy.radius = *radius;
+                enemy.view_radius = *radius;
                 for dp in enemy.draw_packs.iter_mut().rev() {
                     match &mut dp.shape {
                         crate::game::Shape::Circle { radius: r } => {
-                            *r = radius;
+                            *r = *radius;
                             break;
                         },
                         _ => {}
@@ -129,31 +128,41 @@ impl Action {
             },
             Action::SetPlayerSpeed(s) => {
                 let player = game.players.get_mut(entity).unwrap();
-                player.speed = s;
+                player.speed = *s;
             },
             Action::MulPlayerSpeed(s) => {
                 let player = game.players.get_mut(entity).unwrap();
-                player.speed *= s;
+                player.speed *= *s;
             },
             Action::RemoveEnemyEffect { group, effect } => {
-                let enemy = game.enemies.get_mut(group).unwrap().1.get_mut(entity).unwrap();
-                enemy.effects.remove(effect);
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                enemy.effects.remove(*effect);
             },
             Action::MulEnemySpeedMultiplier { group, f } => {
-                let enemy = game.enemies.get_mut(group).unwrap().1.get_mut(entity).unwrap();
-                enemy.speed_multiplier *= f;
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                enemy.speed_multiplier *= *f;
             },
             Action::MulPlayerSpeedMultiplier { f } => {
                 let player = game.players.get_mut(entity).unwrap();
-                player.speed_multiplier *= f;
+                player.speed_multiplier *= *f;
             },
             Action::RemovePlayerEffect { effect } => {
                 let player = game.players.get_mut(entity).unwrap();
-                player.effects.remove(effect);
+                player.effects.remove(*effect);
             },
             Action::PushPlayerEffect(effect) => {
                 let player = game.players.get_mut(entity).unwrap();
-                player.effects.push(effect);
+                player.effects.push(*effect);
+            },
+            Action::DecrementEnemySpeedAlterEase { group, effect } => {
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                let effect = enemy.effects.get_mut(*effect).unwrap();
+                match effect {
+                    EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                        *ease -= 1;
+                    },
+                    _ => { }
+                }
             },
         }
     }

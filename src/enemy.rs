@@ -73,7 +73,7 @@ pub fn handle_effects(game: &mut Game) {
                         }
                     },
                     EnemyEffect::Lifetime(t) => {
-                        actions.push((i, Action::ReduceLifetime(g)));
+                        actions.push((i, Action::ReduceLifetime { group: g, effect: e }));
                     },
                     EnemyEffect::Push { radius, power } => {
                         for (p, player) in game.players.iter().enumerate() {
@@ -141,8 +141,8 @@ pub fn handle_effects(game: &mut Game) {
                                         };
                                     },
                                     None => {
-                                        // TODO make action for player effect
-                                        // player.effects.push(crate::player::PlayerEffect::SpeedAlter { slow: *slow, ease: *duration, origin: id });
+                                        let effect = crate::player::PlayerEffect::SpeedAlter { slow: *slow, ease: *duration, origin: id };
+                                        actions.push((p, Action::PushPlayerEffect(effect)));
                                     },
                                 }
                             }
@@ -162,8 +162,7 @@ pub fn handle_effects(game: &mut Game) {
                             actions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
                         }
                         else {
-                            // TODO action for line below
-                            // *ease -= 1;
+                            actions.push((i, Action::DecrementEnemySpeedAlterEase { group: g, effect: e }));
                             actions.push((i, Action::MulEnemySpeedMultiplier { group: g, f: *slow }));
                         }
                     },
