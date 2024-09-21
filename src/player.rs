@@ -40,7 +40,7 @@ impl Player {
     pub fn new(name: &String) -> Player {
         let color = Color::random().to_string();
         let mut p = Player {
-            x: 0.0,
+            x: -10000.0,
             y: 0.0,
             name: name.clone(),
             radius: 30.0,

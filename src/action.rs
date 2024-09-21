@@ -22,6 +22,7 @@ pub enum Action {
     MulPlayerSpeedMultiplier {f: f32},
     PushPlayerEffect(PlayerEffect),
     DecrementEnemySpeedAlterEase{group: usize, effect: usize},
+    SetEnemySpeedAlterEase{group: usize, effect: usize, value: usize},
 }
 
 impl Action {
@@ -160,6 +161,16 @@ impl Action {
                 match effect {
                     EnemyEffect::SpeedAlter { origin, slow, ease } => {
                         *ease -= 1;
+                    },
+                    _ => { }
+                }
+            },
+            Action::SetEnemySpeedAlterEase { group, effect, value } => {
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                let effect = enemy.effects.get_mut(*effect).unwrap();
+                match effect {
+                    EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                        *ease = *value;
                     },
                     _ => { }
                 }

@@ -134,10 +134,9 @@ pub fn handle_effects(game: &mut Game) {
                                         match effect {
                                             crate::enemy::EnemyEffect::SpeedAlter { origin, slow, ease } => {
                                                 // ease = *duration;
+                                                actions.push((e, Action::SetEnemySpeedAlterEase { group: g, effect: e, value: *duration }));
                                             },
-                                            _ => {
-                                                // do nothing
-                                            }
+                                            _ => { }
                                         };
                                     },
                                     None => {
