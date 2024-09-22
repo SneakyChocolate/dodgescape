@@ -452,7 +452,7 @@ impl Game {
             let mut enemy = Enemy::new(0.0, 20000.0, velocity, 90.0, "rgb(25,25,25)");
             let cd = rand::thread_rng().gen_range(200..=400);
             let radius = rand::thread_rng().gen_range(10.0..=30.0);
-            enemy.effects.push(EnemyEffect::Explode { lifetime: 400, radius, speed: 10.0, time_left: 0, cooldown: cd, color: "rgb(255,255,0)".to_owned(), amount: 10, effects: Vec::new(), under_dps: vec![] });
+            enemy.effects.push(EnemyEffect::Explode { lifetime: 400, radius: (10.0, 30.0), speed: 10.0, time_left: 0, cooldown: cd, color: "rgb(255,255,0)".to_owned(), amount: 10, effects: Vec::new(), under_dps: vec![] });
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
@@ -463,11 +463,21 @@ impl Game {
         for _ in 0..20 * spawn_m {
             let cap = 0.1 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let mut enemy = Enemy::new(-25000.0, 25000.0, velocity, 90.0, "rgb(200,200,220)");
+            let cloudradius = rand::thread_rng().gen_range(100.0..=300.0);
+            let mut enemy = Enemy::new(-25000.0, 25000.0, velocity, cloudradius, "rgb(100,80,150)");
+            enemy.harmless = true;
             let cd = rand::thread_rng().gen_range(400..=500);
-            let radius = rand::thread_rng().gen_range(10.0..=30.0);
-            let er = radius * 5.0;
-            enemy.effects.push(EnemyEffect::Explode { lifetime: 400, radius, speed: 15.0, time_left: 0, cooldown: cd, color: "rgb(255,255,255)".to_owned(), amount: 10, effects: vec![EnemyEffect::SlowPlayers { radius: er, slow: 0.0, duration: 100 }], under_dps: vec![DrawPack::new("rgba(0,0,255,0.2)", Shape::Circle { radius: er }, (0.0,0.0))] });
+            enemy.effects.push(EnemyEffect::Explode {
+                lifetime: 400,
+                radius: (10.0, 30.0),
+                speed: 15.0,
+                time_left: 0,
+                cooldown: cd,
+                color: "rgb(255,255,255)".to_owned(),
+                amount: 10,
+                effects: vec![EnemyEffect::SlowPlayers { radius: 100.0, slow: 0.0, duration: 100 }],
+                under_dps: vec![DrawPack::new("rgba(255,255,0,0.2)", Shape::Circle { radius: 100.0 }, (0.0,0.0))]
+            });
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
@@ -582,7 +592,7 @@ impl Game {
         self.spawn_area(corners, "rgb(100,200,100)", WallType::Poison);
         let corners = vec![(-15.0,15.0),(-10.0,15.0 + 5.0 / 3.0),(-8.0,8.0),(-15.0 - 5.0 / 3.0,10.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(150,100,200)", WallType::Lightning);
+        self.spawn_area(corners, "rgb(20,20,100)", WallType::Lightning);
         let corners = vec![(-15.0,-(15.0)),(-10.0,-(15.0 + 5.0 / 3.0)),(-8.0,-(8.0)),(-15.0 - 5.0 / 3.0,-(10.0))]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(210,100,200)", WallType::Candy);

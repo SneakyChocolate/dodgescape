@@ -40,8 +40,8 @@ impl Player {
     pub fn new(name: &String) -> Player {
         let color = Color::random().to_string();
         let mut p = Player {
-            x: -20000.0,
-            y: 20000.0,
+            x: 0.0,
+            y: 0.0,
             name: name.clone(),
             radius: 30.0,
             alive: true,
@@ -61,8 +61,8 @@ impl Player {
     fn handle_respawn(&mut self) {
         let key = "KeyR".to_owned();
         if self.keys_down.contains(&key) {
-            self.x = 0.0;
-            self.y = 0.0;
+            self.x = -20000.0;
+            self.y = 20000.0;
             self.alive = true;
         }
         let key = "KeyQ".to_owned();
