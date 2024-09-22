@@ -464,7 +464,10 @@ impl Game {
             let cap = 0.1 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let cloudradius = rand::thread_rng().gen_range(100.0..=300.0);
-            let mut enemy = Enemy::new(-25000.0, 25000.0, velocity, cloudradius, "rgb(100,80,150)");
+            let color = "rgba(100,80,150,0.7)";
+            let mut enemy = Enemy::new(-25000.0, 25000.0, velocity, cloudradius, color);
+            enemy.draw_packs.push(DrawPack::new(color, Shape::Circle { radius: cloudradius * 0.8 }, (cloudradius, cloudradius / 5.0)));
+            enemy.draw_packs.push(DrawPack::new(color, Shape::Circle { radius: cloudradius * 0.7 }, (-cloudradius, cloudradius / 4.0)));
             enemy.harmless = true;
             let cd = rand::thread_rng().gen_range(400..=500);
             enemy.effects.push(EnemyEffect::Explode {
@@ -474,9 +477,9 @@ impl Game {
                 time_left: 0,
                 cooldown: cd,
                 color: "rgb(255,255,255)".to_owned(),
-                amount: 10,
+                amount: (cloudradius / 20.0) as usize,
                 effects: vec![EnemyEffect::SlowPlayers { radius: 100.0, slow: 0.0, duration: 100 }],
-                under_dps: vec![DrawPack::new("rgba(255,255,0,0.2)", Shape::Circle { radius: 100.0 }, (0.0,0.0))]
+                under_dps: vec![DrawPack::new("rgba(255,255,0,0.2)", Shape::Circle { radius: 100.0 }, (0.0,0.0))],
             });
             enemies.push(enemy);
         }
