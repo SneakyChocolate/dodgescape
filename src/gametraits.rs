@@ -1,6 +1,9 @@
+use serde::Serialize;
+
 use crate::game::DrawPack;
 
-#[derive(Clone, Debug)]
+// TODO new radius for DrawPack and Effects
+#[derive(Serialize, Debug, Clone)]
 pub enum Radius {
     Absolute(f32),
     Relative(f32),

@@ -1,4 +1,4 @@
-use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::mpsc::{self, channel, Sender}, thread::{self, JoinHandle}};
+use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::mpsc::{self, Sender}, thread::{self, JoinHandle}};
 
 use crate::http::Http_request;
 
@@ -133,7 +133,7 @@ impl Server {
 
 #[cfg(test)]
 mod serde_test {
-    use crate::server::ClientMessage;
+    use crate::{gametraits::Radius, server::ClientMessage};
 
     #[test]
     fn object_with_missing_attribute() {
@@ -141,5 +141,13 @@ mod serde_test {
         let serialized = serde_json::to_string(&example).unwrap();
 
         assert_eq!(serialized, "{\"mode\":\"login\",\"username\":\"jo; 3\",\"x\":20.0,\"y\":null,\"keys_down\":[\"KeyW\"],\"wheel\":null}".to_owned());
+    }
+
+    #[test]
+    fn new_radius_enum() {
+        let example = Radius::Relative(5.0);
+        let serialized = serde_json::to_string(&example).unwrap();
+
+        assert_eq!(serialized, "{\"Relative\":5.0}".to_owned());
     }
 }
