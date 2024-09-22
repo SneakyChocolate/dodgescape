@@ -3,7 +3,7 @@
 use crate::{action::Action, collectable::Collectable, color::Color, game::{DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
 use crate::gametraits::*;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum PlayerEffect {
     SpeedAlter {origin: usize, slow: f32, ease: usize},
 }

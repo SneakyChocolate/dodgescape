@@ -1,6 +1,6 @@
-use rand::Rng;
+use rand::{thread_rng, Rng};
 
-use crate::{action::{Action}, game::{DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, vector};
+use crate::{action::Action, game::{DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, player::PlayerEffect, vector};
 use crate::gametraits::*;
 
 #[derive(Default)]
@@ -34,6 +34,7 @@ impl Enemy {
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new(color, Shape::Circle { radius: p.radius }, (0.0, 0.0)));
+        p.id = thread_rng().gen_range(0..10000);
 
         p
     }
@@ -117,11 +118,10 @@ pub fn handle_effects(game: &mut Game) {
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
                             if dist.2 <= *radius + player.radius {
                                 let id = enemy.id;
-                                // actions.push((p, Action::MulPlayerVelocity(*power)));
                                 // check if effect of this item id is already applied
-                                let position = enemy.effects.iter().position(|e| {
+                                let position = player.effects.iter().position(|e| {
                                     match e {
-                                        crate::enemy::EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                                        PlayerEffect::SpeedAlter { origin, slow, ease } => {
                                             *origin == id
                                         },
                                         _ => {
@@ -131,11 +131,11 @@ pub fn handle_effects(game: &mut Game) {
                                 });
                                 match position {
                                     Some(e) => {
-                                        let effect = enemy.effects.get(e).unwrap();
+                                        let effect = player.effects.get(p).unwrap();
                                         match effect {
-                                            crate::enemy::EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                                            PlayerEffect::SpeedAlter { origin, slow, ease } => {
                                                 // ease = *duration;
-                                                actions.push((e, Action::SetEnemySpeedAlterEase { group: g, effect: e, value: *duration }));
+                                                actions.push((p, Action::SetPlayerSpeedAlterEase { effect: e, value: *duration }));
                                             },
                                             _ => { }
                                         };

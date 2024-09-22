@@ -497,6 +497,7 @@ impl Game {
             let mut enemy = Enemy::new(25000.0, 25000.0, velocity, radius, color);
             enemy.effects.push(EnemyEffect::SlowPlayers { radius: radius * 3.0, slow: 0.5, duration: 200 });
             enemy.draw_packs.push(DrawPack::new("rgba(0,255,0,0.2)", Shape::Circle { radius: radius * 3.0 }, (0.0, 0.0)));
+            enemy.view_radius = radius * 3.0;
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
@@ -609,7 +610,7 @@ impl Game {
         // space spikes
         let corners = vec![(15.0,15.0),(10.0,15.0 + 5.0 / 3.0),(8.0,8.0),(15.0 + 5.0 / 3.0,10.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(100,200,100)", WallType::Poison);
+        self.spawn_area(corners, "rgb(50,100,50)", WallType::Poison);
         let corners = vec![(-15.0,15.0),(-10.0,15.0 + 5.0 / 3.0),(-8.0,8.0),(-15.0 - 5.0 / 3.0,10.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(20,20,100)", WallType::Lightning);

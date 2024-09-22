@@ -17,6 +17,7 @@ pub enum Action {
     ResetCooldown(usize),
     SetEnemyRadius(usize, f32),
     SetEnemySpeedAlterEase{group: usize, effect: usize, value: usize},
+    SetPlayerSpeedAlterEase{effect: usize, value: usize},
     SetPlayerSpeed(f32),
     SetPlayerVelocity((f32,f32)),
     SetPlayerZoomlimit((f32,f32)),
@@ -183,6 +184,16 @@ impl Action {
                 let effect = enemy.effects.get_mut(*effect).unwrap();
                 match effect {
                     EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                        *ease = *value;
+                    },
+                    _ => { }
+                }
+            },
+            Action::SetPlayerSpeedAlterEase {effect, value } => {
+                let player = game.players.get_mut(entity).unwrap();
+                let effect = player.effects.get_mut(*effect).unwrap();
+                match effect {
+                    PlayerEffect::SpeedAlter { origin, slow, ease } => {
                         *ease = *value;
                     },
                     _ => { }
