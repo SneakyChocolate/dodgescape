@@ -22,7 +22,7 @@ pub enum Action {
     SetPlayerZoomlimit((f32,f32)),
     SpawnCrumble(usize),
     SpawnEnemy { color: String, effects: Vec<EnemyEffect>, group: usize, radius: f32, velocity: (f32, f32) },
-    SpawnProjectile { group: usize, velocity: (f32, f32), radius: f32, color: String, lifetime: usize, effects: Vec<EnemyEffect>, underDPs: Vec<DrawPack> },
+    SpawnProjectile { group: usize, velocity: (f32, f32), radius: f32, color: String, lifetime: usize, effects: Vec<EnemyEffect>, under_dps: Vec<DrawPack> },
     UpdateEnemyVelocity(usize, (f32,f32)),
 }
 
@@ -79,12 +79,12 @@ impl Action {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 for effect in enemy.effects.iter_mut() {
                     match effect {
-                        crate::enemy::EnemyEffect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius, color, effects } => {
+                        crate::enemy::EnemyEffect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius, color, effects, under_dps } => {
                             if *time_left > 0 {
                                 *time_left -= 1;
                             }
                         },
-                        crate::enemy::EnemyEffect::Explode { lifetime, radius, speed, amount, time_left, cooldown, color, effects, underDPs } => {
+                        crate::enemy::EnemyEffect::Explode { lifetime, radius, speed, amount, time_left, cooldown, color, effects, under_dps: underDPs } => {
                             if *time_left > 0 {
                                 *time_left -= 1;
                             }
@@ -97,17 +97,17 @@ impl Action {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 for effect in enemy.effects.iter_mut() {
                     match effect {
-                        crate::enemy::EnemyEffect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius, color, effects } => {
+                        crate::enemy::EnemyEffect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius, color, effects, under_dps } => {
                             *time_left = *cooldown;
                         },
-                        crate::enemy::EnemyEffect::Explode { lifetime, radius, speed, amount, time_left, cooldown, color, effects, underDPs } => {
+                        crate::enemy::EnemyEffect::Explode { lifetime, radius, speed, amount, time_left, cooldown, color, effects, under_dps: underDPs } => {
                             *time_left = *cooldown;
                         },
                         _ => {},
                     }
                 }
             },
-            Action::SpawnProjectile { group, velocity, color, radius, lifetime, effects, underDPs } => {
+            Action::SpawnProjectile { group, velocity, color, radius, lifetime, effects, under_dps: underDPs } => {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 // projectile
                 let mut projectile = Enemy::new(enemy.x, enemy.y, *velocity, *radius, color.as_str());
