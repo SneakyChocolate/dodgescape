@@ -46,7 +46,7 @@ pub enum EnemyEffect {
     Lifetime(usize),
     Push {radius: f32, power: f32},
     Shoot {lifetime: usize, radius: f32, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize, color: String, effects: Vec<EnemyEffect>},
-    Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String, effects: Vec<EnemyEffect>, underDPs: Vec<DrawPack>},
+    Explode {lifetime: usize, radius: f32, speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String, effects: Vec<EnemyEffect>, underDPs: Vec<DrawPack>},
     SlowPlayers {radius: f32, slow: f32, duration: usize},
     Grow {size: f32, maxsize: f32, defaultsize: f32},
     SpeedAlter {origin: usize, slow: f32, ease: usize},
@@ -104,8 +104,7 @@ pub fn handle_effects(game: &mut Game) {
                         if *time_left == 0 {
                             for _ in 0..*amount {
                                 let v = (rand::thread_rng().gen_range(-*speed..=*speed), rand::thread_rng().gen_range(-*speed..=*speed));
-                                let r = rand::thread_rng().gen_range(radius.0..=radius.1);
-                                actions.push((i, Action::SpawnProjectile { group: g, velocity: v, radius: r, color: color.clone(), lifetime: *lifetime, effects: effects.clone(), underDPs: vec![] }));
+                                actions.push((i, Action::SpawnProjectile { group: g, velocity: v, radius: *radius, color: color.clone(), lifetime: *lifetime, effects: effects.clone(), underDPs: underDPs.clone() }));
                             }
                             actions.push((i, Action::ResetCooldown(g)));
                         }
