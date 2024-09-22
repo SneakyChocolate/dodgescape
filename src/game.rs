@@ -489,15 +489,32 @@ impl Game {
     fn spawn_poison_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Poison];
         let mut enemies = vec![];
-        for _ in 0..50 * spawn_m {
-            let cap = 0.5 * speed_m;
+        for _ in 0..150 * spawn_m {
+            let cap = 0.6 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let radius = rand::thread_rng().gen_range(100.0..=300.0);
+            let radius = rand::thread_rng().gen_range(100.0..=200.0);
             let color = "rgb(0,255,0)";
             let mut enemy = Enemy::new(25000.0, 25000.0, velocity, radius, color);
             enemy.effects.push(EnemyEffect::SlowPlayers { radius: radius * 3.0, slow: 0.5, duration: 200 });
             enemy.draw_packs.push(DrawPack::new("rgba(0,255,0,0.2)", Shape::Circle { radius: radius * 3.0 }, (0.0, 0.0)));
             enemy.view_radius = radius * 3.0;
+            enemies.push(enemy);
+        }
+        self.enemies.push((ids, enemies)); 
+    }
+    fn spawn_candy_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+        let ids = vec![WallType::Candy];
+        let mut enemies = vec![];
+        for _ in 0..400 * spawn_m {
+            let cap = 0.3 * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let radius = rand::thread_rng().gen_range(50.0..=100.0);
+            let color = "rgb(255,0,255)";
+            let mut enemy = Enemy::new(-25000.0, -25000.0, velocity, radius, color);
+            enemy.id = 1;
+            enemy.effects.push(EnemyEffect::SlowPlayers { radius: radius * 4.0, slow: 5.0, duration: 1 });
+            enemy.draw_packs.push(DrawPack::new("rgba(255,0,255,0.2)", Shape::Circle { radius: radius * 4.0 }, (0.0, 0.0)));
+            enemy.view_radius = radius * 4.0;
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
@@ -517,6 +534,7 @@ impl Game {
         self.spawn_ice_enemies(speed_m, spawn_m);
         self.spawn_lightning_enemies(speed_m, spawn_m);
         self.spawn_poison_enemies(speed_m, spawn_m);
+        self.spawn_candy_enemies(speed_m, spawn_m);
     }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, walltype: WallType) {
         let start = (0.0, 0.0);
@@ -616,7 +634,7 @@ impl Game {
         self.spawn_area(corners, "rgb(20,20,100)", WallType::Lightning);
         let corners = vec![(-15.0,-(15.0)),(-10.0,-(15.0 + 5.0 / 3.0)),(-8.0,-(8.0)),(-15.0 - 5.0 / 3.0,-(10.0))]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(210,100,200)", WallType::Candy);
+        self.spawn_area(corners, "rgb(110,50,100)", WallType::Candy);
         let corners = vec![(15.0,-(15.0)),(10.0,-(15.0 + 5.0 / 3.0)),(8.0,-(8.0)),(15.0 + 5.0 / 3.0,-(10.0))]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(200,50,50)", WallType::Hell);
