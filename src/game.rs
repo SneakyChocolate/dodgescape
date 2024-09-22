@@ -470,6 +470,7 @@ impl Game {
             enemy.draw_packs.push(DrawPack::new(color, Shape::Circle { radius: cloudradius * 0.7 }, (-cloudradius, cloudradius / 4.0)));
             enemy.harmless = true;
             let cd = rand::thread_rng().gen_range(400..=500);
+            let lightning_aura_radius = cloudradius / 2.0;
             enemy.effects.push(EnemyEffect::Explode {
                 lifetime: 400,
                 radius: (10.0, 30.0),
@@ -478,8 +479,8 @@ impl Game {
                 cooldown: cd,
                 color: "rgb(255,255,255)".to_owned(),
                 amount: (cloudradius / 20.0) as usize,
-                effects: vec![EnemyEffect::SlowPlayers { radius: 100.0, slow: 0.0, duration: 100 }],
-                under_dps: vec![DrawPack::new("rgba(255,255,0,0.2)", Shape::Circle { radius: 100.0 }, (0.0,0.0))],
+                effects: vec![EnemyEffect::SlowPlayers { radius: lightning_aura_radius, slow: 0.0, duration: 100 }],
+                under_dps: vec![DrawPack::new("rgba(255,255,0,0.2)", Shape::Circle { radius: lightning_aura_radius }, (0.0,0.0))],
             });
             enemies.push(enemy);
         }

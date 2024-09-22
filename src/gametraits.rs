@@ -1,5 +1,10 @@
 use crate::game::DrawPack;
 
+#[derive(Clone, Debug)]
+pub enum Radius {
+    Absolute(f32),
+    Relative(f32),
+}
 
 pub trait Drawable {
     fn get_draw_packs(&self) -> &Vec<DrawPack>;
