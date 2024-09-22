@@ -486,6 +486,21 @@ impl Game {
         }
         self.enemies.push((ids, enemies)); 
     }
+    fn spawn_poison_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+        let ids = vec![WallType::Poison];
+        let mut enemies = vec![];
+        for _ in 0..50 * spawn_m {
+            let cap = 0.5 * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let radius = rand::thread_rng().gen_range(100.0..=300.0);
+            let color = "rgb(0,255,0)";
+            let mut enemy = Enemy::new(25000.0, 25000.0, velocity, radius, color);
+            enemy.effects.push(EnemyEffect::SlowPlayers { radius: radius * 3.0, slow: 0.5, duration: 200 });
+            enemy.draw_packs.push(DrawPack::new("rgba(0,255,0,0.2)", Shape::Circle { radius: radius * 3.0 }, (0.0, 0.0)));
+            enemies.push(enemy);
+        }
+        self.enemies.push((ids, enemies)); 
+    }
     pub fn spawn_enemies(&mut self) {
         let spawn_m = 3;
         let speed_m = 8.0;
@@ -500,6 +515,7 @@ impl Game {
         self.spawn_explosion_enemies(speed_m, spawn_m);
         self.spawn_ice_enemies(speed_m, spawn_m);
         self.spawn_lightning_enemies(speed_m, spawn_m);
+        self.spawn_poison_enemies(speed_m, spawn_m);
     }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, walltype: WallType) {
         let start = (0.0, 0.0);
