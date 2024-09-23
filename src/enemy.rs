@@ -61,7 +61,7 @@ pub fn handle_effects(game: &mut Game) {
                 match effect {
                     EnemyEffect::Chase { radius, power } => {
                         for player in game.players.iter() {
-                            // if !player.alive {continue;}
+                            if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
                             if dist.2 <= *radius + player.radius {
                                 let add = vector::normalize((dist.0, dist.1), *power);
