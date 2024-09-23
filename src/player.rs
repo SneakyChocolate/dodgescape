@@ -65,6 +65,32 @@ impl Player {
             self.y = 0.0;
             self.alive = true;
         }
+        // TODO need scrolls (items) to tp to the outer spawns
+        let spawnd = 11000.0;
+        let key = "Digit1".to_owned();
+        if self.keys_down.contains(&key) {
+            self.x = -spawnd;
+            self.y = -spawnd;
+            self.alive = true;
+        }
+        let key = "Digit2".to_owned();
+        if self.keys_down.contains(&key) {
+            self.x = spawnd;
+            self.y = -spawnd;
+            self.alive = true;
+        }
+        let key = "Digit3".to_owned();
+        if self.keys_down.contains(&key) {
+            self.x = -spawnd;
+            self.y = spawnd;
+            self.alive = true;
+        }
+        let key = "Digit4".to_owned();
+        if self.keys_down.contains(&key) {
+            self.x = spawnd;
+            self.y = spawnd;
+            self.alive = true;
+        }
         let key = "KeyQ".to_owned();
         if self.keys_down.contains(&key) {
             self.alive = true;

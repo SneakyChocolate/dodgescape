@@ -51,6 +51,7 @@ pub enum EnemyEffect {
     SlowPlayers {radius: Radius, slow: f32, duration: usize},
     Grow {size: f32, maxsize: f32, defaultsize: f32},
     SpeedAlter {origin: usize, slow: f32, ease: usize},
+    // TODO shrink effect
 }
 
 pub fn handle_effects(game: &mut Game) {
