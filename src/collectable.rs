@@ -27,8 +27,8 @@ impl Collectable {
             items,
             ..Default::default()
         };
-        p.draw_packs.push(DrawPack::new(color.mul(0.8).to_string().as_str(), Shape::Circle { radius: p.radius }, (0.0, 0.0)));
-        p.draw_packs.push(DrawPack::new(color.mul(0.5).to_string().as_str(), Shape::Circle { radius: p.radius * 0.8 }, (0.0, 0.0)));
+        p.draw_packs.push(DrawPack::new(color.mul(0.8).to_string().as_str(), Shape::Circle { radius: Radius::Relative(1.0) }, (0.0, 0.0)));
+        p.draw_packs.push(DrawPack::new(color.mul(0.5).to_string().as_str(), Shape::Circle { radius: Radius::Relative(0.8) }, (0.0, 0.0)));
         p.draw_packs.push(DrawPack::new(color.to_string().as_str(), Shape::Text { content: "B".to_owned(), size: 20.0 }, (-5.0, 7.0)));
 
         p

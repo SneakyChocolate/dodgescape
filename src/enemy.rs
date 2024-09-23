@@ -14,7 +14,7 @@ pub struct Enemy {
     pub radius: f32,
     pub effects: Vec<EnemyEffect>,
     pub just_collided: bool,
-    pub view_radius: f32,
+    pub view_radius: Radius,
     pub harmless: bool,
 }
 
@@ -33,7 +33,7 @@ impl Enemy {
             speed_multiplier: 1.0,
             ..Default::default()
         };
-        p.draw_packs.push(DrawPack::new(color, Shape::Circle { radius: p.radius }, (0.0, 0.0)));
+        p.draw_packs.push(DrawPack::new(color, Shape::Circle { radius: Radius::Relative(1.0) }, (0.0, 0.0)));
         p.id = thread_rng().gen_range(0..10000);
 
         p
@@ -42,13 +42,13 @@ impl Enemy {
 
 #[derive(Clone)]
 pub enum EnemyEffect {
-    Chase {radius: f32, power: f32},
+    Chase {radius: Radius, power: f32},
     Crumble,
     Lifetime(usize),
-    Push {radius: f32, power: f32},
-    Shoot {lifetime: usize, radius: f32, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize, color: String, effects: Vec<EnemyEffect>, under_dps: Vec<DrawPack>},
+    Push {radius: Radius, power: f32},
+    Shoot {lifetime: usize, radius: Radius, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize, color: String, effects: Vec<EnemyEffect>, under_dps: Vec<DrawPack>},
     Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String, effects: Vec<EnemyEffect>, under_dps: Vec<DrawPack>},
-    SlowPlayers {radius: f32, slow: f32, duration: usize},
+    SlowPlayers {radius: Radius, slow: f32, duration: usize},
     Grow {size: f32, maxsize: f32, defaultsize: f32},
     SpeedAlter {origin: usize, slow: f32, ease: usize},
 }

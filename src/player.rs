@@ -52,7 +52,7 @@ impl Player {
             speed_multiplier: 1.0,
             ..Default::default()
         };
-        p.draw_packs.push(DrawPack::new(p.color.as_str(), Shape::Circle { radius: p.radius }, (0.0, 0.0)));
+        p.draw_packs.push(DrawPack::new(p.color.as_str(), Shape::Circle { radius: Radius::Relative(1.0) }, (0.0, 0.0)));
         p.draw_packs.push(DrawPack::new("white", Shape::Text { content: name.clone(), size: 20.0 }, (-20.0, -40.0)));
         // p.draw_packs.push(DrawPack::new("red", Shape::Line { x: 0.0, y: 0.0, width: 10.0 }, (0.0, 0.0)));
 
@@ -61,8 +61,8 @@ impl Player {
     fn handle_respawn(&mut self) {
         let key = "KeyR".to_owned();
         if self.keys_down.contains(&key) {
-            self.x = 0.0;
-            self.y = 0.0;
+            self.x = -20000.0;
+            self.y = 20000.0;
             self.alive = true;
         }
         let key = "KeyQ".to_owned();

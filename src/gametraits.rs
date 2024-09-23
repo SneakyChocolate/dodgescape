@@ -3,10 +3,16 @@ use serde::Serialize;
 use crate::game::DrawPack;
 
 // TODO new radius for DrawPack and Effects
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, Copy)]
 pub enum Radius {
     Absolute(f32),
     Relative(f32),
+}
+
+impl Default for Radius {
+    fn default() -> Self {
+        Radius::Relative(1.0)
+    }
 }
 
 pub trait Drawable {

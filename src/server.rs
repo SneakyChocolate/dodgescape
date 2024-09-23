@@ -133,7 +133,7 @@ impl Server {
 
 #[cfg(test)]
 mod serde_test {
-    use crate::{gametraits::Radius, server::ClientMessage};
+    use crate::{enemy::Enemy, game::DrawPack, gametraits::Radius, server::ClientMessage};
 
     #[test]
     fn object_with_missing_attribute() {
@@ -149,5 +149,12 @@ mod serde_test {
         let serialized = serde_json::to_string(&example).unwrap();
 
         assert_eq!(serialized, "{\"Relative\":5.0}".to_owned());
+    }
+    #[test]
+    fn new_radius_enum_dp() {
+        let example = DrawPack::new("rgb(0,32,15)", crate::game::Shape::Circle { radius: Radius::Absolute(30.3) }, (0.0, 0.0));
+        let serialized = serde_json::to_string(&example).unwrap();
+
+        assert_eq!(serialized, "{\"Radius\":{\"Relative\":5.0}}".to_owned());
     }
 }
