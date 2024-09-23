@@ -136,7 +136,6 @@ function render(data) {
       let shape = object.draw_pack.shape[s];
       if (s == "Circle") {
         let radius = 0;
-        console.log(object);
         for (r in shape.radius) {
           if (r == "Absolute") {
             radius = shape.radius[r];

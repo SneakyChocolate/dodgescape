@@ -4,8 +4,9 @@ use crate::{collectable::Collectable, color::Color, enemy::{Enemy, EnemyEffect},
 use rand::prelude::*;
 use serde::Serialize;
 
-pub fn draw(position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
-    format!("{{\"position\":{{\"x\":{},\"y\":{}}},\"draw_pack\":{},\"camera\":{{\"x\":{},\"y\":{}}},\"zoom\":{}}},",
+pub fn draw(radius: f32, position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
+    format!("{{\"radius\":{},\"position\":{{\"x\":{},\"y\":{}}},\"draw_pack\":{},\"camera\":{{\"x\":{},\"y\":{}}},\"zoom\":{}}},",
+        radius,
         position.0,
         position.1,
         serde_json::to_string(&draw_pack).unwrap(),
@@ -19,7 +20,7 @@ pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom
     let draw_packs = object.get_draw_packs();
     let mut output = "".to_owned();
     for draw_pack in draw_packs {
-        let s = draw(&pos, draw_pack, &camera, zoom);
+        let s = draw(*object.get_radius(), &pos, draw_pack, &camera, zoom);
         output.push_str(&s);
     }
     output
@@ -851,7 +852,7 @@ impl Game {
         let mut objects = "{\"objects\":[".to_owned();
         // map
         for shape in self.map.iter() {
-            let acc = draw(&shape.0, &shape.1, &camera, zoom);
+            let acc = draw(0.0, &shape.0, &shape.1, &camera, zoom);
             objects.push_str(&acc);
         }
         for (position, drawpack, xory) in self.grid.iter() {
@@ -862,7 +863,7 @@ impl Game {
             else {
                 if dist.1.abs() > view {continue;}
             }
-            let acc = draw(&position, &drawpack, &camera, zoom);
+            let acc = draw(0.0, &position, &drawpack, &camera, zoom);
             objects.push_str(&acc);
         }
 
@@ -884,7 +885,8 @@ impl Game {
             for item in player.inventory.items.iter() {
                 if item.active {
                     for dp in item.drawpacks.iter() {
-                        let acc = draw(&(player.x, player.y), &dp, &camera, zoom);
+                        // let acc = draw(&(player.x, player.y), &dp, &camera, zoom);
+                        let acc = draw(player.radius, &(player.x, player.y), &dp, &camera, zoom);
                         objects.push_str(&acc);
                     }
                 }
@@ -908,11 +910,11 @@ impl Game {
         for object in self.players.iter() {
             if *name == *object.name && object.inventory.open {
                 let drawpack = DrawPack::new("rgba(200,100,50,0.8)", Shape::Rectangle { width: 400.0, height: 800.0 }, (-900.0, -400.0));
-                let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
+                let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
                 objects.push_str(&acc);
 
                 let drawpack = DrawPack::new("white", Shape::Text { content: "Inventory".to_owned(), size: 30.0 }, (-850.0, -350.0));
-                let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
+                let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
                 objects.push_str(&acc);
 
                 for (i, item) in object.inventory.items.iter().enumerate() {
@@ -920,7 +922,7 @@ impl Game {
                         Some(s) => {
                             if i == s {
                                 let drawpack = DrawPack::new("rgba(255,255,255,0.3)", Shape::Rectangle { width: 300.0, height: 40.0 }, (-850.0, -330.0 + 50.0 * (i as f32)));
-                                let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
+                                let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
                                 objects.push_str(&acc);
                             }
                         },
@@ -933,7 +935,7 @@ impl Game {
                         "black"
                     };
                     let drawpack = DrawPack::new(color, Shape::Text { content: item.name.clone(), size: 30.0 }, (-850.0, -300.0 + 50.0 * (i as f32)));
-                    let acc = draw(&(object.x, object.y), &drawpack, &camera, 1.0);
+                    let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
                     objects.push_str(&acc);
                 }
             }
