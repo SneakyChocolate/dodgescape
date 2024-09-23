@@ -898,9 +898,9 @@ impl Game {
         }
         // enemies
         for group in self.enemies.iter() {
-            for object in group.1.iter() {
-                if vector::distance(camera, (object.x, object.y)).2 - object.view_radius > view {continue;}
-                let acc = draw_object(object, &camera, zoom);
+            for enemy in group.1.iter() {
+                if vector::distance(camera, (enemy.x, enemy.y)).2 - enemy.view_radius.translate(enemy.radius) > view {continue;}
+                let acc = draw_object(enemy, &camera, zoom);
                 objects.push_str(&acc);
             }
         }

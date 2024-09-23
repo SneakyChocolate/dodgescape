@@ -28,7 +28,7 @@ impl Enemy {
             x,y,
             velocity,
             radius,
-            view_radius: radius,
+            view_radius: Radius::Relative(1.0),
             draw_packs: vec![],
             speed_multiplier: 1.0,
             ..Default::default()
@@ -63,7 +63,7 @@ pub fn handle_effects(game: &mut Game) {
                         for player in game.players.iter() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= *radius + player.radius {
+                            if dist.2 <= radius.translate(enemy.radius) + player.radius {
                                 let add = vector::normalize((dist.0, dist.1), *power);
                                 actions.push((i, Action::UpdateEnemyVelocity(g, (enemy.velocity.0 + add.0, enemy.velocity.1 + add.1))));
                             }
@@ -83,7 +83,7 @@ pub fn handle_effects(game: &mut Game) {
                                 continue;
                             }
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= *radius + player.radius {
+                            if dist.2 <= radius.translate(enemy.radius) + player.radius {
                                 let add = vector::normalize((dist.0, dist.1), *power);
                                 actions.push((p, Action::AddPlayerPosition(add)));
                             }
@@ -93,7 +93,7 @@ pub fn handle_effects(game: &mut Game) {
                         for player in game.players.iter() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= *radius + player.radius {
+                            if dist.2 <= radius.translate(enemy.radius) + player.radius {
                                 let v = vector::normalize((dist.0, dist.1), *speed);
                                 if *time_left == 0 {
                                     actions.push((i, Action::SpawnProjectile { group: g, velocity: v, radius: *projectile_radius, color: color.clone(), lifetime: *lifetime, effects: effects.clone(), under_dps: under_dps.clone() }));
@@ -119,7 +119,7 @@ pub fn handle_effects(game: &mut Game) {
                         for (p, player) in game.players.iter().enumerate() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= *radius + player.radius {
+                            if dist.2 <= radius.translate(enemy.radius) + player.radius {
                                 let id = enemy.id;
                                 // check if effect of this item id is already applied
                                 let position = player.effects.iter().position(|e| {

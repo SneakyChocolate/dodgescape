@@ -155,6 +155,6 @@ mod serde_test {
         let example = DrawPack::new("rgb(0,32,15)", crate::game::Shape::Circle { radius: Radius::Absolute(30.3) }, (0.0, 0.0));
         let serialized = serde_json::to_string(&example).unwrap();
 
-        assert_eq!(serialized, "{\"Radius\":{\"Relative\":5.0}}".to_owned());
+        assert_eq!(serialized, "{\"color\":\"rgb(0,32,15)\",\"shape\":{\"Circle\":{\"radius\":{\"Absolute\":30.3}}},\"offset\":[0.0,0.0]}".to_owned());
     }
 }

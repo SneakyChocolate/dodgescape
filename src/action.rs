@@ -136,16 +136,6 @@ impl Action {
             Action::SetEnemyRadius(group, radius) => {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 enemy.radius = *radius;
-                enemy.view_radius = *radius;
-                for dp in enemy.draw_packs.iter_mut().rev() {
-                    match &mut dp.shape {
-                        crate::game::Shape::Circle { radius: r } => {
-                            *r = *radius;
-                            break;
-                        },
-                        _ => {}
-                    }
-                }
             },
             Action::SetPlayerSpeed(s) => {
                 let player = game.players.get_mut(entity).unwrap();

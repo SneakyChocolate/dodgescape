@@ -9,6 +9,15 @@ pub enum Radius {
     Relative(f32),
 }
 
+impl Radius {
+    pub fn translate(&self, origin: f32) -> f32 {
+        match self {
+            Radius::Absolute(v) => *v,
+            Radius::Relative(v) => origin * *v,
+        }
+    }
+}
+
 impl Default for Radius {
     fn default() -> Self {
         Radius::Relative(1.0)

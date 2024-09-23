@@ -135,7 +135,18 @@ function render(data) {
     for (s in object.draw_pack.shape) {
       let shape = object.draw_pack.shape[s];
       if (s == "Circle") {
-        circle(x, y, shape.radius * object.zoom * f, object.draw_pack.color);
+        let radius = 0;
+        console.log(object);
+        for (r in shape.radius) {
+          if (r == "Absolute") {
+            radius = shape.radius[r];
+          }
+          else if (r == "Relative") {
+            radius = shape.radius[r] * object.radius;
+          }
+
+        }
+        circle(x, y, radius * object.zoom * f, object.draw_pack.color);
       }
       else if (s == "Rectangle") {
         rect(x, y, shape.width * object.zoom * f, shape.height * object.zoom * f, object.draw_pack.color);
