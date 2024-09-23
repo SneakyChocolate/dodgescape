@@ -471,7 +471,7 @@ impl Game {
             enemy.draw_packs.push(DrawPack::new(color, Shape::Circle { radius: Radius::Relative(0.7) }, (-cloudradius, cloudradius / 4.0)));
             enemy.harmless = true;
             let cd = rand::thread_rng().gen_range(400..=500);
-            let lightning_aura_radius = Radius::Relative(3.0);
+            let lightning_aura_radius = Radius::Relative(5.0);
             enemy.effects.push(EnemyEffect::Explode {
                 lifetime: 400,
                 radius: (10.0, 30.0),
@@ -497,7 +497,7 @@ impl Game {
             let color = "rgb(60,0,0)";
             let mut enemy = Enemy::new(25000.0, -25000.0, velocity, radius, color);
             let cd = rand::thread_rng().gen_range(400..=500);
-            let fire_aura_radius = Radius::Relative(3.0);
+            let fire_aura_radius = Radius::Relative(5.0);
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,0,0.2)", Shape::Circle { radius: Radius::Relative(3.0) }, (0.0, 0.0)));
             enemy.view_radius = Radius::Relative(3.0);
             enemy.effects.push(EnemyEffect::Explode {
