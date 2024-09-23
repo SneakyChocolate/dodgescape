@@ -3,6 +3,7 @@ use crate::{enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game}, player::PlayerE
 
 pub enum Action {
     AddPlayerVelocity((f32,f32)),
+    AddPlayerPosition((f32,f32)),
     DecrementEnemySpeedAlterEase{group: usize, effect: usize},
     Despawn(usize),
     MulEnemySpeedMultiplier {group: usize, f: f32},
@@ -45,6 +46,11 @@ impl Action {
             Action::AddPlayerVelocity(v) => {
                 let object = game.players.get_mut(entity).unwrap();
                 object.velocity = (object.velocity.0 + v.0, object.velocity.1 + v.1);
+            },
+            Action::AddPlayerPosition(v) => {
+                let object = game.players.get_mut(entity).unwrap();
+                object.x += v.0;
+                object.y += v.1;
             },
             Action::MulPlayerVelocity(factor) => {
                 let object = game.players.get_mut(entity).unwrap();

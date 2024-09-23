@@ -79,10 +79,13 @@ pub fn handle_effects(game: &mut Game) {
                     },
                     EnemyEffect::Push { radius, power } => {
                         for (p, player) in game.players.iter().enumerate() {
+                            if !player.alive {
+                                continue;
+                            }
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
                             if dist.2 <= *radius + player.radius {
                                 let add = vector::normalize((dist.0, dist.1), *power);
-                                actions.push((p, Action::AddPlayerVelocity(add)));
+                                actions.push((p, Action::AddPlayerPosition(add)));
                             }
                         }
                     },

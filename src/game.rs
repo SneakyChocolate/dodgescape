@@ -541,8 +541,8 @@ impl Game {
             let color = "rgb(255,0,255)";
             let mut enemy = Enemy::new(-25000.0, -25000.0, velocity, radius, color);
             enemy.id = 1;
-            enemy.effects.push(EnemyEffect::SlowPlayers { radius: radius * 4.0, slow: 5.0, duration: 1 });
-            enemy.effects.push(EnemyEffect::Chase { radius: radius * 3.0, power: -0.2 });
+            enemy.effects.push(EnemyEffect::Chase { radius: radius * 3.0, power: -0.05 });
+            enemy.effects.push(EnemyEffect::Push { radius: radius * 4.0, power: -1.5 });
             enemy.draw_packs.push(DrawPack::new("rgba(255,0,255,0.2)", Shape::Circle { radius: radius * 4.0 }, (0.0, 0.0)));
             enemy.view_radius = radius * 4.0;
             enemies.push(enemy);
