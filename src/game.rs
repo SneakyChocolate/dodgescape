@@ -278,9 +278,11 @@ impl Game {
         for _ in 0..5 * spawn_m {
             let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let mut enemy = Enemy::new(3000.0, -3000.0, velocity, rand::thread_rng().gen_range(400.0..=600.0), "rgb(10,10,100)");
+            let radius = rand::thread_rng().gen_range(400.0..=600.0);
+            let mut enemy = Enemy::new(3000.0, -3000.0, velocity, radius, "rgb(10,10,100)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(10,10,100,0.5)", Shape::Circle { radius: Radius::Relative(1.3) }, (0.0, 0.0)));
             enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(1.3), power: -2.0 });
+            // enemy.draw_packs.push(DrawPack::new("", Shape::Image { keyword: "candytop".to_owned(), scale: radius / 300.0 }, (-radius / 1.2, -radius / 1.2)));
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
