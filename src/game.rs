@@ -693,23 +693,32 @@ impl Game {
         self.spawn_grid(40000.0, "rgb(255,255,255,0.05)", 500.0, 10.0);
     }
     pub fn spawn_collectables(&mut self) {
+        let scale = 0.3;
         let mut item_counter = 0;
         let c = Collectable::new(2000.0, 2000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("monocle", vec![ItemEffect::Vision((0.9,0.9))], vec![], &mut item_counter)
+            Item::new("monocle", vec![ItemEffect::Vision((0.9,0.9))], vec![], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "monocle".to_owned(), scale }, (0.0, 0.0)))
+            )
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, -2000.0, Color::new(200, 200, 100, 1), vec![
             Item::new("microscope", vec![
                 ItemEffect::Vision((1.0,5.0)),
-            ], vec![], &mut item_counter)
+            ], vec![], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "microscope".to_owned(), scale }, (0.0, 0.0)))
+            )
         ]);
         self.collectables.push(c);
         let c = Collectable::new(4000.0, -4000.0, Color::new(255, 255, 255, 1), vec![
-            Item::new("binoculars", vec![ItemEffect::Vision((0.7,1.0))], vec![], &mut item_counter)
+            Item::new("binoculars", vec![ItemEffect::Vision((0.7,1.0))], vec![], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "binoculars".to_owned(), scale }, (0.0, 0.0)))
+            )
         ]);
         self.collectables.push(c);
         let c = Collectable::new(-6000.0, 0.0, Color::new(200, 200, 0, 1), vec![
-            Item::new("telescope", vec![ItemEffect::Vision((0.4,0.6))], vec![], &mut item_counter)
+            Item::new("telescope", vec![ItemEffect::Vision((0.4,0.6))], vec![], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "telescope".to_owned(), scale }, (0.0, 0.0)))
+            )
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
@@ -717,7 +726,9 @@ impl Game {
                 ItemEffect::SlowEnemies { slow: 0.5, radius: 200.0, duration: 100 },
             ], vec![
                 DrawPack::new("rgba(255,0,0,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
-            ], &mut item_counter)
+            ], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "heatwave".to_owned(), scale }, (0.0, 0.0)))
+            )
         ]);
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
@@ -725,11 +736,15 @@ impl Game {
                 ItemEffect::SlowEnemies { slow: 0.8, radius: 600.0, duration: 1 },
             ], vec![
                 DrawPack::new("rgba(100,100,255,0.1)", Shape::Circle { radius: Radius::Relative(20.0) }, (0.0, 0.0))
-            ], &mut item_counter)
+            ], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "blizzard".to_owned(), scale }, (0.0, 0.0)))
+            )
         ]);
         self.collectables.push(c);
         let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
-            Item::new("univeye", vec![ ItemEffect::Vision((0.01,1.0)), ], vec![ ], &mut item_counter)
+            Item::new("univeye", vec![ ItemEffect::Vision((0.01,1.0)), ], vec![ ], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "univeye".to_owned(), scale }, (0.0, 0.0)))
+            )
         ]);
         self.collectables.push(c);
         let cords = vec![(8,0),(-8,0),(0,8),(0,-8)];
@@ -741,7 +756,9 @@ impl Game {
                 let c = Collectable::new(point.0, point.1, Color::new(255,0,0,1), vec![
                     Item::new("dragonfire rune", vec![
                         ItemEffect::Speed(1.1),
-                    ], vec![], &mut item_counter)
+                    ], vec![], &mut item_counter,
+                        Some(DrawPack::new("", Shape::Image { keyword: "dragonfirerune".to_owned(), scale }, (0.0, 0.0)))
+                    )
                 ]);
                 self.collectables.push(c);
             }
@@ -917,6 +934,7 @@ impl Game {
                 let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
                 objects.push_str(&acc);
 
+                // inventory items
                 for (i, item) in object.inventory.items.iter().enumerate() {
                     match object.inventory.selected_item {
                         Some(s) => {
@@ -937,6 +955,13 @@ impl Game {
                     let drawpack = DrawPack::new(color, Shape::Text { content: item.name.clone(), size: 30.0 }, (-850.0, -300.0 + 50.0 * (i as f32)));
                     let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
                     objects.push_str(&acc);
+                    match &item.icon {
+                        Some(icon) => {
+                            let acc = draw(0.0, &(object.x - 890.0, object.y -325.0 + 50.0 * (i as f32)), icon, &camera, 1.0);
+                            objects.push_str(&acc);
+                        },
+                        None => {},
+                    }
                 }
             }
         }

@@ -126,12 +126,15 @@ impl Server {
 
             // ingame resources
             "GET /monocle.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/monocle.png").unwrap()),
+            "GET /microscope.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/microscope.png").unwrap()),
             "GET /binoculars.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/binoculars.png").unwrap()),
             "GET /telescope.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/telescope.png").unwrap()),
             "GET /heatwave.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/heatwave.png").unwrap()),
             "GET /blizzard.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/blizzard.png").unwrap()),
-            "GET /candytop.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/candytop.png").unwrap()),
             "GET /univeye.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/univeye.png").unwrap()),
+            "GET /dragonfirerune.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/dragonfirerune.png").unwrap()),
+
+            "GET /candytop.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/candytop.png").unwrap()),
             // "GET /monocle.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/monocle.png").unwrap()),
             _ => ("HTTP/1.1 404 NOT FOUND", fs::read("./res/404.html").unwrap()),
         };

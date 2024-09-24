@@ -8,6 +8,7 @@ pub struct Item {
     pub active: bool,
     pub effects: Vec<ItemEffect>,
     pub drawpacks: Vec<DrawPack>,
+    pub icon: Option<DrawPack>,
 }
 
 #[derive(Debug)]
@@ -76,13 +77,14 @@ pub fn handle_effects(game: &mut Game) {
 }
 
 impl Item {
-    pub fn new(name: &str, effects: Vec<ItemEffect>, drawpacks: Vec<DrawPack>, item_counter: &mut usize) -> Self {
+    pub fn new(name: &str, effects: Vec<ItemEffect>, drawpacks: Vec<DrawPack>, item_counter: &mut usize, icon: Option<DrawPack>) -> Self {
         let item = Item {
             name: name.to_owned(),
             active: false,
             effects,
             drawpacks,
             id: *item_counter,
+            icon,
         };
         *item_counter += 1;
         item

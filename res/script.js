@@ -74,10 +74,14 @@ function new_image(keyword, url) {
 }
 
 new_image("monocle", "monocle.png");
+new_image("microscope", "microscope.png");
 new_image("binoculars", "binoculars.png");
 new_image("telescope", "telescope.png");
 new_image("heatwave", "heatwave.png");
 new_image("blizzard", "blizzard.png");
+new_image("univeye", "univeye.png");
+new_image("dragonfirerune", "dragonfirerune.png");
+
 new_image("candytop", "candytop.png");
 
 function draw_image(x, y, keyword, scale) {
