@@ -44,13 +44,12 @@ pub enum Shape {
     Line{width: f32, x: f32, y: f32},
     Text{content: String, size: f32},
     Poly{corners: Vec<(f32,f32)>},
+    Image{keyword: String, scale: f32},
 }
 
 impl Default for Shape {
     fn default() -> Self {
         Self::Circle { radius: Radius::Relative(1.0) }
-        // Self::Rectangle { width: 10.0, height: 20.0 }
-        // Self::Line {x: 0.0, y: 0.0}
     }
 }
 #[derive(Serialize, Debug, Clone)]
@@ -545,6 +544,7 @@ impl Game {
             enemy.effects.push(EnemyEffect::Chase { radius: Radius::Relative(3.0), power: -0.05 });
             enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(4.0), power: -1.5 });
             enemy.draw_packs.push(DrawPack::new("rgba(255,0,255,0.2)", Shape::Circle { radius: Radius::Relative(4.0) }, (0.0, 0.0)));
+            enemy.draw_packs.push(DrawPack::new("", Shape::Image { keyword: "candytop".to_owned(), scale: radius / 300.0 }, (-radius / 1.2, -radius / 1.2)));
             enemy.view_radius = Radius::Relative(4.0);
             enemies.push(enemy);
         }
@@ -729,7 +729,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
-            Item::new("megascope", vec![ ItemEffect::Vision((0.01,1.0)), ], vec![ ], &mut item_counter)
+            Item::new("univeye", vec![ ItemEffect::Vision((0.01,1.0)), ], vec![ ], &mut item_counter)
         ]);
         self.collectables.push(c);
         let cords = vec![(8,0),(-8,0),(0,8),(0,-8)];

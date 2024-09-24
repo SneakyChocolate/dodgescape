@@ -1,3 +1,4 @@
+const host = "127.0.0.1:7878/";
 let login_button = document.getElementById("login");
 let username = document.getElementById("nameinput");
 let canvas;
@@ -60,6 +61,29 @@ function circle(x, y, radius, color) {
     ctx.fillStyle = color;
     ctx.fill();
     ctx.closePath();
+}
+
+let images = [ ];
+
+function new_image(keyword, url) {
+  let img = new Image();
+  img.src = url;
+  img.onload = function() {
+    images.push({"keyword": keyword, "image": img});
+  }
+}
+
+new_image("monocle", "monocle.png");
+new_image("binoculars", "binoculars.png");
+new_image("telescope", "telescope.png");
+new_image("heatwave", "heatwave.png");
+new_image("blizzard", "blizzard.png");
+new_image("candytop", "candytop.png");
+
+function draw_image(x, y, keyword, scale) {
+  let img = images.find((e) => {return e.keyword == keyword;});
+  if (img == undefined) return;
+  ctx.drawImage(img.image, x, y, img.image.width * scale, img.image.height * scale);
 }
 
 function rect(x, y, width, height, color) {
@@ -178,13 +202,18 @@ function render(data) {
         ctx.closePath();
         ctx.fill();
       }
+      else if (s == "Image") {
+        let keyword = shape.keyword;
+        let scale = shape.scale;
+        draw_image(x, y, keyword, scale * object.zoom * f);
+      }
     }
   }
   return;
 }
 
 login_button.onclick = function(_e) {
-  let ws = new WebSocket("ws://127.0.0.1:7878/");
+  let ws = new WebSocket("ws://" + host);
   ws.onopen = function() {
     // here comes what happens after login
     let loginmsg = JSON.stringify({mode: "login", username: username.value, x: mouse_x, y: mouse_y, keys_down: keys_down, wheel: wheel});
