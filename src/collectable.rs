@@ -5,6 +5,7 @@ use crate::gametraits::*;
 pub struct Collectable {
     pub velocity: (f32, f32),
     pub speed_multiplier: f32,
+    pub radius_multiplier: f32,
     pub x: f32,
     pub y: f32,
     pub draw_packs: Vec<DrawPack>,
@@ -25,6 +26,7 @@ impl Collectable {
             radius: 15.0,
             draw_packs: vec![],
             items,
+            radius_multiplier: 1.0,
             ..Default::default()
         };
         p.draw_packs.push(DrawPack::new(color.mul(0.8).to_string().as_str(), Shape::Circle { radius: Radius::Relative(1.0) }, (0.0, 0.0)));

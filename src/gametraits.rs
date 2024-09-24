@@ -24,7 +24,7 @@ impl Default for Radius {
 }
 
 pub trait Drawable {
-    fn get_radius(&self) -> &f32;
+    fn get_radius(&self) -> f32;
     fn get_draw_packs(&self) -> &Vec<DrawPack>;
 }
 #[macro_export]
@@ -34,8 +34,8 @@ macro_rules! impl_Drawable {
             fn get_draw_packs(&self) -> &Vec<DrawPack> {
                 &self.draw_packs
             }
-            fn get_radius(&self) -> &f32 {
-                &self.radius
+            fn get_radius(&self) -> f32 {
+                self.radius * self.radius_multiplier
             }
         }
     };

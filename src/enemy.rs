@@ -8,6 +8,7 @@ pub struct Enemy {
     pub id: usize,
     pub velocity: (f32, f32),
     pub speed_multiplier: f32,
+    pub radius_multiplier: f32,
     pub x: f32,
     pub y: f32,
     pub draw_packs: Vec<DrawPack>,
@@ -51,6 +52,7 @@ pub enum EnemyEffect {
     SlowPlayers {radius: Radius, slow: f32, duration: usize},
     Grow {size: f32, maxsize: f32, defaultsize: f32},
     SpeedAlter {origin: usize, slow: f32, ease: usize},
+    ShrinkPlayers {radius: Radius, shrink: f32, duration: usize},
     // TODO shrink effect
 }
 
@@ -64,7 +66,7 @@ pub fn handle_effects(game: &mut Game) {
                         for player in game.players.iter() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= radius.translate(enemy.radius) + player.radius {
+                            if dist.2 <= radius.translate(enemy.radius) + player.get_radius() {
                                 let add = vector::normalize((dist.0, dist.1), *power);
                                 actions.push((i, Action::UpdateEnemyVelocity(g, (enemy.velocity.0 + add.0, enemy.velocity.1 + add.1))));
                             }
@@ -84,7 +86,7 @@ pub fn handle_effects(game: &mut Game) {
                                 continue;
                             }
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= radius.translate(enemy.radius) + player.radius {
+                            if dist.2 <= radius.translate(enemy.radius) + player.get_radius() {
                                 let add = vector::normalize((dist.0, dist.1), *power);
                                 actions.push((p, Action::AddPlayerPosition(add)));
                             }
@@ -94,7 +96,7 @@ pub fn handle_effects(game: &mut Game) {
                         for player in game.players.iter() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= radius.translate(enemy.radius) + player.radius {
+                            if dist.2 <= radius.translate(enemy.radius) + player.get_radius() {
                                 let v = vector::normalize((dist.0, dist.1), *speed);
                                 if *time_left == 0 {
                                     actions.push((i, Action::SpawnProjectile { group: g, velocity: v, radius: *projectile_radius, color: color.clone(), lifetime: *lifetime, effects: effects.clone(), under_dps: under_dps.clone() }));
@@ -120,7 +122,7 @@ pub fn handle_effects(game: &mut Game) {
                         for (p, player) in game.players.iter().enumerate() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= radius.translate(enemy.radius) + player.radius {
+                            if dist.2 <= radius.translate(enemy.radius) + player.get_radius() {
                                 let id = enemy.id;
                                 // check if effect of this item id is already applied
                                 let position = player.effects.iter().position(|e| {
@@ -139,13 +141,49 @@ pub fn handle_effects(game: &mut Game) {
                                         match effect {
                                             PlayerEffect::SpeedAlter { origin, slow, ease } => {
                                                 // ease = *duration;
-                                                actions.push((p, Action::SetPlayerSpeedAlterEase { effect: e, value: *duration }));
+                                                actions.push((p, Action::SetPlayerEase { effect: e, value: *duration }));
                                             },
                                             _ => { }
                                         };
                                     },
                                     None => {
                                         let effect = crate::player::PlayerEffect::SpeedAlter { slow: *slow, ease: *duration, origin: id };
+                                        actions.push((p, Action::PushPlayerEffect(effect)));
+                                    },
+                                }
+                            }
+                        }
+                    },
+                    EnemyEffect::ShrinkPlayers { radius, shrink, duration } => {
+                        for (p, player) in game.players.iter().enumerate() {
+                            if !player.alive {continue;}
+                            let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
+                            if dist.2 <= radius.translate(enemy.radius) + player.get_radius() {
+                                let id = enemy.id;
+                                // check if effect of this item id is already applied
+                                let position = player.effects.iter().position(|e| {
+                                    match e {
+                                        PlayerEffect::Shrink { origin, shrink, ease } => {
+                                            *origin == id
+                                        },
+                                        _ => {
+                                            false
+                                        }
+                                    }
+                                });
+                                match position {
+                                    Some(e) => {
+                                        let effect = player.effects.get(p).unwrap();
+                                        match effect {
+                                            PlayerEffect::Shrink { origin, shrink, ease } => {
+                                                // ease = *duration;
+                                                actions.push((p, Action::SetPlayerEase { effect: e, value: *duration }));
+                                            },
+                                            _ => { }
+                                        };
+                                    },
+                                    None => {
+                                        let effect = PlayerEffect::Shrink { origin: id, shrink: *shrink, ease: *duration };
                                         actions.push((p, Action::PushPlayerEffect(effect)));
                                     },
                                 }
@@ -178,6 +216,7 @@ pub fn handle_effects(game: &mut Game) {
     for group in game.enemies.iter_mut() {
         for enemy in group.1.iter_mut() {
             enemy.speed_multiplier = 1.0;
+            enemy.radius_multiplier = 1.0;
         }
     }
     // reverse order due to deletions and index errors

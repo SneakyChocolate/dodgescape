@@ -5,31 +5,33 @@ use crate::gametraits::*;
 
 #[derive(Clone, Copy, Debug)]
 pub enum PlayerEffect {
+    Shrink {origin: usize, shrink: f32, ease: usize},
     SpeedAlter {origin: usize, slow: f32, ease: usize},
 }
 
 #[derive(Default)]
 pub struct Player {
-    pub mouse: (f32, f32),
-    pub keys_down: Vec<String>,
+    pub alive: bool,
+    pub color: String,
+    pub draw_packs: Vec<DrawPack>,
+    pub effects: Vec<PlayerEffect>,
+    pub inventory: Inventory,
+    pub invincible: bool,
     just_pressed: Vec<String>,
-    old_keys_down: Vec<String>,
-    pub velocity: (f32, f32),
-    pub speed_multiplier: f32,
+    pub keys_down: Vec<String>,
+    pub mouse: (f32, f32),
     pub name: String,
+    old_keys_down: Vec<String>,
+    pub radius: f32,
+    pub radius_multiplier: f32,
+    pub skip_move: bool,
+    pub speed: f32,
+    pub speed_multiplier: f32,
+    pub velocity: (f32, f32),
     pub x: f32,
     pub y: f32,
-    pub draw_packs: Vec<DrawPack>,
-    pub alive: bool,
-    pub radius: f32,
-    pub speed: f32,
-    pub skip_move: bool,
-    pub inventory: Inventory,
     pub zoom: f32,
     pub zoomlimit: (f32, f32),
-    pub color: String,
-    pub invincible: bool,
-    pub effects: Vec<PlayerEffect>,
 }
 
 impl_Position!(Player);
@@ -243,12 +245,23 @@ pub fn handle_effects(game: &mut Game) {
                         actions.push((i, Action::MulPlayerSpeedMultiplier { f: *slow }));
                     }
                 },
+                PlayerEffect::Shrink { origin, shrink, ease } => {
+                    if *ease == 0 {
+                        // remove this effect
+                        actions.push((i, Action::RemovePlayerEffect { effect: e }));
+                    }
+                    else {
+                        *ease -= 1;
+                        actions.push((i, Action::MulPlayerSpeedMultiplier { f: *shrink }));
+                    }
+                },
             }
         }
     }
     // reset enemy speed multiplier to 1.0
     for player in game.players.iter_mut() {
         player.speed_multiplier = 1.0;
+        player.radius_multiplier = 4.0;
     }
     // reverse order due to deletions and index errors
     for (entity, action) in actions.iter().rev() {

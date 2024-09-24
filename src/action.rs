@@ -9,6 +9,7 @@ pub enum Action {
     MulEnemySpeedMultiplier {group: usize, f: f32},
     MulPlayerSpeed(f32),
     MulPlayerSpeedMultiplier {f: f32},
+    MulPlayerRadiusMultiplier {f: f32},
     MulPlayerVelocity(f32),
     PushPlayerEffect(PlayerEffect),
     ReduceCooldown(usize),
@@ -18,7 +19,7 @@ pub enum Action {
     ResetCooldown(usize),
     SetEnemyRadius(usize, f32),
     SetEnemySpeedAlterEase{group: usize, effect: usize, value: usize},
-    SetPlayerSpeedAlterEase{effect: usize, value: usize},
+    SetPlayerEase{effect: usize, value: usize},
     SetPlayerSpeed(f32),
     SetPlayerVelocity((f32,f32)),
     SetPlayerZoomlimit((f32,f32)),
@@ -157,6 +158,10 @@ impl Action {
                 let player = game.players.get_mut(entity).unwrap();
                 player.speed_multiplier *= *f;
             },
+            Action::MulPlayerRadiusMultiplier { f } => {
+                let player = game.players.get_mut(entity).unwrap();
+                player.radius_multiplier *= *f;
+            },
             Action::RemovePlayerEffect { effect } => {
                 let player = game.players.get_mut(entity).unwrap();
                 player.effects.remove(*effect);
@@ -185,11 +190,14 @@ impl Action {
                     _ => { }
                 }
             },
-            Action::SetPlayerSpeedAlterEase {effect, value } => {
+            Action::SetPlayerEase {effect, value } => {
                 let player = game.players.get_mut(entity).unwrap();
                 let effect = player.effects.get_mut(*effect).unwrap();
                 match effect {
                     PlayerEffect::SpeedAlter { origin, slow, ease } => {
+                        *ease = *value;
+                    },
+                    PlayerEffect::Shrink { origin, shrink, ease } => {
                         *ease = *value;
                     },
                     _ => { }

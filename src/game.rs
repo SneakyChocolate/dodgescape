@@ -20,7 +20,7 @@ pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom
     let draw_packs = object.get_draw_packs();
     let mut output = "".to_owned();
     for draw_pack in draw_packs {
-        let s = draw(*object.get_radius(), &pos, draw_pack, &camera, zoom);
+        let s = draw(object.get_radius(), &pos, draw_pack, &camera, zoom);
         output.push_str(&s);
     }
     output
@@ -97,7 +97,7 @@ pub fn handle_collectables(game: &mut Game) {
     for p in game.players.iter_mut() {
         for (i, c) in game.collectables.iter_mut().enumerate() {
             let dist = distance(p, c);
-            if dist.2 <= p.radius + c.radius {
+            if dist.2 <= p.get_radius() + c.radius {
                 c.collect(p);
                 rems.push(i);
             }
@@ -119,7 +119,7 @@ pub fn handle_kill_revive(game: &mut Game) {
                     continue;
                 }
                 let dd = distance(player, enemy).2;
-                if dd <= (player.radius + enemy.radius) {
+                if dd <= (player.get_radius() + enemy.radius) {
                     deaths.push(i);
                 }
             }
@@ -135,7 +135,7 @@ pub fn handle_kill_revive(game: &mut Game) {
         for other in game.players.iter() {
             if std::ptr::eq(player, other) || !other.alive {continue;}
             let dd = distance(player, other).2;
-            if dd <= (player.radius + other.radius) {
+            if dd <= (player.get_radius() + other.get_radius()) {
                 revives.push(i);
             }
         }
@@ -175,7 +175,7 @@ pub fn handle_collision(game: &mut Game) {
             if wall.player {
                 for (i, player) in game.players.iter().enumerate() {
                     let cp = wall.get_nearest_point(&(player.x, player.y));
-                    if vector::distance(cp, (player.x, player.y)).2 <= player.radius {
+                    if vector::distance(cp, (player.x, player.y)).2 <= player.get_radius() {
                         if player_collisions.iter().any(|(e, _)| {*e == i}) {
                             continue;
                         }
@@ -202,7 +202,7 @@ pub fn handle_collision(game: &mut Game) {
         let player = game.players.get_mut(i).unwrap();
         let speed = vector::abs(player.velocity);
         let dist = vector::distance(cp, (player.x, player.y));
-        let push = vector::normalize((dist.0, dist.1), player.radius + OFFSET);
+        let push = vector::normalize((dist.0, dist.1), player.get_radius() + OFFSET);
         player.x = cp.0 + push.0;
         player.y = cp.1 + push.1;
         let new_v = vector::normalize(vector::collision((player.x, player.y), player.velocity, cp), speed);
@@ -905,7 +905,7 @@ impl Game {
                 if item.active {
                     for dp in item.drawpacks.iter() {
                         // let acc = draw(&(player.x, player.y), &dp, &camera, zoom);
-                        let acc = draw(player.radius, &(player.x, player.y), &dp, &camera, zoom);
+                        let acc = draw(player.get_radius(), &(player.x, player.y), &dp, &camera, zoom);
                         objects.push_str(&acc);
                     }
                 }
