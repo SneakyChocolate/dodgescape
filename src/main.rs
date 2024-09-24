@@ -18,6 +18,7 @@ mod websocket;
 mod bits;
 mod color;
 mod string;
+mod spawner;
 
 use std::sync::mpsc::channel;
 
