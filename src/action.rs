@@ -4,9 +4,10 @@ use crate::{enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game}, player::PlayerE
 pub enum Action {
     AddPlayerVelocity((f32,f32)),
     AddPlayerPosition((f32,f32)),
-    DecrementEnemySpeedAlterEase{group: usize, effect: usize},
+    DecrementEnemyEase{group: usize, effect: usize},
     Despawn(usize),
-    MulEnemySpeedMultiplier {group: usize, f: f32},
+    MulEnemySpeedMultiplier {f: f32, group: usize},
+    MulEnemyRadiusMultiplier {f: f32, group: usize},
     MulPlayerSpeed(f32),
     MulPlayerSpeedMultiplier {f: f32},
     MulPlayerRadiusMultiplier {f: f32},
@@ -154,6 +155,10 @@ impl Action {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 enemy.speed_multiplier *= *f;
             },
+            Action::MulEnemyRadiusMultiplier { group, f } => {
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                enemy.radius_multiplier *= *f;
+            },
             Action::MulPlayerSpeedMultiplier { f } => {
                 let player = game.players.get_mut(entity).unwrap();
                 player.speed_multiplier *= *f;
@@ -170,11 +175,14 @@ impl Action {
                 let player = game.players.get_mut(entity).unwrap();
                 player.effects.push(*effect);
             },
-            Action::DecrementEnemySpeedAlterEase { group, effect } => {
+            Action::DecrementEnemyEase { group, effect } => {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 let effect = enemy.effects.get_mut(*effect).unwrap();
                 match effect {
-                    EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                    EnemyEffect::SpeedAlter { origin, power: slow, ease } => {
+                        *ease -= 1;
+                    },
+                    EnemyEffect::Shrink { origin, power: slow, ease } => {
                         *ease -= 1;
                     },
                     _ => { }
@@ -184,7 +192,7 @@ impl Action {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 let effect = enemy.effects.get_mut(*effect).unwrap();
                 match effect {
-                    EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                    EnemyEffect::SpeedAlter { origin, power: slow, ease } => {
                         *ease = *value;
                     },
                     _ => { }

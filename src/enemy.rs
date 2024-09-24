@@ -51,7 +51,8 @@ pub enum EnemyEffect {
     Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String, effects: Vec<EnemyEffect>, under_dps: Vec<DrawPack>},
     SlowPlayers {radius: Radius, slow: f32, duration: usize},
     Grow {size: f32, maxsize: f32, defaultsize: f32},
-    SpeedAlter {origin: usize, slow: f32, ease: usize},
+    SpeedAlter {origin: usize, power: f32, ease: usize},
+    Shrink {origin: usize, power: f32, ease: usize},
     ShrinkPlayers {radius: Radius, shrink: f32, duration: usize},
     // TODO shrink effect
 }
@@ -66,7 +67,7 @@ pub fn handle_effects(game: &mut Game) {
                         for player in game.players.iter() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= radius.translate(enemy.radius) + player.get_radius() {
+                            if dist.2 <= radius.translate(enemy.get_radius()) + player.get_radius() {
                                 let add = vector::normalize((dist.0, dist.1), *power);
                                 actions.push((i, Action::UpdateEnemyVelocity(g, (enemy.velocity.0 + add.0, enemy.velocity.1 + add.1))));
                             }
@@ -86,7 +87,7 @@ pub fn handle_effects(game: &mut Game) {
                                 continue;
                             }
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= radius.translate(enemy.radius) + player.get_radius() {
+                            if dist.2 <= radius.translate(enemy.get_radius()) + player.get_radius() {
                                 let add = vector::normalize((dist.0, dist.1), *power);
                                 actions.push((p, Action::AddPlayerPosition(add)));
                             }
@@ -96,7 +97,7 @@ pub fn handle_effects(game: &mut Game) {
                         for player in game.players.iter() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= radius.translate(enemy.radius) + player.get_radius() {
+                            if dist.2 <= radius.translate(enemy.get_radius()) + player.get_radius() {
                                 let v = vector::normalize((dist.0, dist.1), *speed);
                                 if *time_left == 0 {
                                     actions.push((i, Action::SpawnProjectile { group: g, velocity: v, radius: *projectile_radius, color: color.clone(), lifetime: *lifetime, effects: effects.clone(), under_dps: under_dps.clone() }));
@@ -122,7 +123,7 @@ pub fn handle_effects(game: &mut Game) {
                         for (p, player) in game.players.iter().enumerate() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= radius.translate(enemy.radius) + player.get_radius() {
+                            if dist.2 <= radius.translate(enemy.get_radius()) + player.get_radius() {
                                 let id = enemy.id;
                                 // check if effect of this item id is already applied
                                 let position = player.effects.iter().position(|e| {
@@ -158,7 +159,7 @@ pub fn handle_effects(game: &mut Game) {
                         for (p, player) in game.players.iter().enumerate() {
                             if !player.alive {continue;}
                             let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
-                            if dist.2 <= radius.translate(enemy.radius) + player.get_radius() {
+                            if dist.2 <= radius.translate(enemy.get_radius()) + player.get_radius() {
                                 let id = enemy.id;
                                 // check if effect of this item id is already applied
                                 let position = player.effects.iter().position(|e| {
@@ -194,18 +195,28 @@ pub fn handle_effects(game: &mut Game) {
                         if enemy.just_collided {
                             actions.push((i, Action::SetEnemyRadius(g, *defaultsize)));
                         }
-                        else if enemy.radius < *maxsize {
-                            actions.push((i, Action::SetEnemyRadius(g, enemy.radius + *size)));
+                        else if enemy.get_radius() < *maxsize {
+                            actions.push((i, Action::SetEnemyRadius(g, enemy.get_radius() + *size)));
                         }
                     },
-                    EnemyEffect::SpeedAlter { slow, ease, origin } => {
+                    EnemyEffect::SpeedAlter { power, ease, origin } => {
                         if *ease == 0 {
                             // remove this effect
                             actions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
                         }
                         else {
-                            actions.push((i, Action::DecrementEnemySpeedAlterEase { group: g, effect: e }));
-                            actions.push((i, Action::MulEnemySpeedMultiplier { group: g, f: *slow }));
+                            actions.push((i, Action::DecrementEnemyEase { group: g, effect: e }));
+                            actions.push((i, Action::MulEnemySpeedMultiplier { group: g, f: *power }));
+                        }
+                    },
+                    EnemyEffect::Shrink { power, ease, origin } => {
+                        if *ease == 0 {
+                            // remove this effect
+                            actions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
+                        }
+                        else {
+                            actions.push((i, Action::DecrementEnemyEase { group: g, effect: e }));
+                            actions.push((i, Action::MulEnemyRadiusMultiplier { f: *power, group: g }));
                         }
                     },
                 }

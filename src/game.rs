@@ -119,7 +119,7 @@ pub fn handle_kill_revive(game: &mut Game) {
                     continue;
                 }
                 let dd = distance(player, enemy).2;
-                if dd <= (player.get_radius() + enemy.radius) {
+                if dd <= (player.get_radius() + enemy.get_radius()) {
                     deaths.push(i);
                 }
             }
@@ -162,7 +162,7 @@ pub fn handle_collision(game: &mut Game) {
                     if !egroup.0.contains(&wgroup.0) {continue;} 
                     for (i, enemy) in egroup.1.iter().enumerate() {
                         let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
-                        if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.radius {
+                        if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.get_radius() {
                             if enemy_collisions.iter().any(|(_, e, _)| {*e == i}) {
                                 continue;
                             }
@@ -191,7 +191,7 @@ pub fn handle_collision(game: &mut Game) {
         let enemy = game.enemies.get_mut(g).unwrap().1.get_mut(i).unwrap();
         let speed = vector::abs(enemy.velocity);
         let dist = vector::distance(cp, (enemy.x, enemy.y));
-        let push = vector::normalize((dist.0, dist.1), enemy.radius + OFFSET);
+        let push = vector::normalize((dist.0, dist.1), enemy.get_radius() + OFFSET);
         enemy.x = cp.0 + push.0;
         enemy.y = cp.1 + push.1;
         let new_v = vector::normalize(vector::collision((enemy.x, enemy.y), enemy.velocity, cp), speed);
@@ -411,7 +411,7 @@ impl Game {
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(0.0, -20000.0, velocity, rand::thread_rng().gen_range(50.0..=70.0), "rgb(255,255,255)");
             let r = Radius::Relative(2.0);
-            enemy.effects.push(EnemyEffect::Grow { size: 0.2, maxsize: 10.0 * enemy.radius, defaultsize: enemy.radius });
+            enemy.effects.push(EnemyEffect::Grow { size: 0.2, maxsize: 10.0 * enemy.get_radius(), defaultsize: enemy.get_radius() });
             enemy.view_radius = r;
             enemies.push(enemy);
         }
@@ -728,7 +728,7 @@ impl Game {
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("heatwave", vec![
-                ItemEffect::SlowEnemies { slow: 0.5, radius: Radius::Relative(7.0), duration: 100 },
+                ItemEffect::SlowEnemies { power: 0.5, radius: Radius::Relative(7.0), duration: 100 },
             ], vec![
                 DrawPack::new("rgba(255,0,0,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
             ], &mut item_counter,
@@ -738,7 +738,7 @@ impl Game {
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("blizzard", vec![
-                ItemEffect::SlowEnemies { slow: 0.8, radius: Radius::Relative(20.0), duration: 1 },
+                ItemEffect::SlowEnemies { power: 0.8, radius: Radius::Relative(20.0), duration: 1 },
             ], vec![
                 DrawPack::new("rgba(100,100,255,0.1)", Shape::Circle { radius: Radius::Relative(20.0) }, (0.0, 0.0))
             ], &mut item_counter,
@@ -747,7 +747,9 @@ impl Game {
         ]);
         self.collectables.push(c);
         let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
-            Item::new("univeye", vec![ ItemEffect::Vision((0.01,1.0)), ], vec![ ], &mut item_counter,
+            Item::new("univeye", vec![
+                ItemEffect::Vision((0.01,1.0)),
+            ], vec![ ], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "univeye".to_owned(), scale }, (0.0, 0.0)))
             )
         ]);
@@ -923,7 +925,7 @@ impl Game {
         // enemies
         for group in self.enemies.iter() {
             for enemy in group.1.iter() {
-                if vector::distance(camera, (enemy.x, enemy.y)).2 - enemy.view_radius.translate(enemy.radius) > view {continue;}
+                if vector::distance(camera, (enemy.x, enemy.y)).2 - enemy.view_radius.translate(enemy.get_radius()) > view {continue;}
                 let acc = draw_object(enemy, &camera, zoom);
                 objects.push_str(&acc);
             }

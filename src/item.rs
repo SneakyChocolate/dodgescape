@@ -15,7 +15,8 @@ pub struct Item {
 pub enum ItemEffect {
     Vision((f32,f32)),
     Speed(f32),
-    SlowEnemies{slow: f32, radius: Radius, duration: usize},
+    SlowEnemies{power: f32, radius: Radius, duration: usize},
+    ShrinkEnemies{power: f32, radius: Radius, duration: usize},
 }
 
 pub fn handle_effects(game: &mut Game) {
@@ -31,14 +32,14 @@ pub fn handle_effects(game: &mut Game) {
                     ItemEffect::Speed(s) => {
                         actions.push((p, Action::MulPlayerSpeed(*s)));
                     },
-                    ItemEffect::SlowEnemies{slow, radius, duration } => {
+                    ItemEffect::SlowEnemies{power, radius, duration } => {
                         for group in game.enemies.iter_mut() {
                             for enemy in group.1.iter_mut() {
-                                if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.radius <= radius.translate(player.get_radius()) {
+                                if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.get_radius() <= radius.translate(player.get_radius()) {
                                     // check if effect of this item id is already applied
                                     let effect = enemy.effects.iter_mut().find(|e| {
                                         match e {
-                                            crate::enemy::EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                                            crate::enemy::EnemyEffect::SpeedAlter { origin, power: slow, ease } => {
                                                 *origin == item.id
                                             },
                                             _ => {
@@ -49,7 +50,7 @@ pub fn handle_effects(game: &mut Game) {
                                     match effect {
                                         Some(e) => {
                                             match e {
-                                                crate::enemy::EnemyEffect::SpeedAlter { origin, slow, ease } => {
+                                                crate::enemy::EnemyEffect::SpeedAlter { origin, power: slow, ease } => {
                                                     *ease = *duration;
                                                 },
                                                 _ => {
@@ -58,7 +59,41 @@ pub fn handle_effects(game: &mut Game) {
                                             }
                                         },
                                         None => {
-                                            enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { slow: *slow, ease: *duration, origin: item.id });
+                                            enemy.effects.push(crate::enemy::EnemyEffect::SpeedAlter { power: *power, ease: *duration, origin: item.id });
+                                        },
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    ItemEffect::ShrinkEnemies{power, radius, duration } => {
+                        for group in game.enemies.iter_mut() {
+                            for enemy in group.1.iter_mut() {
+                                if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.get_radius() <= radius.translate(player.get_radius()) {
+                                    // check if effect of this item id is already applied
+                                    let effect = enemy.effects.iter_mut().find(|e| {
+                                        match e {
+                                            crate::enemy::EnemyEffect::Shrink { origin, power, ease } => {
+                                                *origin == item.id
+                                            },
+                                            _ => {
+                                                false
+                                            }
+                                        }
+                                    });
+                                    match effect {
+                                        Some(e) => {
+                                            match e {
+                                                crate::enemy::EnemyEffect::Shrink { origin, power, ease } => {
+                                                    *ease = *duration;
+                                                },
+                                                _ => {
+                                                    // do nothing
+                                                }
+                                            }
+                                        },
+                                        None => {
+                                            enemy.effects.push(crate::enemy::EnemyEffect::Shrink { power: *power, ease: *duration, origin: item.id });
                                         },
                                     }
                                 }
