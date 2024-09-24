@@ -411,7 +411,7 @@ impl Game {
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(0.0, -20000.0, velocity, rand::thread_rng().gen_range(50.0..=70.0), "rgb(255,255,255)");
             let r = Radius::Relative(2.0);
-            enemy.effects.push(EnemyEffect::Grow { size: 0.2, maxsize: 10.0 * enemy.get_radius(), defaultsize: enemy.get_radius() });
+            enemy.effects.push(EnemyEffect::Grow { size: 0.2, maxsize: 10.0 * enemy.radius, defaultsize: enemy.radius });
             enemy.view_radius = r;
             enemies.push(enemy);
         }
@@ -701,12 +701,14 @@ impl Game {
     pub fn spawn_collectables(&mut self) {
         let scale = 0.3;
         let mut item_counter = 0;
+        // dirt area,
         let c = Collectable::new(2000.0, 2000.0, Color::new(200, 200, 100, 1), vec![
             Item::new("monocle", vec![ItemEffect::Vision((0.9,0.9))], vec![], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "monocle".to_owned(), scale }, (0.0, 0.0)))
             )
         ]);
         self.collectables.push(c);
+        // above spawn in fire
         let c = Collectable::new(0.0, -2000.0, Color::new(200, 200, 100, 1), vec![
             Item::new("microscope", vec![
                 ItemEffect::Vision((1.0,5.0)),
@@ -715,18 +717,21 @@ impl Game {
             )
         ]);
         self.collectables.push(c);
+        // water area middle
         let c = Collectable::new(4000.0, -4000.0, Color::new(255, 255, 255, 1), vec![
             Item::new("binoculars", vec![ItemEffect::Vision((0.7,1.0))], vec![], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "binoculars".to_owned(), scale }, (0.0, 0.0)))
             )
         ]);
         self.collectables.push(c);
+        // left to spawn in fire
         let c = Collectable::new(-6000.0, 0.0, Color::new(200, 200, 0, 1), vec![
             Item::new("telescope", vec![ItemEffect::Vision((0.4,0.6))], vec![], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "telescope".to_owned(), scale }, (0.0, 0.0)))
             )
         ]);
         self.collectables.push(c);
+        // hell area start
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("heatwave", vec![
                 ItemEffect::SlowEnemies { power: 0.5, radius: Radius::Relative(7.0), duration: 100 },
@@ -737,16 +742,18 @@ impl Game {
             )
         ]);
         self.collectables.push(c);
+        // ice area middle
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("blizzard", vec![
                 ItemEffect::SlowEnemies { power: 0.8, radius: Radius::Relative(20.0), duration: 1 },
             ], vec![
-                DrawPack::new("rgba(100,100,255,0.1)", Shape::Circle { radius: Radius::Relative(20.0) }, (0.0, 0.0))
+                DrawPack::new("rgba(100,100,255,0.2)", Shape::Circle { radius: Radius::Relative(20.0) }, (0.0, 0.0))
             ], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "blizzard".to_owned(), scale }, (0.0, 0.0)))
             )
         ]);
         self.collectables.push(c);
+        // bottom space area
         let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("univeye", vec![
                 ItemEffect::Vision((0.01,1.0)),
@@ -755,6 +762,7 @@ impl Game {
             )
         ]);
         self.collectables.push(c);
+        // across the fire area
         let cords = vec![(8,0),(-8,0),(0,8),(0,-8)];
         for c in cords {
             for i in 0..10 {
