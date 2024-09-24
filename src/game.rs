@@ -323,7 +323,7 @@ impl Game {
         }
         self.enemies.push((ids, enemies)); 
     }
-    fn spawn_space_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    fn spawn_blackhole_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let size = 200.0..=500.0;
         let amount = 50;
         let speed = 2.0;
@@ -348,6 +348,7 @@ impl Game {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(dist, -dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            enemy.view_radius = Radius::Relative(2.0);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: Radius::Relative(2.0) }, (0.0, 0.0)));
             enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(2.0), power: -6.0 });
             enemies.push(enemy);
@@ -356,6 +357,7 @@ impl Game {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(dist, dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            enemy.view_radius = Radius::Relative(2.0);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: Radius::Relative(2.0) }, (0.0, 0.0)));
             enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(2.0), power: -6.0 });
             enemies.push(enemy);
@@ -364,6 +366,7 @@ impl Game {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-dist, -dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            enemy.view_radius = Radius::Relative(2.0);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: Radius::Relative(2.0) }, (0.0, 0.0)));
             enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(2.0), power: -6.0 });
             enemies.push(enemy);
@@ -372,6 +375,7 @@ impl Game {
             let cap = speed * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-dist, dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
+            enemy.view_radius = Radius::Relative(2.0);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: Radius::Relative(2.0) }, (0.0, 0.0)));
             enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(2.0), power: -6.0 });
             enemies.push(enemy);
@@ -563,7 +567,7 @@ impl Game {
         self.spawn_flower_enemies(speed_m, spawn_m);
         self.spawn_water_enemies(speed_m, spawn_m);
         self.spawn_fire_enemies(speed_m, spawn_m);
-        self.spawn_space_enemies(speed_m, spawn_m);
+        self.spawn_blackhole_enemies(speed_m, spawn_m);
         self.spawn_tech_enemies(speed_m, spawn_m);
         self.spawn_snake_enemies(speed_m, spawn_m);
         self.spawn_explosion_enemies(speed_m, spawn_m);
