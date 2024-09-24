@@ -1,4 +1,4 @@
-use crate::{action::Action, game::{DrawPack, Game}, vector};
+use crate::{action::Action, game::{DrawPack, Game}, gametraits::{Drawable, Radius}, vector};
 
 
 #[derive(Debug, Default)]
@@ -15,7 +15,7 @@ pub struct Item {
 pub enum ItemEffect {
     Vision((f32,f32)),
     Speed(f32),
-    SlowEnemies{slow: f32, radius: f32, duration: usize},
+    SlowEnemies{slow: f32, radius: Radius, duration: usize},
 }
 
 pub fn handle_effects(game: &mut Game) {
@@ -34,7 +34,7 @@ pub fn handle_effects(game: &mut Game) {
                     ItemEffect::SlowEnemies{slow, radius, duration } => {
                         for group in game.enemies.iter_mut() {
                             for enemy in group.1.iter_mut() {
-                                if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.radius <= *radius {
+                                if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.radius <= radius.translate(player.get_radius()) {
                                     // check if effect of this item id is already applied
                                     let effect = enemy.effects.iter_mut().find(|e| {
                                         match e {

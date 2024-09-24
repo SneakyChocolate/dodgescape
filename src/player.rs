@@ -252,7 +252,7 @@ pub fn handle_effects(game: &mut Game) {
                     }
                     else {
                         *ease -= 1;
-                        actions.push((i, Action::MulPlayerSpeedMultiplier { f: *shrink }));
+                        actions.push((i, Action::MulPlayerRadiusMultiplier { f: *shrink }));
                     }
                 },
             }
@@ -261,7 +261,7 @@ pub fn handle_effects(game: &mut Game) {
     // reset enemy speed multiplier to 1.0
     for player in game.players.iter_mut() {
         player.speed_multiplier = 1.0;
-        player.radius_multiplier = 4.0;
+        player.radius_multiplier = 1.0;
     }
     // reverse order due to deletions and index errors
     for (entity, action) in actions.iter().rev() {

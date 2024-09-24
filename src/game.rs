@@ -230,11 +230,14 @@ impl Game {
     fn spawn_dirt_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Dirt, WallType::SpawnA];
         let mut enemies = vec![];
-        for _ in 0..80 * spawn_m {
+        for _ in 0..120 * spawn_m {
             let cap = 0.5 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,40,20)");
             enemy.effects.push(EnemyEffect::Crumble);
+            enemy.effects.push(EnemyEffect::ShrinkPlayers { radius: Radius::Relative(10.0), shrink: 0.9, duration: 1 });
+            enemy.draw_packs.push(DrawPack::new("rgba(50,40,20,0.2)", Shape::Circle { radius: Radius::Relative(10.0) }, (0.0, 0.0)));
+            enemy.view_radius = Radius::Relative(10.0);
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
@@ -725,7 +728,7 @@ impl Game {
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("heatwave", vec![
-                ItemEffect::SlowEnemies { slow: 0.5, radius: 200.0, duration: 100 },
+                ItemEffect::SlowEnemies { slow: 0.5, radius: Radius::Relative(7.0), duration: 100 },
             ], vec![
                 DrawPack::new("rgba(255,0,0,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
             ], &mut item_counter,
@@ -735,7 +738,7 @@ impl Game {
         self.collectables.push(c);
         let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("blizzard", vec![
-                ItemEffect::SlowEnemies { slow: 0.8, radius: 600.0, duration: 1 },
+                ItemEffect::SlowEnemies { slow: 0.8, radius: Radius::Relative(20.0), duration: 1 },
             ], vec![
                 DrawPack::new("rgba(100,100,255,0.1)", Shape::Circle { radius: Radius::Relative(20.0) }, (0.0, 0.0))
             ], &mut item_counter,
