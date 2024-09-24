@@ -58,26 +58,42 @@ macro_rules! impl_Position {
     };
 }
 pub trait Moveable {
-    fn get_x(&mut self) -> &mut f32;
-    fn get_y(&mut self) -> &mut f32;
-    fn get_velocity(&mut self) -> &mut (f32, f32);
-    fn get_speed_multiplier(&mut self) -> &mut f32;
+    fn get_x_mut(&mut self) -> &mut f32;
+    fn get_y_mut(&mut self) -> &mut f32;
+    fn get_velocity_mut(&mut self) -> &mut (f32, f32);
+    fn get_speed_multiplier_mut(&mut self) -> &mut f32;
+    fn get_x(&self) -> f32;
+    fn get_y(&self) -> f32;
+    fn get_velocity(&self) -> (f32, f32);
+    fn get_speed_multiplier(&self) -> f32;
 }
 #[macro_export]
 macro_rules! impl_Movable {
     ($struct_name:ident) => {
         impl Moveable for $struct_name {
-            fn get_x(&mut self) -> &mut f32 {
+            fn get_x_mut(&mut self) -> &mut f32 {
                 &mut self.x
             }
-            fn get_y(&mut self) -> &mut f32 {
+            fn get_y_mut(&mut self) -> &mut f32 {
                 &mut self.y
             }
-            fn get_velocity(&mut self) -> &mut (f32, f32) {
+            fn get_velocity_mut(&mut self) -> &mut (f32, f32) {
                 &mut self.velocity
             }
-            fn get_speed_multiplier(&mut self) -> &mut f32 {
+            fn get_speed_multiplier_mut(&mut self) -> &mut f32 {
                 &mut self.speed_multiplier
+            }
+            fn get_x(&self) -> f32 {
+                self.x
+            }
+            fn get_y(&self) -> f32 {
+                self.y
+            }
+            fn get_velocity(&self) -> (f32, f32) {
+                self.velocity
+            }
+            fn get_speed_multiplier(&self) -> f32 {
+                self.speed_multiplier
             }
         }
     };

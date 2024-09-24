@@ -206,8 +206,7 @@ impl Player {
         // slowing down
         let key = "ShiftLeft".to_owned();
         if self.keys_down.contains(&key) {
-            vx /= 2.0;
-            vy /= 2.0;
+            self.speed_multiplier *= 0.5;
         }
         self.velocity = (vx, vy);
     }

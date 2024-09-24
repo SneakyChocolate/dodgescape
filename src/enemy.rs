@@ -138,7 +138,7 @@ pub fn handle_effects(game: &mut Game) {
                                 });
                                 match position {
                                     Some(e) => {
-                                        let effect = player.effects.get(p).unwrap();
+                                        let effect = player.effects.get(e).unwrap();
                                         match effect {
                                             PlayerEffect::SpeedAlter { origin, slow, ease } => {
                                                 // ease = *duration;
@@ -174,7 +174,7 @@ pub fn handle_effects(game: &mut Game) {
                                 });
                                 match position {
                                     Some(e) => {
-                                        let effect = player.effects.get(p).unwrap();
+                                        let effect = player.effects.get(e).unwrap();
                                         match effect {
                                             PlayerEffect::Shrink { origin, shrink, ease } => {
                                                 // ease = *duration;

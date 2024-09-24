@@ -26,9 +26,9 @@ pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom
     output
 }
 pub fn move_object<T: Moveable>(object: &mut T) {
-    let (vx, vy) = object.get_velocity().clone();
-    *(object.get_x()) += vx * *object.get_speed_multiplier();
-    *(object.get_y()) += vy * *object.get_speed_multiplier();
+    let (vx, vy) = object.get_velocity();
+    *object.get_x_mut() += vx * object.get_speed_multiplier();
+    *object.get_y_mut() += vy * object.get_speed_multiplier();
 }
 
 pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {
@@ -97,7 +97,7 @@ pub fn handle_collectables(game: &mut Game) {
     for p in game.players.iter_mut() {
         for (i, c) in game.collectables.iter_mut().enumerate() {
             let dist = distance(p, c);
-            if dist.2 <= p.get_radius() + c.radius {
+            if dist.2 <= p.get_radius() + c.get_radius() {
                 c.collect(p);
                 rems.push(i);
             }
@@ -854,10 +854,10 @@ impl Game {
                     break;
                 }
 
-                handle_players(&mut self.players, &mut self.collectables);
                 crate::enemy::handle_effects(&mut self);
                 crate::item::handle_effects(&mut self);
                 crate::player::handle_effects(&mut self);
+                handle_players(&mut self.players, &mut self.collectables);
                 handle_collision(&mut self);
                 handle_kill_revive(&mut self);
                 handle_collectables(&mut self);
