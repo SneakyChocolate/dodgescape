@@ -629,7 +629,7 @@ impl Game {
         // surround
         let corners = vec![(-20.0,0.0),(-15.0,15.0),(0.0,20.0),(15.0,15.0),(20.0,0.0),(15.0,-15.0),(0.0,-20.0),(-15.0,-15.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(20,0,30)", WallType::Blackhole);
+        self.spawn_area(corners, "rgb(40,0,60)", WallType::Blackhole);
         let corners = vec![(-5.0,-5.0),(5.0,-5.0),(5.0,5.0),(-5.0,5.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(50,20,30)", WallType::Fire);
@@ -643,7 +643,7 @@ impl Game {
         self.spawn_area(corners, "rgb(120,150,150)", WallType::Wind);
         let corners = vec![(0.0,0.0),(-3.0,-1.0),(-4.0,-4.0),(-1.0,-3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(10,50,20)", WallType::Flower);
+        self.spawn_area(corners, "rgb(20,80,30)", WallType::Flower);
         let corners = vec![(0.0,0.0),(3.0,-1.0),(4.0,-4.0),(1.0,-3.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
         self.spawn_area(corners, "rgb(0,0,50)", WallType::Water);
@@ -677,22 +677,23 @@ impl Game {
         self.spawn_area(corners, "rgb(100,30,20)", WallType::Hell);
         
         // spawns
+        let spawncolor = "rgb(150,150,150)";
         let corners = vec![(-0.4,0.0),(0.0,0.4),(0.4,0.0),(0.0,-0.4)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "black", WallType::SpawnA);
+        self.spawn_area(corners, spawncolor, WallType::SpawnA);
 
         let corners = vec![(-6.0,6.0),(-5.0,4.0),(-4.0,5.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(150,150,150)", WallType::SpawnB);
+        self.spawn_area(corners, spawncolor, WallType::SpawnB);
         let corners = vec![(6.0,6.0),(5.0,4.0),(4.0,5.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(150,150,150)", WallType::SpawnB);
+        self.spawn_area(corners, spawncolor, WallType::SpawnB);
         let corners = vec![(-6.0,-6.0),(-5.0,-4.0),(-4.0,-5.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(150,150,150)", WallType::SpawnB);
+        self.spawn_area(corners, spawncolor, WallType::SpawnB);
         let corners = vec![(6.0,-6.0),(5.0,-4.0),(4.0,-5.0)]
             .iter().map(|e| {(e.0 * multiplier, e.1 * multiplier)}).collect();
-        self.spawn_area(corners, "rgb(150,150,150)", WallType::SpawnB);
+        self.spawn_area(corners, spawncolor, WallType::SpawnB);
         
         // grid
         self.spawn_grid(40000.0, "rgb(255,255,255,0.05)", 500.0, 10.0);
