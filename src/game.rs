@@ -951,12 +951,13 @@ impl Game {
                 objects.push_str(&acc);
 
                 // inventory items
-                let line_height = 50.0;
                 for (i, item) in object.inventory.items.iter().enumerate() {
+                    let line_height = 50.0;
+                    let line_offset = line_height * (i as f32);
                     match object.inventory.selected_item {
                         Some(s) => {
                             if i == s {
-                                let drawpack = DrawPack::new("rgba(255,255,255,0.3)", Shape::Rectangle { width: 300.0, height: 40.0 }, (-850.0, -330.0 + line_height * (i as f32)));
+                                let drawpack = DrawPack::new("rgba(255,255,255,0.3)", Shape::Rectangle { width: 300.0, height: 40.0 }, (-850.0, -330.0 + line_offset));
                                 let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
                                 objects.push_str(&acc);
                             }
@@ -969,12 +970,12 @@ impl Game {
                     else {
                         "rgb(100,0,0)"
                     };
-                    let drawpack = DrawPack::new(color, Shape::Text { content: item.name.clone(), size: 30.0 }, (-850.0, -300.0 + line_height * (i as f32)));
+                    let drawpack = DrawPack::new(color, Shape::Text { content: item.name.clone(), size: 30.0 }, (-850.0, -300.0 + line_offset));
                     let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
                     objects.push_str(&acc);
                     match &item.icon {
                         Some(icon) => {
-                            let acc = draw(0.0, &(object.x - 890.0, object.y -325.0 + line_height * (i as f32)), icon, &camera, 1.0);
+                            let acc = draw(0.0, &(object.x - 890.0, object.y -325.0 + line_offset), icon, &camera, 1.0);
                             objects.push_str(&acc);
                         },
                         None => {},
