@@ -459,7 +459,16 @@ impl Game {
                     else {
                         "rgb(100,0,0)"
                     };
-                    let drawpack = DrawPack::new(color, Shape::Text { content: item.name.clone(), size: 30.0 }, (-850.0, -300.0 + line_offset));
+                    let mut append = "".to_owned();
+                    for effect in item.effects.iter() {
+                        match effect {
+                            crate::item::ItemEffect::Consumable { uses } => {
+                                append.push_str(format!("({})", *uses).as_str());
+                            },
+                            _ => {}
+                        };
+                    }
+                    let drawpack = DrawPack::new(color, Shape::Text { content: format!("{} {}", item.name.clone(), append), size: 30.0 }, (-850.0, -300.0 + line_offset));
                     let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
                     objects.push_str(&acc);
                     match &item.icon {

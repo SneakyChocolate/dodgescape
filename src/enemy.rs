@@ -59,6 +59,7 @@ pub enum EnemyEffect {
 
 pub fn handle_effects(game: &mut Game) {
     let mut actions: Vec<(usize, Action)> = vec![];
+    let mut deletions: Vec<(usize, Action)> = vec![];
     for (g, group) in game.enemies.iter().enumerate() {
         for (i, enemy) in group.1.iter().enumerate() {
             for (e, effect) in enemy.effects.iter().enumerate() {
@@ -79,7 +80,7 @@ pub fn handle_effects(game: &mut Game) {
                         }
                     },
                     EnemyEffect::Lifetime(t) => {
-                        actions.push((i, Action::ReduceLifetime { group: g, effect: e }));
+                        deletions.push((i, Action::ReduceLifetime { group: g, effect: e }));
                     },
                     EnemyEffect::Push { radius, power } => {
                         for (p, player) in game.players.iter().enumerate() {
@@ -202,20 +203,20 @@ pub fn handle_effects(game: &mut Game) {
                     EnemyEffect::SpeedAlter { power, ease, origin } => {
                         if *ease == 0 {
                             // remove this effect
-                            actions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
+                            deletions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
                         }
                         else {
-                            actions.push((i, Action::DecrementEnemyEase { group: g, effect: e }));
+                            deletions.push((i, Action::DecrementEnemyEase { group: g, effect: e }));
                             actions.push((i, Action::MulEnemySpeedMultiplier { group: g, f: *power }));
                         }
                     },
                     EnemyEffect::Shrink { power, ease, origin } => {
                         if *ease == 0 {
                             // remove this effect
-                            actions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
+                            deletions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
                         }
                         else {
-                            actions.push((i, Action::DecrementEnemyEase { group: g, effect: e }));
+                            deletions.push((i, Action::DecrementEnemyEase { group: g, effect: e }));
                             actions.push((i, Action::MulEnemyRadiusMultiplier { f: *power, group: g }));
                         }
                     },
@@ -232,6 +233,9 @@ pub fn handle_effects(game: &mut Game) {
     }
     // reverse order due to deletions and index errors
     for (entity, action) in actions.iter().rev() {
+        action.execute(game, *entity);
+    }
+    for (entity, action) in deletions.iter().rev() {
         action.execute(game, *entity);
     }
 }

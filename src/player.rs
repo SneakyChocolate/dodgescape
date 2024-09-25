@@ -230,6 +230,7 @@ impl Player {
 
 pub fn handle_effects(game: &mut Game) {
     let mut actions: Vec<(usize, Action)> = vec![];
+    let mut deletions: Vec<(usize, Action)> = vec![];
     // convert effects to actions
     for (i, player) in game.players.iter_mut().enumerate() {
         for (e, effect) in player.effects.iter_mut().enumerate() {
@@ -237,7 +238,7 @@ pub fn handle_effects(game: &mut Game) {
                 PlayerEffect::SpeedAlter { origin, slow, ease } => {
                     if *ease == 0 {
                         // remove this effect
-                        actions.push((i, Action::RemovePlayerEffect { effect: e }));
+                        deletions.push((i, Action::RemovePlayerEffect { effect: e }));
                     }
                     else {
                         *ease -= 1;
@@ -247,7 +248,7 @@ pub fn handle_effects(game: &mut Game) {
                 PlayerEffect::Shrink { origin, shrink, ease } => {
                     if *ease == 0 {
                         // remove this effect
-                        actions.push((i, Action::RemovePlayerEffect { effect: e }));
+                        deletions.push((i, Action::RemovePlayerEffect { effect: e }));
                     }
                     else {
                         *ease -= 1;
@@ -264,6 +265,9 @@ pub fn handle_effects(game: &mut Game) {
     }
     // reverse order due to deletions and index errors
     for (entity, action) in actions.iter().rev() {
+        action.execute(game, *entity);
+    }
+    for (entity, action) in deletions.iter().rev() {
         action.execute(game, *entity);
     }
 }
