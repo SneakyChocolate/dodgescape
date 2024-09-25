@@ -454,8 +454,19 @@ impl Game {
         let mut item_counter = 0;
         // dirt area,
         let c = Collectable::new(2000.0, 2000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("monocle", vec![ItemEffect::Vision((0.9,0.9))], vec![], &mut item_counter,
+            Item::new("monocle",
+                vec![ItemEffect::Vision((0.9,0.9))],
+                vec![], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "monocle".to_owned(), scale }, (0.0, 0.0)))
+            )
+        ]);
+        self.collectables.push(c);
+        // dirt area,
+        let c = Collectable::new(200.0, 200.0, Color::new(200, 200, 100, 1), vec![
+            Item::new("heart",
+                vec![ItemEffect::Revive { radius: Radius::Relative(5.0) }, ItemEffect::Consumable { uses: 3 }],
+                vec![], &mut item_counter,
+                None
             )
         ]);
         self.collectables.push(c);

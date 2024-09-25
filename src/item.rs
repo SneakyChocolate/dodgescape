@@ -23,6 +23,7 @@ pub enum ItemEffect {
 
 pub fn handle_effects(game: &mut Game) {
     let mut actions: Vec<(usize, Action)> = vec![];
+    let mut deletions: Vec<(usize, Action)> = vec![];
     for (p, player) in game.players.iter().enumerate() {
         for (i, item) in player.inventory.items.iter().enumerate() {
             if !item.active {continue;}
@@ -104,14 +105,13 @@ pub fn handle_effects(game: &mut Game) {
                     },
                     ItemEffect::Revive { radius } => {
                         actions.push((p, Action::RevivePlayers { radius: *radius }));
-                        actions.push((p, Action::DecreaseItemEffect { item: i, effect: e }));
                     },
                     ItemEffect::Consumable { uses } => {
                         if *uses == 0 {
-                            actions.push((p, Action::RemovePlayerItem { item: i }));
+                            deletions.push((p, Action::RemovePlayerItem { item: i }));
                         }
                         else {
-                            actions.push((p, Action::DecreaseItemEffect { item: i, effect: e }));
+                            deletions.push((p, Action::DecreaseItemEffect { item: i, effect: e }));
                         }
                     },
                 }
@@ -121,6 +121,9 @@ pub fn handle_effects(game: &mut Game) {
         actions.push((p, Action::SetPlayerSpeed(8.0)));
     }
     for (entity, action) in actions.iter().rev() {
+        action.execute(game, *entity);
+    }
+    for (entity, action) in deletions.iter().rev() {
         action.execute(game, *entity);
     }
 }

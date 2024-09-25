@@ -225,6 +225,7 @@ impl Action {
                 match effect {
                     crate::item::ItemEffect::Consumable { uses } => {
                         *uses -= 1;
+                        item.active = false;
                         if *uses == 0 {
                             player.inventory.items.remove(*i);
                         }
