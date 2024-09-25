@@ -17,14 +17,16 @@ pub enum ItemEffect {
     Speed(f32),
     SlowEnemies{power: f32, radius: Radius, duration: usize},
     ShrinkEnemies{power: f32, radius: Radius, duration: usize},
+    Revive{radius: Radius},
+    Consumable{uses: usize},
 }
 
 pub fn handle_effects(game: &mut Game) {
     let mut actions: Vec<(usize, Action)> = vec![];
     for (p, player) in game.players.iter().enumerate() {
-        for item in player.inventory.items.iter() {
+        for (i, item) in player.inventory.items.iter().enumerate() {
             if !item.active {continue;}
-            for effect in item.effects.iter() {
+            for (e, effect) in item.effects.iter().enumerate() {
                 match effect {
                     ItemEffect::Vision(zoom) => {
                         actions.push((p, Action::SetPlayerZoomlimit(*zoom)));
@@ -98,6 +100,18 @@ pub fn handle_effects(game: &mut Game) {
                                     }
                                 }
                             }
+                        }
+                    },
+                    ItemEffect::Revive { radius } => {
+                        actions.push((p, Action::RevivePlayers { radius: *radius }));
+                        actions.push((p, Action::DecreaseItemEffect { item: i, effect: e }));
+                    },
+                    ItemEffect::Consumable { uses } => {
+                        if *uses == 0 {
+                            actions.push((p, Action::RemovePlayerItem { item: i }));
+                        }
+                        else {
+                            actions.push((p, Action::DecreaseItemEffect { item: i, effect: e }));
                         }
                     },
                 }

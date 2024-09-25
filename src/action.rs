@@ -1,22 +1,24 @@
 
-use crate::{enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game}, player::PlayerEffect, vector};
+use crate::{enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game}, gametraits::Radius, player::PlayerEffect, vector};
 
 pub enum Action {
-    AddPlayerVelocity((f32,f32)),
     AddPlayerPosition((f32,f32)),
+    AddPlayerVelocity((f32,f32)),
+    DecreaseItemEffect {item: usize, effect: usize},
     DecrementEnemyEase{group: usize, effect: usize},
     Despawn(usize),
-    MulEnemySpeedMultiplier {f: f32, group: usize},
     MulEnemyRadiusMultiplier {f: f32, group: usize},
+    MulEnemySpeedMultiplier {f: f32, group: usize},
+    MulPlayerRadiusMultiplier {f: f32},
     MulPlayerSpeed(f32),
     MulPlayerSpeedMultiplier {f: f32},
-    MulPlayerRadiusMultiplier {f: f32},
     MulPlayerVelocity(f32),
     PushPlayerEffect(PlayerEffect),
     ReduceCooldown(usize),
     ReduceLifetime{group: usize, effect: usize},
     RemoveEnemyEffect {group: usize, effect: usize},
     RemovePlayerEffect {effect: usize},
+    RemovePlayerItem {item: usize},
     ResetCooldown(usize),
     SetEnemyRadius(usize, f32),
     SetEnemySpeedAlterEase{group: usize, effect: usize, value: usize},
@@ -28,6 +30,7 @@ pub enum Action {
     SpawnEnemy { color: String, effects: Vec<EnemyEffect>, group: usize, radius: f32, velocity: (f32, f32) },
     SpawnProjectile { group: usize, velocity: (f32, f32), radius: f32, color: String, lifetime: usize, effects: Vec<EnemyEffect>, under_dps: Vec<DrawPack> },
     UpdateEnemyVelocity(usize, (f32,f32)),
+    RevivePlayers {radius: Radius},
 }
 
 impl Action {
@@ -209,6 +212,35 @@ impl Action {
                         *ease = *value;
                     },
                     _ => { }
+                }
+            },
+            Action::RemovePlayerItem { item } => {
+                let player = game.players.get_mut(entity).unwrap();
+                player.inventory.items.remove(*item);
+            },
+            Action::DecreaseItemEffect { item: i, effect: e } => {
+                let player = game.players.get_mut(entity).unwrap();
+                let item = player.inventory.items.get_mut(*i).unwrap();
+                let effect = item.effects.get_mut(*e).unwrap();
+                match effect {
+                    crate::item::ItemEffect::Consumable { uses } => {
+                        *uses -= 1;
+                        if *uses == 0 {
+                            player.inventory.items.remove(*i);
+                        }
+                    },
+                    _ => {}
+                };
+            },
+            Action::RevivePlayers { radius } => {
+                let center = game.players.get_mut(entity).unwrap();
+                let r = center.radius;
+                let center = (center.x, center.y);
+                for player in game.players.iter_mut() {
+                    let dist = vector::distance((player.x, player.y), center);
+                    if dist.2 <= radius.translate(radius.translate(r)) {
+                        player.alive = true;
+                    }
                 }
             },
         }

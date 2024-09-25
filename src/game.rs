@@ -1,6 +1,6 @@
 use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{collectable::Collectable, color::Color, enemy::Enemy, gametraits::{Drawable, Moveable, Position, Radius}, item::{Item, ItemEffect}, player::Player, server::ServerMessage, vector::{self, random_point}, wall::{Wall, WallType}};
+use crate::{collectable::Collectable, enemy::Enemy, gametraits::{Drawable, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self}, wall::{Wall, WallType}};
 use serde::Serialize;
 
 pub fn draw(radius: f32, position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
