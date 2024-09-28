@@ -2,7 +2,6 @@ use rand::Rng;
 
 use crate::{collectable::Collectable, color::Color, enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game, Shape}, gametraits::Radius, item::{Item, ItemEffect}, vector::random_point, wall::WallType};
 
-
 impl Game {
     pub fn spawn_dirt_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Dirt, WallType::SpawnA];
@@ -343,6 +342,26 @@ impl Game {
             enemy.effects.push(EnemyEffect::Chase { radius: Radius::Relative(3.0), power: -0.05 });
             enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(4.0), power: -1.5 });
             enemy.draw_packs.push(DrawPack::new("rgba(255,0,255,0.2)", Shape::Circle { radius: Radius::Relative(4.0) }, (0.0, 0.0)));
+            enemy.draw_packs.push(DrawPack::new("", Shape::Image { keyword: "candytop".to_owned(), scale: radius / 300.0 }, (-radius / 1.2, -radius / 1.2)));
+            enemy.view_radius = Radius::Relative(4.0);
+            enemies.push(enemy);
+        }
+        self.enemies.push((ids, enemies)); 
+    }
+    pub fn spawn_hypnosis_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+        let ids = vec![WallType::Candy];
+        let mut enemies = vec![];
+        for _ in 0..400 * spawn_m {
+            let cap = 0.3 * speed_m;
+            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let radius = rand::thread_rng().gen_range(50.0..=100.0);
+            let color = "rgb(190,190,190)";
+            let mut enemy = Enemy::new(-25000.0, -25000.0, velocity, radius, color);
+            enemy.id = 1;
+            enemy.effects.push(EnemyEffect::Chase { radius: Radius::Relative(3.0), power: -0.05 });
+            enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(4.0), power: -1.5 });
+            enemy.effects.push(EnemyEffect::SlowPlayers { radius: Radius::Relative(4.0), slow: -1.0, duration: 1 });
+            enemy.draw_packs.push(DrawPack::new("rgba(255,255,255,0.2)", Shape::Circle { radius: Radius::Relative(4.0) }, (0.0, 0.0)));
             enemy.draw_packs.push(DrawPack::new("", Shape::Image { keyword: "candytop".to_owned(), scale: radius / 300.0 }, (-radius / 1.2, -radius / 1.2)));
             enemy.view_radius = Radius::Relative(4.0);
             enemies.push(enemy);
