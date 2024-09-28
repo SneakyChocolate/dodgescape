@@ -485,7 +485,7 @@ impl Game {
             Item::new("heart",
                 vec![ItemEffect::Revive { radius: Radius::Relative(5.0) }, ItemEffect::Consumable { uses: 3 }],
                 vec![], &mut item_counter,
-                None
+                Some(DrawPack::new("", Shape::Image { keyword: "heart".to_owned(), scale }, (0.0, 0.0)))
             )
         ]);
         self.collectables.push(c);
@@ -540,6 +540,57 @@ impl Game {
                 ItemEffect::Vision((0.01,1.0)),
             ], vec![ ], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "univeye".to_owned(), scale }, (0.0, 0.0)))
+            )
+        ]);
+        self.collectables.push(c);
+        // flower area
+        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+            Item::new("puddle", vec![
+            ], vec![ ], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "puddle".to_owned(), scale }, (0.0, 0.0)))
+            )
+        ]);
+        self.collectables.push(c);
+        // wind area
+        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+            Item::new("windaura", vec![
+            ], vec![ ], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "push".to_owned(), scale }, (0.0, 0.0)))
+            )
+        ]);
+        self.collectables.push(c);
+        // black hole area
+        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+            Item::new("hourglass", vec![
+            ], vec![ ], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "hourglass".to_owned(), scale }, (0.0, 0.0)))
+            )
+        ]);
+        self.collectables.push(c);
+        // black hole area
+        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+            Item::new("orbit", vec![
+            ], vec![ ], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "orbit".to_owned(), scale }, (0.0, 0.0)))
+            )
+        ]);
+        self.collectables.push(c);
+        // black hole area
+        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+            Item::new("blackhole", vec![
+            ], vec![ ], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "blackhole".to_owned(), scale }, (0.0, 0.0)))
+            )
+        ]);
+        self.collectables.push(c);
+        // water area
+        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+            Item::new("speedup", vec![
+                ItemEffect::SlowEnemies { power: 3.0, radius: Radius::Relative(15.0), duration: 1 },
+            ], vec![
+                DrawPack::new("rgba(0,0,255,0.2)", Shape::Circle { radius: Radius::Relative(15.0) }, (0.0, 0.0))
+            ], &mut item_counter,
+                Some(DrawPack::new("", Shape::Image { keyword: "speedup".to_owned(), scale }, (0.0, 0.0)))
             )
         ]);
         self.collectables.push(c);

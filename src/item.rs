@@ -19,6 +19,7 @@ pub enum ItemEffect {
     ShrinkEnemies{power: f32, radius: Radius, duration: usize},
     Revive{radius: Radius},
     Consumable{uses: usize},
+    PushEnemies{power: f32, radius: Radius},
 }
 
 pub fn handle_effects(game: &mut Game) {

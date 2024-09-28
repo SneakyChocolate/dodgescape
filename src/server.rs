@@ -133,6 +133,13 @@ impl Server {
             "GET /blizzard.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/blizzard.png").unwrap()),
             "GET /univeye.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/univeye.png").unwrap()),
             "GET /dragonfirerune.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/dragonfirerune.png").unwrap()),
+            "GET /hourglass.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/hourglass.png").unwrap()),
+            "GET /orbit.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/orbit.png").unwrap()),
+            "GET /blackhole.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/blackhole.png").unwrap()),
+            "GET /push.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/push.png").unwrap()),
+            "GET /speedup.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/speedup.png").unwrap()),
+            "GET /puddle.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/puddle.png").unwrap()),
+            "GET /heart.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/heart.png").unwrap()),
 
             "GET /candytop.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/candytop.png").unwrap()),
             // "GET /monocle.png HTTP/1.1" => ("HTTP/1.1 200 OK", fs::read("./res/monocle.png").unwrap()),

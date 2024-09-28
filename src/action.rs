@@ -1,8 +1,9 @@
 
-use crate::{enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game}, gametraits::Radius, player::PlayerEffect, vector};
+use crate::{enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game}, gametraits::Radius, player::{Player, PlayerEffect}, vector};
 
 pub enum Action {
     AddPlayerPosition((f32,f32)),
+    AddEnemyPosition{group: usize, x: f32, y: f32},
     AddPlayerVelocity((f32,f32)),
     DecreaseItemEffect {item: usize, effect: usize},
     DecrementEnemyEase{group: usize, effect: usize},
@@ -33,36 +34,42 @@ pub enum Action {
     RevivePlayers {radius: Radius},
 }
 
+fn get_player<'a>(game: &'a mut Game, player: usize) -> &'a mut Player {
+    game.players.get_mut(player).unwrap()
+}
+fn get_enemy<'a>(game: &'a mut Game, group: usize, enemy: usize) -> &'a mut Enemy {
+    game.enemies.get_mut(group).unwrap().1.get_mut(enemy).unwrap()
+}
 impl Action {
     pub fn execute(&self, game: &mut Game, entity: usize) {
         match self {
             Action::UpdateEnemyVelocity(g, v) => {
-                let enemy = game.enemies.get_mut(*g).unwrap().1.get_mut(entity).unwrap();
+                let enemy = get_enemy(game, *g, entity);
                 enemy.velocity = *v;
             },
             Action::SetPlayerVelocity(v) => {
-                let object = game.players.get_mut(entity).unwrap();
-                object.velocity = *v;
+                let player = get_player(game, entity);
+                player.velocity = *v;
             },
             Action::SetPlayerZoomlimit(v) => {
-                let object = game.players.get_mut(entity).unwrap();
-                object.zoomlimit = *v;
+                let player = get_player(game, entity);
+                player.zoomlimit = *v;
             },
             Action::AddPlayerVelocity(v) => {
-                let object = game.players.get_mut(entity).unwrap();
-                object.velocity = (object.velocity.0 + v.0, object.velocity.1 + v.1);
+                let player = get_player(game, entity);
+                player.velocity = (player.velocity.0 + v.0, player.velocity.1 + v.1);
             },
             Action::AddPlayerPosition(v) => {
-                let object = game.players.get_mut(entity).unwrap();
-                object.x += v.0;
-                object.y += v.1;
+                let player = get_player(game, entity);
+                player.x += v.0;
+                player.y += v.1;
             },
             Action::MulPlayerVelocity(factor) => {
-                let object = game.players.get_mut(entity).unwrap();
-                object.velocity = (object.velocity.0 * factor, object.velocity.1 * factor);
+                let player = get_player(game, entity);
+                player.velocity = (player.velocity.0 * factor, player.velocity.1 * factor);
             },
             Action::SpawnCrumble(g) => {
-                let enemy = game.enemies.get_mut(*g).unwrap().1.get_mut(entity).unwrap();
+                let enemy = get_enemy(game, *g, entity);
                 let (x, y, v, r) = (enemy.x, enemy.y, enemy.velocity.clone(), enemy.radius / 2.0);
                 // cumble
                 let mut crumble = Enemy::new(x, y, vector::normalize(v, 0.5), r, "rgb(0,0,0)");
@@ -73,7 +80,7 @@ impl Action {
                 game.enemies.get_mut(*g).unwrap().1.remove(entity);
             },
             Action::ReduceLifetime { group, effect } => {
-                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                let enemy = get_enemy(game, *group, entity);
                 let effect = enemy.effects.get_mut(*effect).unwrap();
                 match effect {
                     EnemyEffect::Lifetime(t) => {
@@ -88,7 +95,7 @@ impl Action {
                 }
             },
             Action::ReduceCooldown(group) => {
-                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                let enemy = get_enemy(game, *group, entity);
                 for effect in enemy.effects.iter_mut() {
                     match effect {
                         crate::enemy::EnemyEffect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius, color, effects, under_dps } => {
@@ -106,7 +113,7 @@ impl Action {
                 }
             },
             Action::ResetCooldown(group) => {
-                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                let enemy = get_enemy(game, *group, entity);
                 for effect in enemy.effects.iter_mut() {
                     match effect {
                         crate::enemy::EnemyEffect::Shoot { radius, speed, time_left, cooldown, lifetime, projectile_radius, color, effects, under_dps } => {
@@ -120,7 +127,7 @@ impl Action {
                 }
             },
             Action::SpawnProjectile { group, velocity, color, radius, lifetime, effects, under_dps: underDPs } => {
-                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                let enemy = get_enemy(game, *group, entity);
                 // projectile
                 let mut projectile = Enemy::new(enemy.x, enemy.y, *velocity, *radius, color.as_str());
                 let udps = underDPs.clone();
@@ -132,14 +139,14 @@ impl Action {
                 game.enemies.get_mut(*group).unwrap().1.push(projectile);
             },
             Action::SpawnEnemy { group, velocity, color, radius, effects } => {
-                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                let enemy = get_enemy(game, *group, entity);
                 // projectile
                 let mut projectile = Enemy::new(enemy.x, enemy.y, *velocity, *radius, color.as_str());
                 projectile.effects = effects.clone();
                 game.enemies.get_mut(*group).unwrap().1.push(projectile);
             },
             Action::SetEnemyRadius(group, radius) => {
-                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                let enemy = get_enemy(game, *group, entity);
                 enemy.radius = *radius;
             },
             Action::SetPlayerSpeed(s) => {
@@ -243,6 +250,11 @@ impl Action {
                         player.alive = true;
                     }
                 }
+            },
+            Action::AddEnemyPosition { group, x, y } => {
+                let enemy = get_enemy(game, *group, entity);
+                enemy.x += *x;
+                enemy.y += *y;
             },
         }
     }

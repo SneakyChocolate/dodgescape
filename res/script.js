@@ -81,6 +81,13 @@ new_image("heatwave", "heatwave.png");
 new_image("blizzard", "blizzard.png");
 new_image("univeye", "univeye.png");
 new_image("dragonfirerune", "dragonfirerune.png");
+new_image("hourglass", "hourglass.png");
+new_image("orbit", "orbit.png");
+new_image("blackhole", "blackhole.png");
+new_image("push", "push.png");
+new_image("speedup", "speedup.png");
+new_image("puddle", "puddle.png");
+new_image("heart", "heart.png");
 
 new_image("candytop", "candytop.png");
 
