@@ -352,9 +352,9 @@ impl Game {
         let ids = vec![WallType::Candy];
         let mut enemies = vec![];
         for _ in 0..400 * spawn_m {
-            let cap = 0.3 * speed_m;
+            let cap = 0.03 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let radius = rand::thread_rng().gen_range(50.0..=100.0);
+            let radius = rand::thread_rng().gen_range(5.0..=10.0);
             let color = "rgb(190,190,190)";
             let mut enemy = Enemy::new(-25000.0, -25000.0, velocity, radius, color);
             enemy.id = 1;

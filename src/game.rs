@@ -241,8 +241,8 @@ impl Game {
         self.spawn_ice_enemies(speed_m, spawn_m);
         self.spawn_lightning_enemies(speed_m, spawn_m);
         self.spawn_poison_enemies(speed_m, spawn_m);
-        // self.spawn_candy_enemies(speed_m, spawn_m);
-        self.spawn_hypnosis_enemies(speed_m, spawn_m);
+        self.spawn_candy_enemies(speed_m, spawn_m);
+        // self.spawn_hypnosis_enemies(speed_m, spawn_m);
         self.spawn_hell_enemies(speed_m, spawn_m);
     }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, walltype: WallType) {
