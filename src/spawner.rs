@@ -599,11 +599,21 @@ impl Game {
         let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("windaura", vec![
                 ItemEffect::PushEnemies { power: 2.0, radius: Radius::Relative(5.0) },
-                ItemEffect::ShrinkEnemies { power: 0.5, radius: Radius::Relative(5.0), duration: 100, startd: 100 },
             ], vec![
                 DrawPack::new("rgba(255,255,255,0.2)", Shape::Circle { radius: Radius::Relative(5.0) }, (0.0, 0.0))
             ], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "push".to_owned(), scale }, (0.0, 0.0)))
+            )
+        ]);
+        self.collectables.push(c);
+        // dirt area
+        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+            Item::new("sandstorm", vec![
+                ItemEffect::ShrinkEnemies { power: 0.5, radius: Radius::Relative(7.0), duration: 100 },
+            ], vec![
+                DrawPack::new("rgba(50,40,20,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
+            ], &mut item_counter,
+                None
             )
         ]);
         self.collectables.push(c);

@@ -52,7 +52,7 @@ pub enum EnemyEffect {
     SlowPlayers {radius: Radius, slow: f32, duration: usize},
     Grow {size: f32, maxsize: f32, defaultsize: f32},
     SpeedAlter {origin: usize, power: f32, ease: usize},
-    Shrink {origin: usize, power: f32, ease: usize},
+    Shrink {origin: usize, power: f32, ease: usize, start: usize},
     ShrinkPlayers {radius: Radius, shrink: f32, duration: usize},
 }
 
@@ -209,15 +209,15 @@ pub fn handle_effects(game: &mut Game) {
                             actions.push((i, Action::MulEnemySpeedMultiplier { group: g, f: *power }));
                         }
                     },
-                    EnemyEffect::Shrink { power, ease, origin } => {
-                        // TODO ease size effect
+                    EnemyEffect::Shrink { power, ease, origin, start } => {
                         if *ease == 0 {
                             // remove this effect
                             deletions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
                         }
                         else {
                             deletions.push((i, Action::DecrementEnemyEase { group: g, effect: e }));
-                            actions.push((i, Action::MulEnemyRadiusMultiplier { f: *power, group: g }));
+                            let r = *power + *power * ((*start - *ease) as f32 / *start as f32);
+                            actions.push((i, Action::MulEnemyRadiusMultiplier { f: r, group: g }));
                         }
                     },
                 }

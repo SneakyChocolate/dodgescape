@@ -78,7 +78,7 @@ pub fn handle_effects(game: &mut Game) {
                                     // check if effect of this item id is already applied
                                     let effect = enemy.effects.iter_mut().find(|e| {
                                         match e {
-                                            crate::enemy::EnemyEffect::Shrink { origin, power, ease } => {
+                                            crate::enemy::EnemyEffect::Shrink { origin, power, ease, start } => {
                                                 *origin == item.id
                                             },
                                             _ => {
@@ -89,7 +89,7 @@ pub fn handle_effects(game: &mut Game) {
                                     match effect {
                                         Some(e) => {
                                             match e {
-                                                crate::enemy::EnemyEffect::Shrink { origin, power, ease } => {
+                                                crate::enemy::EnemyEffect::Shrink { origin, power, ease, start } => {
                                                     *ease = *duration;
                                                 },
                                                 _ => {
@@ -98,7 +98,7 @@ pub fn handle_effects(game: &mut Game) {
                                             }
                                         },
                                         None => {
-                                            enemy.effects.push(crate::enemy::EnemyEffect::Shrink { power: *power, ease: *duration, origin: item.id });
+                                            enemy.effects.push(crate::enemy::EnemyEffect::Shrink { power: *power, ease: *duration, origin: item.id, start: *duration });
                                         },
                                     }
                                 }

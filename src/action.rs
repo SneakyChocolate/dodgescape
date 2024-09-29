@@ -192,7 +192,7 @@ impl Action {
                     EnemyEffect::SpeedAlter { origin, power: slow, ease } => {
                         *ease -= 1;
                     },
-                    EnemyEffect::Shrink { origin, power: slow, ease } => {
+                    EnemyEffect::Shrink { origin, power: slow, ease, start } => {
                         *ease -= 1;
                     },
                     _ => { }
