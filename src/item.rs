@@ -11,7 +11,6 @@ pub struct Item {
     pub icon: Option<DrawPack>,
 }
 
-
 #[derive(Debug)]
 pub enum ItemEffect {
     Vision((f32,f32)),

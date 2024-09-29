@@ -599,6 +599,7 @@ impl Game {
         let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("windaura", vec![
                 ItemEffect::PushEnemies { power: 2.0, radius: Radius::Relative(5.0) },
+                ItemEffect::ShrinkEnemies { power: 0.5, radius: Radius::Relative(5.0), duration: 100, startd: 100 },
             ], vec![
                 DrawPack::new("rgba(255,255,255,0.2)", Shape::Circle { radius: Radius::Relative(5.0) }, (0.0, 0.0))
             ], &mut item_counter,

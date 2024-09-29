@@ -210,6 +210,7 @@ pub fn handle_effects(game: &mut Game) {
                         }
                     },
                     EnemyEffect::Shrink { power, ease, origin } => {
+                        // TODO ease size effect
                         if *ease == 0 {
                             // remove this effect
                             deletions.push((i, Action::RemoveEnemyEffect { group: g, effect: e }));
