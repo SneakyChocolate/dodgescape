@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::{collectable::Collectable, color::Color, enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game, Shape}, gametraits::Radius, item::{Item, ItemEffect}, vector::random_point, wall::WallType};
+use crate::{collectable::Collectable, color::Color, enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game, Shape}, gametraits::Radius, item::{Item, ItemEffect}, vector::random_point, wall::{Wall, WallType}};
 
 impl Game {
     pub fn spawn_enemies(&mut self) {
@@ -412,6 +412,31 @@ impl Game {
             ));
         }
     }
+    pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, walltype: WallType) {
+        let start = (0.0, 0.0);
+        for c in 0..corners.len() {
+            let a = corners[c];
+            let b = if c + 1 == corners.len() {
+                corners[0]
+            }
+            else {
+                corners[c + 1]
+            };
+            let addition = Wall::new(a, b, false, true);
+            let group = self.walls.iter_mut().find(|(i, _)| {*i == walltype});
+            match group {
+                Some(g) => {
+                    g.1.push(addition);
+                },
+                None => {
+                    self.walls.push((walltype, vec![addition]));
+                },
+            }
+        }
+        let poly = Shape::Poly { corners };
+        let draw_pack = DrawPack::new(color, poly, (0.0, 0.0));
+        self.map.push((start, draw_pack));
+    }
     pub fn spawn_map(&mut self) {
         let multiplier = 2000.0;
         
@@ -584,7 +609,9 @@ impl Game {
         // black hole area
         let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("hourglass", vec![
-            ], vec![ ], &mut item_counter,
+            ], vec![
+                DrawPack::new("rgba(0,255,0,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
+            ], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "hourglass".to_owned(), scale }, (0.0, 0.0)))
             )
         ]);

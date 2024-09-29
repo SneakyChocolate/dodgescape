@@ -11,6 +11,7 @@ pub struct Item {
     pub icon: Option<DrawPack>,
 }
 
+
 #[derive(Debug)]
 pub enum ItemEffect {
     Vision((f32,f32)),
@@ -35,7 +36,7 @@ pub fn handle_effects(game: &mut Game) {
                         actions.push((p, Action::SetPlayerZoomlimit(*zoom)));
                     },
                     ItemEffect::Speed(s) => {
-                        actions.push((p, Action::MulPlayerSpeed(*s)));
+                        actions.push((p, Action::MulPlayerSpeedMultiplier { f: *s }));
                     },
                     ItemEffect::SlowEnemies{power, radius, duration } => {
                         for group in game.enemies.iter_mut() {
@@ -145,8 +146,6 @@ pub fn handle_effects(game: &mut Game) {
                 }
             }
         }
-        actions.push((p, Action::SetPlayerZoomlimit((1.0, 1.0))));
-        actions.push((p, Action::SetPlayerSpeed(8.0)));
     }
     for (entity, action) in actions.iter().rev() {
         action.execute(game, *entity);

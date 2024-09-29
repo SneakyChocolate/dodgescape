@@ -226,31 +226,6 @@ pub fn handle_movements(game: &mut Game) {
 }
 
 impl Game {
-    pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, walltype: WallType) {
-        let start = (0.0, 0.0);
-        for c in 0..corners.len() {
-            let a = corners[c];
-            let b = if c + 1 == corners.len() {
-                corners[0]
-            }
-            else {
-                corners[c + 1]
-            };
-            let addition = Wall::new(a, b, false, true);
-            let group = self.walls.iter_mut().find(|(i, _)| {*i == walltype});
-            match group {
-                Some(g) => {
-                    g.1.push(addition);
-                },
-                None => {
-                    self.walls.push((walltype, vec![addition]));
-                },
-            }
-        }
-        let poly = Shape::Poly { corners };
-        let draw_pack = DrawPack::new(color, poly, (0.0, 0.0));
-        self.map.push((start, draw_pack));
-    }
     pub fn new(receiver: Receiver<ServerMessage>) -> Game {
         let mut g = Game {
             game_loop: None,
