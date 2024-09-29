@@ -226,25 +226,6 @@ pub fn handle_movements(game: &mut Game) {
 }
 
 impl Game {
-    pub fn spawn_enemies(&mut self) {
-        let spawn_m = 3;
-        let speed_m = 8.0;
-        self.spawn_dirt_enemies(speed_m, spawn_m);
-        self.spawn_wind_enemies(speed_m, spawn_m);
-        self.spawn_flower_enemies(speed_m, spawn_m);
-        self.spawn_water_enemies(speed_m, spawn_m);
-        self.spawn_fire_enemies(speed_m, spawn_m);
-        self.spawn_blackhole_enemies(speed_m, spawn_m);
-        self.spawn_tech_enemies(speed_m, spawn_m);
-        self.spawn_snake_enemies(speed_m, spawn_m);
-        self.spawn_explosion_enemies(speed_m, spawn_m);
-        self.spawn_ice_enemies(speed_m, spawn_m);
-        self.spawn_lightning_enemies(speed_m, spawn_m);
-        self.spawn_poison_enemies(speed_m, spawn_m);
-        self.spawn_candy_enemies(speed_m, spawn_m);
-        // self.spawn_hypnosis_enemies(speed_m, spawn_m);
-        self.spawn_hell_enemies(speed_m, spawn_m);
-    }
     pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, walltype: WallType) {
         let start = (0.0, 0.0);
         for c in 0..corners.len() {

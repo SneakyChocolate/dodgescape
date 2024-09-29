@@ -3,6 +3,25 @@ use rand::Rng;
 use crate::{collectable::Collectable, color::Color, enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game, Shape}, gametraits::Radius, item::{Item, ItemEffect}, vector::random_point, wall::WallType};
 
 impl Game {
+    pub fn spawn_enemies(&mut self) {
+        let spawn_m = 3;
+        let speed_m = 8.0;
+        self.spawn_dirt_enemies(speed_m, spawn_m);
+        self.spawn_wind_enemies(speed_m, spawn_m);
+        self.spawn_flower_enemies(speed_m, spawn_m);
+        self.spawn_water_enemies(speed_m, spawn_m);
+        self.spawn_fire_enemies(speed_m, spawn_m);
+        self.spawn_blackhole_enemies(speed_m, spawn_m);
+        self.spawn_tech_enemies(speed_m, spawn_m);
+        self.spawn_snake_enemies(speed_m, spawn_m);
+        self.spawn_explosion_enemies(speed_m, spawn_m);
+        self.spawn_ice_enemies(speed_m, spawn_m);
+        self.spawn_lightning_enemies(speed_m, spawn_m);
+        self.spawn_poison_enemies(speed_m, spawn_m);
+        self.spawn_candy_enemies(speed_m, spawn_m);
+        // self.spawn_hypnosis_enemies(speed_m, spawn_m);
+        self.spawn_hell_enemies(speed_m, spawn_m);
+    }
     pub fn spawn_dirt_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Dirt, WallType::SpawnA];
         let mut enemies = vec![];
@@ -352,9 +371,9 @@ impl Game {
         let ids = vec![WallType::Candy];
         let mut enemies = vec![];
         for _ in 0..400 * spawn_m {
-            let cap = 0.03 * speed_m;
+            let cap = 0.3 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let radius = rand::thread_rng().gen_range(5.0..=10.0);
+            let radius = rand::thread_rng().gen_range(50.0..=100.0);
             let color = "rgb(190,190,190)";
             let mut enemy = Enemy::new(-25000.0, -25000.0, velocity, radius, color);
             enemy.id = 1;
@@ -554,7 +573,10 @@ impl Game {
         // wind area
         let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("windaura", vec![
-            ], vec![ ], &mut item_counter,
+                ItemEffect::PushEnemies { power: 2.0, radius: Radius::Relative(5.0) },
+            ], vec![
+                DrawPack::new("rgba(255,255,255,0.2)", Shape::Circle { radius: Radius::Relative(5.0) }, (0.0, 0.0))
+            ], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "push".to_owned(), scale }, (0.0, 0.0)))
             )
         ]);
@@ -570,7 +592,10 @@ impl Game {
         // black hole area
         let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
             Item::new("orbit", vec![
-            ], vec![ ], &mut item_counter,
+                ItemEffect::RotateEnemies { power: 1.0, radius: Radius::Relative(12.0) },
+            ], vec![
+                DrawPack::new("rgba(150,0,255,0.2)", Shape::Circle { radius: Radius::Relative(12.0) }, (0.0, 0.0))
+            ], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "orbit".to_owned(), scale }, (0.0, 0.0)))
             )
         ]);

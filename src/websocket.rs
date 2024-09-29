@@ -180,7 +180,7 @@ fn send(stream: &mut TcpStream, message: String) {
     }
 
     // Write the message bytes
-    stream.write_all(message_bytes).unwrap();
+    stream.write_all(message_bytes);
     // Ensure all data is sent
     stream.flush().unwrap();
 }

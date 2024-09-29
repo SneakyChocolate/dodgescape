@@ -20,6 +20,7 @@ pub enum ItemEffect {
     Revive{radius: Radius},
     Consumable{uses: usize},
     PushEnemies{power: f32, radius: Radius},
+    RotateEnemies{power: f32, radius: Radius},
 }
 
 pub fn handle_effects(game: &mut Game) {
@@ -113,6 +114,32 @@ pub fn handle_effects(game: &mut Game) {
                         }
                         else {
                             deletions.push((p, Action::DecreaseItemEffect { item: i, effect: e }));
+                        }
+                    },
+                    ItemEffect::PushEnemies { power, radius } => {
+                        for (g, group) in game.enemies.iter().enumerate() {
+                            for (e, enemy) in group.1.iter().enumerate() {
+                                let dist = vector::distance((player.x, player.y), (enemy.x, enemy.y));
+                                if dist.2 <= radius.translate(player.get_radius()) + enemy.get_radius() {
+                                    let add = vector::normalize((dist.0, dist.1), *power);
+                                    actions.push((e, Action::AddEnemyPosition { group: g, x: add.0, y: add.1 }));
+                                }
+                            }
+                        }
+                    },
+                    ItemEffect::RotateEnemies { power, radius } => {
+                        for (g, group) in game.enemies.iter().enumerate() {
+                            for (e, enemy) in group.1.iter().enumerate() {
+                                let dist = vector::distance((player.x, player.y), (enemy.x, enemy.y));
+                                if dist.2 <= radius.translate(player.get_radius()) + enemy.get_radius() {
+                                    let angle = vector::angle_from_point((dist.0, dist.1));
+                                    let newu = vector::point_from_angle(angle + *power);
+                                    let newp = vector::normalize((newu.0, newu.1), dist.2);
+                                    let new = (player.x + newp.0, player.y + newp.1);
+                                    let add = (new.0 - enemy.x, new.1 - enemy.y);
+                                    actions.push((e, Action::AddEnemyPosition { group: g, x: add.0, y: add.1 }));
+                                }
+                            }
                         }
                     },
                 }
