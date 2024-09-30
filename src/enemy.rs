@@ -25,18 +25,18 @@ impl_Drawable!(Enemy);
 
 impl MoveObject for Enemy {
     fn barrier_cross_check(&mut self, old_position: (f32, f32), walls: &Walls, walltypes: Option<&Vec<WallType>>) {
-        // return;
+        let walltypes = match walltypes {
+            Some(w) => w,
+            None => {
+                return;
+            },
+        };
         let current = (self.get_x(), self.get_y());
         let dist = vector::distance(old_position, current);
         let mut enemy_collisions: Vec<(usize, usize, (f32, f32))> = vec![];
         for wgroup in walls.iter() {
-            match walltypes {
-                Some(walltypes) => {
-                    if !walltypes.contains(&wgroup.0) {
-                        continue;
-                    }
-                },
-                None => {},
+            if !walltypes.contains(&wgroup.0) {
+                continue;
             }
             for wall in wgroup.1.iter() {
                 if !wall.enemy {
