@@ -515,7 +515,24 @@ impl Game {
     pub fn spawn_collectables(&mut self) {
         let scale = 0.3;
         let mut item_counter = 0;
-        // dirt area,
+        // spawn b
+        let c = Collectable::new(-11000.0, -11000.0, Color::new(200, 200, 100, 1), vec![
+            Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
+        ]);
+        self.collectables.push(c);
+        let c = Collectable::new(11000.0, -11000.0, Color::new(200, 200, 100, 1), vec![
+            Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
+        ]);
+        self.collectables.push(c);
+        let c = Collectable::new(-11000.0, 11000.0, Color::new(200, 200, 100, 1), vec![
+            Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
+        ]);
+        self.collectables.push(c);
+        let c = Collectable::new(11000.0, 11000.0, Color::new(200, 200, 100, 1), vec![
+            Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
+        ]);
+        self.collectables.push(c);
+        // dirt area
         let c = Collectable::new(2000.0, 2000.0, Color::new(200, 200, 100, 1), vec![
             Item::new("monocle",
                 vec![ItemEffect::Vision((0.9,0.9))],
@@ -524,7 +541,7 @@ impl Game {
             )
         ]);
         self.collectables.push(c);
-        // dirt area,
+        // dirt area
         let c = Collectable::new(200.0, 200.0, Color::new(200, 200, 100, 1), vec![
             Item::new("heart",
                 vec![ItemEffect::Revive { radius: Radius::Relative(5.0) }, ItemEffect::Consumable { uses: 3 }],
@@ -557,7 +574,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         // hell area start
-        let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
+        let c = Collectable::new(17500.0, -17500.0, Color::new(255,0,0,1), vec![
             Item::new("heatwave", vec![
                 ItemEffect::SlowEnemies { power: 0.5, radius: Radius::Relative(7.0), duration: 100 },
             ], vec![
@@ -568,7 +585,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         // ice area middle
-        let c = Collectable::new(0.0, 0.0, Color::new(255,0,0,1), vec![
+        let c = Collectable::new(0.0, -16500.0, Color::new(255,0,0,1), vec![
             Item::new("blizzard", vec![
                 ItemEffect::SlowEnemies { power: 0.8, radius: Radius::Relative(20.0), duration: 1 },
             ], vec![
@@ -579,7 +596,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         // bottom space area
-        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+        let c = Collectable::new(-9000.0, 14500.0, Color::new(255,0,0,1), vec![
             Item::new("univeye", vec![
                 ItemEffect::Vision((0.01,1.0)),
             ], vec![ ], &mut item_counter,
@@ -588,7 +605,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         // flower area
-        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+        let c = Collectable::new(-4500.0, -4000.0, Color::new(255,0,0,1), vec![
             Item::new("puddle", vec![
             ], vec![ ], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "puddle".to_owned(), scale }, (0.0, 0.0)))
@@ -596,7 +613,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         // wind area
-        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+        let c = Collectable::new(-4000.0, 5500.0, Color::new(255,0,0,1), vec![
             Item::new("windaura", vec![
                 ItemEffect::PushEnemies { power: 2.0, radius: Radius::Relative(5.0) },
             ], vec![
@@ -607,7 +624,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         // dirt area
-        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+        let c = Collectable::new(4000.0, 4000.0, Color::new(255,0,0,1), vec![
             Item::new("sandstorm", vec![
                 ItemEffect::ShrinkEnemies { power: 0.5, radius: Radius::Relative(7.0), duration: 100 },
             ], vec![
@@ -618,7 +635,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         // black hole area
-        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+        let c = Collectable::new(-9000.0, -14000.0, Color::new(255,0,0,1), vec![
             Item::new("hourglass", vec![
             ], vec![
                 DrawPack::new("rgba(0,255,0,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
@@ -628,7 +645,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         // black hole area
-        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+        let c = Collectable::new(8000.0, -12500.0, Color::new(255,0,0,1), vec![
             Item::new("orbit", vec![
                 ItemEffect::RotateEnemies { power: 1.0, radius: Radius::Relative(12.0) },
             ], vec![
@@ -639,7 +656,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         // black hole area
-        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+        let c = Collectable::new(11000.0, 16000.0, Color::new(255,0,0,1), vec![
             Item::new("blackhole", vec![
             ], vec![ ], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "blackhole".to_owned(), scale }, (0.0, 0.0)))
@@ -647,7 +664,7 @@ impl Game {
         ]);
         self.collectables.push(c);
         // water area
-        let c = Collectable::new(200.0, 0.0, Color::new(255,0,0,1), vec![
+        let c = Collectable::new(6000.0, -6000.0, Color::new(255,0,0,1), vec![
             Item::new("speedup", vec![
                 ItemEffect::SlowEnemies { power: 3.0, radius: Radius::Relative(15.0), duration: 1 },
             ], vec![

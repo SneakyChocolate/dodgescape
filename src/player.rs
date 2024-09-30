@@ -60,6 +60,25 @@ impl Player {
 
         p
     }
+    fn scroll_use(&mut self) {
+        self.alive = true;
+        let scroll = self.inventory.items.iter().position(|e| {e.name == "teleportation scroll".to_owned()}).unwrap();
+        self.inventory.items.remove(scroll);
+    }
+    fn tp_possibility(&mut self, target: (f32, f32), key: &str) {
+        let scroll = self.inventory.items.iter().position(|e| {e.name == "teleportation scroll".to_owned()});
+        match scroll {
+            Some(_) => {
+                let key = key.to_owned();
+                if self.just_pressed.contains(&key) {
+                    self.x = target.0;
+                    self.y = target.1;
+                    self.scroll_use();
+                }
+            },
+            None => {},
+        };
+    }
     fn handle_respawn(&mut self) {
         let key = "KeyR".to_owned();
         if self.keys_down.contains(&key) {
@@ -67,32 +86,13 @@ impl Player {
             self.y = 0.0;
             self.alive = true;
         }
-        // TODO need scrolls (items) to tp to the outer spawns
+        
         let spawnd = 11000.0;
-        let key = "Digit1".to_owned();
-        if self.keys_down.contains(&key) {
-            self.x = -spawnd;
-            self.y = -spawnd;
-            self.alive = true;
-        }
-        let key = "Digit2".to_owned();
-        if self.keys_down.contains(&key) {
-            self.x = spawnd;
-            self.y = -spawnd;
-            self.alive = true;
-        }
-        let key = "Digit3".to_owned();
-        if self.keys_down.contains(&key) {
-            self.x = -spawnd;
-            self.y = spawnd;
-            self.alive = true;
-        }
-        let key = "Digit4".to_owned();
-        if self.keys_down.contains(&key) {
-            self.x = spawnd;
-            self.y = spawnd;
-            self.alive = true;
-        }
+        self.tp_possibility((-spawnd, -spawnd), "Digit1");
+        self.tp_possibility((spawnd, -spawnd), "Digit2");
+        self.tp_possibility((-spawnd, spawnd), "Digit3");
+        self.tp_possibility((spawnd, spawnd), "Digit4");
+
         let key = "KeyQ".to_owned();
         if self.keys_down.contains(&key) {
             self.alive = true;
