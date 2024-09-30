@@ -48,7 +48,7 @@ impl Player {
             name: name.clone(),
             radius: 30.0,
             alive: true,
-            speed: 8.0,
+            speed: 10.0,
             zoom: 1.0,
             zoomlimit: (1.0, 1.0),
             color: color.clone(),

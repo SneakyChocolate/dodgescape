@@ -241,6 +241,7 @@ impl Game {
         g.spawn_enemies();
         g.spawn_map();
         g.spawn_collectables();
+        g.spawn_collectables();
 
         g
     }
