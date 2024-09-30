@@ -681,6 +681,7 @@ impl Game {
         let c = Collectable::new(6000.0, -6000.0, Color::new(255,0,0,1), vec![
             Item::new("speedup", vec![
                 ItemEffect::SlowEnemies { power: 3.0, radius: Radius::Relative(15.0), duration: 1 },
+                ItemEffect::Speed(3.0),
             ], vec![
                 DrawPack::new("rgba(0,0,255,0.2)", Shape::Circle { radius: Radius::Relative(15.0) }, (0.0, 0.0))
             ], &mut item_counter,
