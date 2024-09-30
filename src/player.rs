@@ -94,8 +94,15 @@ impl Player {
         self.tp_possibility((spawnd, spawnd), "Digit4");
 
         let key = "KeyQ".to_owned();
-        if self.keys_down.contains(&key) {
-            self.alive = true;
+        if self.just_pressed.contains(&key) {
+            let heart = self.inventory.items.iter_mut().find(|e| {e.name == "heart"});
+            match heart {
+                Some(heart) => {
+                    heart.active = true;
+                },
+                None => {},
+            };
+            // self.alive = true;
         }
     }
     fn handle_inventory(&mut self, collectables: &mut Vec<Collectable>) {
