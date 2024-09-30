@@ -544,7 +544,10 @@ impl Game {
         // dirt area
         let c = Collectable::new(200.0, 200.0, Color::new(200, 200, 100, 1), vec![
             Item::new("heart",
-                vec![ItemEffect::Revive { radius: Radius::Relative(5.0) }, ItemEffect::Consumable { uses: 3 }],
+                vec![
+                    ItemEffect::Revive { radius: Radius::Relative(5.0) },
+                    ItemEffect::Consumable { uses: 3 },
+                ],
                 vec![], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "heart".to_owned(), scale }, (0.0, 0.0)))
             )
@@ -554,8 +557,19 @@ impl Game {
         let c = Collectable::new(0.0, -2000.0, Color::new(200, 200, 100, 1), vec![
             Item::new("microscope", vec![
                 ItemEffect::Vision((1.0,5.0)),
+                ItemEffect::Harden { limit: 100, cooldown: 1000 },
             ], vec![], &mut item_counter,
                 Some(DrawPack::new("", Shape::Image { keyword: "microscope".to_owned(), scale }, (0.0, 0.0)))
+            )
+        ]);
+        self.collectables.push(c);
+        // explosion area
+        let c = Collectable::new(0.0, -200.0, Color::new(50, 50, 50, 1), vec![
+            Item::new("bunker", vec![
+                ItemEffect::Harden { limit: 50, cooldown: 300 },
+                ItemEffect::Usable,
+            ], vec![ ], &mut item_counter,
+                None
             )
         ]);
         self.collectables.push(c);

@@ -7,6 +7,7 @@ use crate::gametraits::*;
 pub enum PlayerEffect {
     Shrink {origin: usize, shrink: f32, ease: usize},
     SpeedAlter {origin: usize, slow: f32, ease: usize},
+    Harden {ease: usize, cooldown: usize},
 }
 
 #[derive(Default)]
@@ -239,27 +240,44 @@ pub fn handle_effects(game: &mut Game) {
     let mut actions: Vec<(usize, Action)> = vec![];
     let mut deletions: Vec<(usize, Action)> = vec![];
     // convert effects to actions
-    for (i, player) in game.players.iter_mut().enumerate() {
+    for (p, player) in game.players.iter_mut().enumerate() {
         for (e, effect) in player.effects.iter_mut().enumerate() {
             match effect {
                 PlayerEffect::SpeedAlter { origin, slow, ease } => {
                     if *ease == 0 {
                         // remove this effect
-                        deletions.push((i, Action::RemovePlayerEffect { effect: e }));
+                        deletions.push((p, Action::RemovePlayerEffect { effect: e }));
                     }
                     else {
                         *ease -= 1;
-                        actions.push((i, Action::MulPlayerSpeedMultiplier { f: *slow }));
+                        actions.push((p, Action::MulPlayerSpeedMultiplier { f: *slow }));
                     }
                 },
                 PlayerEffect::Shrink { origin, shrink, ease } => {
                     if *ease == 0 {
                         // remove this effect
-                        deletions.push((i, Action::RemovePlayerEffect { effect: e }));
+                        deletions.push((p, Action::RemovePlayerEffect { effect: e }));
                     }
                     else {
                         *ease -= 1;
-                        actions.push((i, Action::MulPlayerRadiusMultiplier { f: *shrink }));
+                        actions.push((p, Action::MulPlayerRadiusMultiplier { f: *shrink }));
+                    }
+                },
+                PlayerEffect::Harden { ease, cooldown } => {
+                    if *cooldown == 0 {
+                        // remove this effect
+                        deletions.push((p, Action::RemovePlayerEffect { effect: e }));
+                    }
+                    else {
+                        *cooldown -= 1;
+                    }
+                    if *ease == 0 {
+                        // effect shouldnt work anymore
+                    }
+                    else {
+                        *ease -= 1;
+                        actions.push((p, Action::MulPlayerSpeedMultiplier { f: 0.0 }));
+                        actions.push((p, Action::SetPlayerInvincible(true)));
                     }
                 },
             }
@@ -269,6 +287,7 @@ pub fn handle_effects(game: &mut Game) {
     for player in game.players.iter_mut() {
         player.speed_multiplier = 1.0;
         player.radius_multiplier = 1.0;
+        player.invincible = false;
     }
     // reverse order due to deletions and index errors
     for (entity, action) in actions.iter().rev() {

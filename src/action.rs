@@ -5,6 +5,8 @@ pub enum Action {
     AddPlayerPosition((f32,f32)),
     AddEnemyPosition{group: usize, x: f32, y: f32},
     AddPlayerVelocity((f32,f32)),
+    SetPlayerInvincible(bool),
+    SetItemActive{i: usize, v: bool},
     DecreaseItemEffect {item: usize, effect: usize},
     DecrementEnemyEase{group: usize, effect: usize},
     Despawn(usize),
@@ -255,6 +257,15 @@ impl Action {
                 let enemy = get_enemy(game, *group, entity);
                 enemy.x += *x;
                 enemy.y += *y;
+            },
+            Action::SetPlayerInvincible(b) => {
+                let player = game.players.get_mut(entity).unwrap();
+                player.invincible = *b;
+            },
+            Action::SetItemActive { i, v } => {
+                let player = game.players.get_mut(entity).unwrap();
+                let item = player.inventory.items.get_mut(*i).unwrap();
+                item.active = *v;
             },
         }
     }

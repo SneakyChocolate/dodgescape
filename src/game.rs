@@ -372,10 +372,28 @@ impl Game {
             }
         }
         // players
-        for object in self.players.iter() {
-            if vector::distance(camera, (object.x, object.y)).2 > view {continue;}
-            let acc = draw_object(object, &camera, zoom);
+        for player in self.players.iter() {
+            if vector::distance(camera, (player.x, player.y)).2 > view {continue;}
+            let acc = draw_object(player, &camera, zoom);
             objects.push_str(&acc);
+
+            // player effects
+            for effect in player.effects.iter() {
+                match effect {
+                    crate::player::PlayerEffect::Shrink { origin, shrink, ease } => {
+                        
+                    },
+                    crate::player::PlayerEffect::SpeedAlter { origin, slow, ease } => {
+                        
+                    },
+                    crate::player::PlayerEffect::Harden { ease, cooldown } => {
+                        let pos = (player.x - 20.0, player.y - 60.0);
+                        let dp = DrawPack::new("rgba(0,0,255,0.5)", Shape::Text { content: format!("cd: {}", *cooldown), size: 20.0 }, (0.0, 0.0));
+                        let acc = draw(0.0, &pos, &dp, &camera, zoom);
+                        objects.push_str(&acc);
+                    },
+                }
+            }
         }
         // enemies
         for group in self.enemies.iter() {
