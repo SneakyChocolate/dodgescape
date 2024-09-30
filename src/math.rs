@@ -1,6 +1,10 @@
 
+pub type Matrix = Vec<Vec<f32>>;
+
 pub mod matrix {
-    pub fn check(matrix: &Vec<Vec<f32>>) -> bool {
+    use super::Matrix;
+
+    pub fn check(matrix: &Matrix) -> bool {
         let width = match matrix.first() {
             Some(e) => e.len(),
             None => return false,
@@ -12,7 +16,7 @@ pub mod matrix {
         true
     }
 
-    pub fn sort(matrix: &mut Vec<Vec<f32>>) {
+    pub fn sort(matrix: &mut Matrix) {
         matrix.sort_by(|a, b| {
             let ap = match a.iter().position(|e| {*e != 0.0}) {
                 Some(p) => p,
@@ -25,24 +29,6 @@ pub mod matrix {
             ap.partial_cmp(&bp).unwrap()
             
         });
-        // loop {
-        //     let mut swap: Option<(usize, usize)> = None;
-        //     for (r, row) in matrix.iter().enumerate() {
-        //         for (c, col) in row.iter().enumerate() {
-        //             if *col != 0.0 {continue;}
-        //             for (mut r2, row2) in matrix[r..].iter().enumerate() {
-        //                 r2 += r;
-        //                 if *row2.get(c).unwrap() != 0.0 {
-        //                     swap = Some((r, r2));
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     match swap {
-        //         Some(s) => matrix.swap(s.0, s.1),
-        //         None => {break;},
-        //     }
-        // }
     }
 
     pub fn div(row: &mut Vec<f32>, value: f32) {
@@ -64,7 +50,7 @@ pub mod matrix {
         *row1 = nrow;
     }
 
-    pub fn normalize(matrix: &mut Vec<Vec<f32>>) {
+    pub fn normalize(matrix: &mut Matrix) {
         if check(&matrix) == false {
             panic!("wrong matrix input");
         };

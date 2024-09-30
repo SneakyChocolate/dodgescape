@@ -1,6 +1,6 @@
 
 
-use crate::{action::Action, collectable::Collectable, color::Color, game::{DrawPack, Game, Shape}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector};
+use crate::{action::Action, collectable::Collectable, color::Color, game::{DrawPack, Game, Shape, Walls}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector, wall::WallType};
 use crate::gametraits::*;
 
 #[derive(Clone, Copy, Debug)]
@@ -38,6 +38,12 @@ pub struct Player {
 impl_Position!(Player);
 impl_Movable!(Player);
 impl_Drawable!(Player);
+
+impl MoveObject for Player {
+    fn barrier_cross_check(&mut self, old_position: (f32, f32), walls: &Walls, walltypes: Option<&Vec<WallType>>) {
+        // TODO
+    }
+}
 
 impl Player {
     pub fn new(name: &String) -> Player {

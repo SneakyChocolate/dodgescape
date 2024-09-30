@@ -1,7 +1,14 @@
 use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self}, wall::{Wall, WallType}};
+use crate::{collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, MoveObject, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self}, wall::{Wall, WallType}};
 use serde::Serialize;
+
+pub fn move_object<T: Moveable>(object: &mut T, walls: &Walls, walltypes: Option<&Vec<WallType>>) {
+    let (vx, vy) = object.get_velocity();
+    let x = object.get_x() + vx * object.get_speed_multiplier();
+    let y = object.get_y() + vy * object.get_speed_multiplier();
+    object.set_pos(x, y, walls, walltypes);
+}
 
 pub fn draw(radius: f32, position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
     format!("{{\"radius\":{},\"position\":{{\"x\":{},\"y\":{}}},\"draw_pack\":{},\"camera\":{{\"x\":{},\"y\":{}}},\"zoom\":{}}},",
@@ -23,11 +30,6 @@ pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom
         output.push_str(&s);
     }
     output
-}
-pub fn move_object<T: Moveable>(object: &mut T) {
-    let (vx, vy) = object.get_velocity();
-    *object.get_x_mut() += vx * object.get_speed_multiplier();
-    *object.get_y_mut() += vy * object.get_speed_multiplier();
 }
 
 pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {
@@ -67,16 +69,19 @@ impl DrawPack {
     }
 }
 
+pub type Walls = Vec<(WallType, Vec<Wall>)>;
+pub type Enemies = Vec<(Vec<WallType>, Vec<Enemy>)>;
+
 pub struct Game {
     pub receiver: Receiver<ServerMessage>,
     
     pub players: Vec<Player>,
     pub game_loop: Option<JoinHandle<()>>,
     pub running: bool,
-    pub enemies: Vec<(Vec<WallType>, Vec<Enemy>)>,
+    pub enemies: Enemies,
     pub grid: Vec<((f32, f32), DrawPack, bool)>,
     pub map: Vec<((f32, f32), DrawPack)>,
-    pub walls: Vec<(WallType, Vec<Wall>)>,
+    pub walls: Walls,
     pub collectables: Vec<Collectable>,
 }
 
@@ -156,20 +161,20 @@ pub fn handle_collision(game: &mut Game) {
     for wgroup in game.walls.iter() {
         for wall in wgroup.1.iter() {
             // enemies
-            if wall.enemy {
-                for (g, egroup) in game.enemies.iter().enumerate() {
-                    if !egroup.0.contains(&wgroup.0) {continue;} 
-                    for (i, enemy) in egroup.1.iter().enumerate() {
-                        let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
-                        if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.get_radius() {
-                            if enemy_collisions.iter().any(|(_, e, _)| {*e == i}) {
-                                continue;
-                            }
-                            enemy_collisions.push((g, i, cp));
-                        }
-                    }
-                }
-            }
+            // if wall.enemy {
+            //     for (g, egroup) in game.enemies.iter().enumerate() {
+            //         if !egroup.0.contains(&wgroup.0) {continue;} 
+            //         for (i, enemy) in egroup.1.iter().enumerate() {
+            //             let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
+            //             if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.get_radius() {
+            //                 if enemy_collisions.iter().any(|(_, e, _)| {*e == i}) {
+            //                     continue;
+            //                 }
+            //                 enemy_collisions.push((g, i, cp));
+            //             }
+            //         }
+            //     }
+            // }
             // players
             if wall.player {
                 for (i, player) in game.players.iter().enumerate() {
@@ -212,7 +217,7 @@ pub fn handle_collision(game: &mut Game) {
 pub fn handle_movements(game: &mut Game) {
     for object in &mut game.players {
         if object.alive && !object.skip_move {
-            move_object(object);
+            move_object(object, &game.walls, None);
         }
         else {
             object.skip_move = false;
@@ -220,7 +225,7 @@ pub fn handle_movements(game: &mut Game) {
     }
     for group in game.enemies.iter_mut() {
         for object in group.1.iter_mut() {
-            move_object(object);
+            move_object(object, &game.walls, Some(&group.0));
         }
     }
 }

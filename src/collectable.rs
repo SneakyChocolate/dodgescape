@@ -1,4 +1,4 @@
-use crate::{color::Color, game::{DrawPack, Shape}, impl_Drawable, impl_Movable, impl_Position, item::Item, player::Player};
+use crate::{color::Color, game::{DrawPack, Shape, Walls}, impl_Drawable, impl_Movable, impl_Position, item::Item, player::Player, wall::WallType};
 use crate::gametraits::*;
 
 #[derive(Default)]
@@ -17,6 +17,12 @@ pub struct Collectable {
 impl_Position!(Collectable);
 impl_Movable!(Collectable);
 impl_Drawable!(Collectable);
+
+impl MoveObject for Collectable {
+    fn barrier_cross_check(&mut self, old_position: (f32, f32), walls: &Walls, walltypes: Option<&Vec<WallType>>) {
+        // TODO
+    }
+}
 
 impl Collectable {
     pub fn new(x: f32, y: f32, color: Color, items: Vec<Item>) -> Self {
