@@ -1,6 +1,6 @@
 use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{collectable::Collectable, enemy::Enemy, gametraits::{Drawable, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self}, wall::{Wall, WallType}};
+use crate::{collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self}, wall::{Wall, WallType}};
 use serde::Serialize;
 
 pub fn draw(radius: f32, position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
@@ -18,7 +18,7 @@ pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom
     let pos = (object.x(), object.y());
     let draw_packs = object.get_draw_packs();
     let mut output = "".to_owned();
-    for draw_pack in draw_packs {
+    for (d, draw_pack) in draw_packs.iter().enumerate() {
         let s = draw(object.get_radius(), &pos, draw_pack, &camera, zoom);
         output.push_str(&s);
     }
@@ -87,7 +87,7 @@ pub fn handle_players(players: &mut Vec<Player>, collectables: &mut Vec<Collecta
             object.draw_packs[0].color = object.color.clone();
         }
         else {
-            object.draw_packs[0].color = "red".to_owned();
+            object.draw_packs[0].color = "rgb(255,0,0)".to_owned();
         }
     }
 }
@@ -309,8 +309,8 @@ impl Game {
                 }
 
                 crate::enemy::handle_effects(&mut self);
-                crate::item::handle_effects(&mut self);
                 crate::player::handle_effects(&mut self);
+                crate::item::handle_effects(&mut self);
                 handle_players(&mut self.players, &mut self.collectables);
                 handle_collision(&mut self);
                 handle_kill_revive(&mut self);
@@ -374,24 +374,34 @@ impl Game {
         // players
         for player in self.players.iter() {
             if vector::distance(camera, (player.x, player.y)).2 > view {continue;}
-            let acc = draw_object(player, &camera, zoom);
-            objects.push_str(&acc);
+            if player.invincible {
+                let mut dps = player.draw_packs.clone();
+                match dps.get_mut(0) {
+                    Some(dp) => {
+                        dp.color = color::Color::from_str(dp.color.as_str()).mul(0.5).to_string();
+                    },
+                    None => {},
+                }
+                for dp in dps.iter() {
+                    let acc = draw(player.get_radius(), &(player.x, player.y), dp, &camera, zoom);
+                    objects.push_str(&acc);
+                }
+            }
+            else {
+                let acc = draw_object(player, &camera, zoom);
+                objects.push_str(&acc);
+            }
 
             // player effects
             for effect in player.effects.iter() {
                 match effect {
-                    crate::player::PlayerEffect::Shrink { origin, shrink, ease } => {
-                        
-                    },
-                    crate::player::PlayerEffect::SpeedAlter { origin, slow, ease } => {
-                        
-                    },
                     crate::player::PlayerEffect::Harden { ease, cooldown } => {
                         let pos = (player.x - 20.0, player.y - 60.0);
                         let dp = DrawPack::new("rgba(0,0,255,0.5)", Shape::Text { content: format!("cd: {}", *cooldown), size: 20.0 }, (0.0, 0.0));
                         let acc = draw(0.0, &pos, &dp, &camera, zoom);
                         objects.push_str(&acc);
                     },
+                    _ => {}
                 }
             }
         }
