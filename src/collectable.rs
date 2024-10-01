@@ -1,5 +1,6 @@
-use crate::{color::Color, game::{DrawPack, Shape, Walls}, impl_Drawable, impl_Movable, impl_Position, item::Item, player::Player, wall::WallType};
+use crate::{color::Color, game::{DrawPack, Shape, Walls}, impl_Drawable, impl_Entity,  impl_Moveable, impl_Position, item::Item, player::Player, wall::WallType};
 use crate::gametraits::*;
+use crate::{impl_RadiusTrait};
 
 #[derive(Default)]
 pub struct Collectable {
@@ -14,9 +15,7 @@ pub struct Collectable {
     pub items: Vec<Item>,
 }
 
-impl_Position!(Collectable);
-impl_Movable!(Collectable);
-impl_Drawable!(Collectable);
+impl_Entity!(Collectable);
 
 impl Collectable {
     pub fn new(x: f32, y: f32, color: Color, items: Vec<Item>) -> Self {

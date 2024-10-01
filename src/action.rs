@@ -1,5 +1,5 @@
 
-use crate::{enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game}, gametraits::{Moveable, Radius}, player::{Player, PlayerEffect}, vector};
+use crate::{enemy::{Enemy, EnemyEffect}, game::{get_enemy, get_player, DrawPack, Game}, gametraits::{Moveable, Radius}, player::{Player, PlayerEffect}, vector};
 
 pub enum Action {
     AddPlayerPosition((f32,f32)),
@@ -36,12 +36,6 @@ pub enum Action {
     RevivePlayers {radius: Radius},
 }
 
-fn get_player<'a>(game: &'a mut Game, player: usize) -> &'a mut Player {
-    game.players.get_mut(player).unwrap()
-}
-fn get_enemy<'a>(game: &'a mut Game, group: usize, enemy: usize) -> &'a mut Enemy {
-    game.enemies.get_mut(group).unwrap().1.get_mut(enemy).unwrap()
-}
 impl Action {
     pub fn execute(&self, game: &mut Game, entity: usize) {
         match self {

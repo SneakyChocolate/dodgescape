@@ -1,7 +1,8 @@
 
 
-use crate::{action::Action, collectable::Collectable, color::Color, game::{DrawPack, Game, Shape, Walls}, impl_Drawable, impl_Movable, impl_Position, inventory::Inventory, vector, wall::WallType};
+use crate::{action::Action, collectable::Collectable, color::Color, game::{DrawPack, Game, Shape, Walls}, impl_Drawable, impl_Moveable, impl_Entity, impl_Position, inventory::Inventory, vector, wall::WallType};
 use crate::gametraits::*;
+use crate::{impl_RadiusTrait};
 
 #[derive(Clone, Copy, Debug)]
 pub enum PlayerEffect {
@@ -33,11 +34,10 @@ pub struct Player {
     pub y: f32,
     pub zoom: f32,
     pub zoomlimit: (f32, f32),
+    pub just_collided: bool,
 }
 
-impl_Position!(Player);
-impl_Movable!(Player);
-impl_Drawable!(Player);
+impl_Entity!(Player);
 
 impl Player {
     pub fn new(name: &String) -> Player {

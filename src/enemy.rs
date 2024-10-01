@@ -1,7 +1,8 @@
 use rand::{thread_rng, Rng};
 
-use crate::{action::Action, game::{DrawPack, Game, Shape, Walls}, impl_Drawable, impl_Movable, impl_Position, player::PlayerEffect, vector, wall::WallType};
+use crate::{action::Action, game::{DrawPack, Game, Shape}, impl_Drawable, impl_Entity, impl_Moveable, impl_Position, player::PlayerEffect, vector};
 use crate::gametraits::*;
+use crate::{impl_RadiusTrait};
 
 #[derive(Default)]
 pub struct Enemy {
@@ -19,9 +20,7 @@ pub struct Enemy {
     pub harmless: bool,
 }
 
-impl_Position!(Enemy);
-impl_Movable!(Enemy);
-impl_Drawable!(Enemy);
+impl_Entity!(Enemy);
 
 impl Enemy {
     pub fn new(x: f32, y: f32, velocity: (f32, f32), radius: f32, color: &str) -> Enemy {

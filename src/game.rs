@@ -1,6 +1,8 @@
 use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self}, wall::{Wall, WallType}};
+use crate::{collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, EntityIndex, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self}, wall::{Wall, WallType}};
+use crate::gametraits::*;
+use crate::{impl_RadiusTrait};
 use serde::Serialize;
 
 pub fn move_object<T: Moveable>(object: &mut T, walls: &Walls, walltypes: Option<&Vec<WallType>>) {
@@ -8,6 +10,12 @@ pub fn move_object<T: Moveable>(object: &mut T, walls: &Walls, walltypes: Option
     let x = object.get_x() + vx * object.get_speed_multiplier();
     let y = object.get_y() + vy * object.get_speed_multiplier();
     object.set_pos(x, y);
+}
+pub fn get_player<'a>(game: &'a mut Game, player: usize) -> &'a mut Player {
+    game.players.get_mut(player).unwrap()
+}
+pub fn get_enemy<'a>(game: &'a mut Game, group: usize, enemy: usize) -> &'a mut Enemy {
+    game.enemies.get_mut(group).unwrap().1.get_mut(enemy).unwrap()
 }
 
 pub fn draw(radius: f32, position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
@@ -22,7 +30,7 @@ pub fn draw(radius: f32, position: &(f32, f32), draw_pack: &DrawPack, camera: &(
     )
 }
 pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom: f32) -> String {
-    let pos = (object.x(), object.y());
+    let pos = (object.get_x(), object.get_y());
     let draw_packs = object.get_draw_packs();
     let mut output = "".to_owned();
     for (d, draw_pack) in draw_packs.iter().enumerate() {
@@ -33,8 +41,8 @@ pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom
 }
 
 pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {
-    let a = (a.x(), a.y());
-    let b = (b.x(), b.y());
+    let a = (a.get_x(), a.get_y());
+    let b = (b.get_x(), b.get_y());
     vector::distance(a, b)
 }
 
@@ -156,34 +164,43 @@ pub fn handle_collision(game: &mut Game) {
             enemy.just_collided = false;
         }
     }
-    let mut enemy_collisions: Vec<(usize, usize, (f32, f32))> = vec![];
-    let mut player_collisions: Vec<(usize, (f32, f32))> = vec![];
+    let mut collisions: Vec<(EntityIndex, (f32, f32))> = vec![];
     for wgroup in game.walls.iter() {
         for wall in wgroup.1.iter() {
             // enemies
             if wall.enemy {
                 for (g, egroup) in game.enemies.iter().enumerate() {
                     if !egroup.0.contains(&wgroup.0) {continue;} 
-                    for (i, enemy) in egroup.1.iter().enumerate() {
+                    for (e, enemy) in egroup.1.iter().enumerate() {
                         let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
                         if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.get_radius() {
-                            if enemy_collisions.iter().any(|(_, e, _)| {*e == i}) {
+                            if collisions.iter().any(|c| {
+                                match c.0 {
+                                    EntityIndex::Player { p } => false,
+                                    EntityIndex::Enemy { g, e: e2 } => e2 == e,
+                                }
+                            }) {
                                 continue;
                             }
-                            enemy_collisions.push((g, i, cp));
+                            collisions.push((EntityIndex::Enemy { g, e }, cp));
                         }
                     }
                 }
             }
             // players
             if wall.player {
-                for (i, player) in game.players.iter().enumerate() {
+                for (p, player) in game.players.iter().enumerate() {
                     let cp = wall.get_nearest_point(&(player.x, player.y));
                     if vector::distance(cp, (player.x, player.y)).2 <= player.get_radius() {
-                        if player_collisions.iter().any(|(e, _)| {*e == i}) {
+                        if collisions.iter().any(|c| {
+                            match c.0 {
+                                EntityIndex::Player { p: p2 } => p == p2,
+                                EntityIndex::Enemy { g, e } => false,
+                            }
+                        }) {
                             continue;
                         }
-                        player_collisions.push((i, cp));
+                        collisions.push((EntityIndex::Player { p }, cp));
                     }
                 }
             }
@@ -191,27 +208,24 @@ pub fn handle_collision(game: &mut Game) {
     }
     // offset for pushing object away on collision so collision doesnt trigger again
     const OFFSET: f32 = 0.001;
-    for (g, i, cp) in enemy_collisions {
-        let enemy = game.enemies.get_mut(g).unwrap().1.get_mut(i).unwrap();
-        let speed = vector::abs(enemy.velocity);
-        let dist = vector::distance(cp, (enemy.x, enemy.y));
-        let push = vector::normalize((dist.0, dist.1), enemy.get_radius() + OFFSET);
-        enemy.x = cp.0 + push.0;
-        enemy.y = cp.1 + push.1;
-        let new_v = vector::normalize(vector::collision((enemy.x, enemy.y), enemy.velocity, cp), speed);
-        enemy.velocity = new_v;
-        enemy.just_collided = true;
-    }
-    for (i, cp) in player_collisions {
-        let player = game.players.get_mut(i).unwrap();
-        let speed = vector::abs(player.velocity);
-        let dist = vector::distance(cp, (player.x, player.y));
-        let push = vector::normalize((dist.0, dist.1), player.get_radius() + OFFSET);
-        player.x = cp.0 + push.0;
-        player.y = cp.1 + push.1;
-        let new_v = vector::normalize(vector::collision((player.x, player.y), player.velocity, cp), speed);
-        player.velocity = new_v;
-        player.skip_move = true;
+    for (collision, cp) in collisions {
+        let object: Box<&mut dyn Moveable> = match collision {
+            EntityIndex::Player { p } => {
+                Box::new(get_player(game, p))
+            },
+            EntityIndex::Enemy { g, e } => {
+                Box::new(get_enemy(game, g, e))
+            },
+        };
+        let speed = vector::abs(object.get_velocity());
+        let dist = vector::distance(cp, (object.get_x(), object.get_y()));
+        let push = vector::normalize((dist.0, dist.1), object.get_radius() + OFFSET);
+        let x = cp.0 + push.0;
+        let y = cp.1 + push.1;
+        object.set_pos(x, y);
+        let new_v = vector::normalize(vector::collision((object.get_x(), object.get_y()), object.get_velocity(), cp), speed);
+        object.set_velocity(new_v);
+        object.set_just_collided(true);
     }
 }
 pub fn handle_movements(game: &mut Game) {
