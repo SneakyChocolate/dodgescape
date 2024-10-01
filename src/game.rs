@@ -2,7 +2,7 @@ use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Dura
 
 use crate::{collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, EntityIndex, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self}, wall::{Wall, WallType}};
 use crate::gametraits::*;
-use crate::{impl_RadiusTrait};
+use crate::{impl_RadiusTrait, impl_Drawable, impl_Entity, impl_Moveable, impl_Position};
 use serde::Serialize;
 
 pub fn move_object<T: Moveable>(object: &mut T, walls: &Walls, walltypes: Option<&Vec<WallType>>) {
@@ -158,6 +158,10 @@ pub fn handle_kill_revive(game: &mut Game) {
     }
 }
 
+pub fn cross_barrier_check<T: Moveable>(object: &T, wall: &Wall) {
+    // TODO
+}
+
 pub fn handle_collision(game: &mut Game) {
     for group in game.enemies.iter_mut() {
         for enemy in group.1.iter_mut() {
@@ -172,6 +176,7 @@ pub fn handle_collision(game: &mut Game) {
                 for (g, egroup) in game.enemies.iter().enumerate() {
                     if !egroup.0.contains(&wgroup.0) {continue;} 
                     for (e, enemy) in egroup.1.iter().enumerate() {
+                        cross_barrier_check(enemy, wall);
                         let cp = wall.get_nearest_point(&(enemy.get_x(), enemy.get_y()));
                         if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
                             if collisions.iter().any(|c| {
@@ -190,6 +195,7 @@ pub fn handle_collision(game: &mut Game) {
             // players
             if wall.player {
                 for (p, player) in game.players.iter().enumerate() {
+                    cross_barrier_check(player, wall);
                     let cp = wall.get_nearest_point(&(player.get_x(), player.get_y()));
                     if vector::distance(cp, (player.get_x(), player.get_y())).2 <= player.get_radius() {
                         if collisions.iter().any(|c| {

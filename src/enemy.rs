@@ -18,6 +18,7 @@ pub struct Enemy {
     pub just_collided: bool,
     pub view_radius: Radius,
     pub harmless: bool,
+    pub old_position: (f32, f32),
 }
 
 impl_Entity!(Enemy);

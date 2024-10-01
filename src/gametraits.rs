@@ -68,7 +68,7 @@ macro_rules! impl_RadiusTrait {
     ($struct_name:ident) => {
         impl RadiusTrait for $struct_name {
             fn get_radius(&self) -> f32 {
-                self.radius
+                self.radius * self.radius_multiplier
             }
             fn set_radius(&mut self, v: f32) {
                 self.radius = v;
@@ -101,6 +101,7 @@ macro_rules! impl_Moveable {
                 let old = (self.get_x(), self.get_y());
                 self.x = x;
                 self.y = y;
+                self.old_position = old;
             }
             fn set_velocity(&mut self, v: (f32, f32)) {
                 self.velocity = v;

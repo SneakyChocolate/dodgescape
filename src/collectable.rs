@@ -13,6 +13,7 @@ pub struct Collectable {
     pub radius: f32,
     pub just_collided: bool,
     pub items: Vec<Item>,
+    pub old_position: (f32, f32),
 }
 
 impl_Entity!(Collectable);

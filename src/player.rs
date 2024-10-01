@@ -35,6 +35,7 @@ pub struct Player {
     pub zoom: f32,
     pub zoomlimit: (f32, f32),
     pub just_collided: bool,
+    pub old_position: (f32, f32),
 }
 
 impl_Entity!(Player);
