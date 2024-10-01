@@ -43,7 +43,7 @@ pub fn handle_effects(game: &mut Game) {
                     ItemEffect::SlowEnemies{power, radius, duration } => {
                         for group in game.enemies.iter_mut() {
                             for enemy in group.1.iter_mut() {
-                                if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.get_radius() <= radius.translate(player.get_radius()) {
+                                if vector::distance((player.get_x(), player.get_y()), (enemy.get_x(), enemy.get_y())).2 - enemy.get_radius() <= radius.translate(player.get_radius()) {
                                     // check if effect of this item id is already applied
                                     let effect = enemy.effects.iter_mut().find(|e| {
                                         match e {
@@ -77,7 +77,7 @@ pub fn handle_effects(game: &mut Game) {
                     ItemEffect::ShrinkEnemies{power, radius, duration } => {
                         for group in game.enemies.iter_mut() {
                             for enemy in group.1.iter_mut() {
-                                if vector::distance((player.x, player.y), (enemy.x, enemy.y)).2 - enemy.get_radius() <= radius.translate(player.get_radius()) {
+                                if vector::distance((player.get_x(), player.get_y()), (enemy.get_x(), enemy.get_y())).2 - enemy.get_radius() <= radius.translate(player.get_radius()) {
                                     // check if effect of this item id is already applied
                                     let effect = enemy.effects.iter_mut().find(|e| {
                                         match e {
@@ -122,7 +122,7 @@ pub fn handle_effects(game: &mut Game) {
                     ItemEffect::PushEnemies { power, radius } => {
                         for (g, group) in game.enemies.iter().enumerate() {
                             for (e, enemy) in group.1.iter().enumerate() {
-                                let dist = vector::distance((player.x, player.y), (enemy.x, enemy.y));
+                                let dist = vector::distance((player.get_x(), player.get_y()), (enemy.get_x(), enemy.get_y()));
                                 if dist.2 <= radius.translate(player.get_radius()) + enemy.get_radius() {
                                     let add = vector::normalize((dist.0, dist.1), *power);
                                     actions.push((e, Action::AddEnemyPosition { group: g, x: add.0, y: add.1 }));
@@ -133,13 +133,13 @@ pub fn handle_effects(game: &mut Game) {
                     ItemEffect::RotateEnemies { power, radius } => {
                         for (g, group) in game.enemies.iter().enumerate() {
                             for (e, enemy) in group.1.iter().enumerate() {
-                                let dist = vector::distance((player.x, player.y), (enemy.x, enemy.y));
+                                let dist = vector::distance((player.get_x(), player.get_y()), (enemy.get_x(), enemy.get_y()));
                                 if dist.2 <= radius.translate(player.get_radius()) + enemy.get_radius() {
                                     let angle = vector::angle_from_point((dist.0, dist.1));
                                     let newu = vector::point_from_angle(angle + *power);
                                     let newp = vector::normalize((newu.0, newu.1), dist.2);
-                                    let new = (player.x + newp.0, player.y + newp.1);
-                                    let add = (new.0 - enemy.x, new.1 - enemy.y);
+                                    let new = (player.get_x() + newp.0, player.get_y() + newp.1);
+                                    let add = (new.0 - enemy.get_x(), new.1 - enemy.get_y());
                                     actions.push((e, Action::AddEnemyPosition { group: g, x: add.0, y: add.1 }));
                                 }
                             }

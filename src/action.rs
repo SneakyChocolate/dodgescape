@@ -57,8 +57,9 @@ impl Action {
             },
             Action::AddPlayerPosition(v) => {
                 let player = get_player(game, entity);
-                player.x += v.0;
-                player.y += v.1;
+                let x = player.x + v.0;
+                let y = player.y + v.1;
+                player.set_pos(x, y);
             },
             Action::MulPlayerVelocity(factor) => {
                 let player = get_player(game, entity);
@@ -249,8 +250,9 @@ impl Action {
             },
             Action::AddEnemyPosition { group, x, y } => {
                 let enemy = get_enemy(game, *group, entity);
-                enemy.x += *x;
-                enemy.y += *y;
+                let x = enemy.x + *x;
+                let y = enemy.y + *y;
+                enemy.set_pos(x, y);
             },
             Action::SetPlayerInvincible(b) => {
                 let player = game.players.get_mut(entity).unwrap();

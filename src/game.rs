@@ -172,8 +172,8 @@ pub fn handle_collision(game: &mut Game) {
                 for (g, egroup) in game.enemies.iter().enumerate() {
                     if !egroup.0.contains(&wgroup.0) {continue;} 
                     for (e, enemy) in egroup.1.iter().enumerate() {
-                        let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
-                        if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.get_radius() {
+                        let cp = wall.get_nearest_point(&(enemy.get_x(), enemy.get_y()));
+                        if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
                             if collisions.iter().any(|c| {
                                 match c.0 {
                                     EntityIndex::Player { p } => false,
@@ -190,8 +190,8 @@ pub fn handle_collision(game: &mut Game) {
             // players
             if wall.player {
                 for (p, player) in game.players.iter().enumerate() {
-                    let cp = wall.get_nearest_point(&(player.x, player.y));
-                    if vector::distance(cp, (player.x, player.y)).2 <= player.get_radius() {
+                    let cp = wall.get_nearest_point(&(player.get_x(), player.get_y()));
+                    if vector::distance(cp, (player.get_x(), player.get_y())).2 <= player.get_radius() {
                         if collisions.iter().any(|c| {
                             match c.0 {
                                 EntityIndex::Player { p: p2 } => p == p2,
@@ -344,7 +344,7 @@ impl Game {
             Some(p) => p,
             None => return "".to_owned(),
         };
-        let camera = (player.x, player.y);
+        let camera = (player.get_x(), player.get_y());
         let zoom = player.zoom;
 
         let view = 1000.0 / zoom;
@@ -385,7 +385,7 @@ impl Game {
                 if item.active {
                     for dp in item.drawpacks.iter() {
                         // let acc = draw(&(player.x, player.y), &dp, &camera, zoom);
-                        let acc = draw(player.get_radius(), &(player.x, player.y), &dp, &camera, zoom);
+                        let acc = draw(player.get_radius(), &(player.get_x(), player.get_y()), &dp, &camera, zoom);
                         objects.push_str(&acc);
                     }
                 }
@@ -393,7 +393,7 @@ impl Game {
         }
         // players
         for player in self.players.iter() {
-            if vector::distance(camera, (player.x, player.y)).2 > view {continue;}
+            if vector::distance(camera, (player.get_x(), player.get_y())).2 > view {continue;}
             if player.invincible {
                 let mut dps = player.draw_packs.clone();
                 match dps.get_mut(0) {
@@ -403,7 +403,7 @@ impl Game {
                     None => {},
                 }
                 for dp in dps.iter() {
-                    let acc = draw(player.get_radius(), &(player.x, player.y), dp, &camera, zoom);
+                    let acc = draw(player.get_radius(), &(player.get_x(), player.get_y()), dp, &camera, zoom);
                     objects.push_str(&acc);
                 }
             }
@@ -416,7 +416,7 @@ impl Game {
             for effect in player.effects.iter() {
                 match effect {
                     crate::player::PlayerEffect::Harden { ease, cooldown } => {
-                        let pos = (player.x - 20.0, player.y - 60.0);
+                        let pos = (player.get_x() - 20.0, player.get_y() - 60.0);
                         let dp = DrawPack::new("rgba(0,0,255,0.5)", Shape::Text { content: format!("cd: {}", *cooldown), size: 20.0 }, (0.0, 0.0));
                         let acc = draw(0.0, &pos, &dp, &camera, zoom);
                         objects.push_str(&acc);
@@ -428,7 +428,7 @@ impl Game {
         // enemies
         for group in self.enemies.iter() {
             for enemy in group.1.iter() {
-                if vector::distance(camera, (enemy.x, enemy.y)).2 - enemy.view_radius.translate(enemy.get_radius()) > view {continue;}
+                if vector::distance(camera, (enemy.get_x(), enemy.get_y())).2 - enemy.view_radius.translate(enemy.get_radius()) > view {continue;}
                 let acc = draw_object(enemy, &camera, zoom);
                 objects.push_str(&acc);
             }
@@ -437,11 +437,11 @@ impl Game {
         for object in self.players.iter() {
             if *name == *object.name && object.inventory.open {
                 let drawpack = DrawPack::new("rgba(200,100,50,0.8)", Shape::Rectangle { width: 400.0, height: 800.0 }, (-900.0, -400.0));
-                let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
+                let acc = draw(0.0, &(object.get_x(), object.get_y()), &drawpack, &camera, 1.0);
                 objects.push_str(&acc);
 
                 let drawpack = DrawPack::new("white", Shape::Text { content: "Inventory".to_owned(), size: 30.0 }, (-850.0, -350.0));
-                let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
+                let acc = draw(0.0, &(object.get_x(), object.get_y()), &drawpack, &camera, 1.0);
                 objects.push_str(&acc);
 
                 // inventory items
@@ -452,7 +452,7 @@ impl Game {
                         Some(s) => {
                             if i == s {
                                 let drawpack = DrawPack::new("rgba(255,255,255,0.3)", Shape::Rectangle { width: 300.0, height: 40.0 }, (-850.0, -330.0 + line_offset));
-                                let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
+                                let acc = draw(0.0, &(object.get_x(), object.get_y()), &drawpack, &camera, 1.0);
                                 objects.push_str(&acc);
                             }
                         },
@@ -474,11 +474,11 @@ impl Game {
                         };
                     }
                     let drawpack = DrawPack::new(color, Shape::Text { content: format!("{} {}", item.name.clone(), append), size: 30.0 }, (-850.0, -300.0 + line_offset));
-                    let acc = draw(0.0, &(object.x, object.y), &drawpack, &camera, 1.0);
+                    let acc = draw(0.0, &(object.get_x(), object.get_y()), &drawpack, &camera, 1.0);
                     objects.push_str(&acc);
                     match &item.icon {
                         Some(icon) => {
-                            let acc = draw(0.0, &(object.x - 890.0, object.y -325.0 + line_offset), icon, &camera, 1.0);
+                            let acc = draw(0.0, &(object.get_x() - 890.0, object.get_y() -325.0 + line_offset), icon, &camera, 1.0);
                             objects.push_str(&acc);
                         },
                         None => {},

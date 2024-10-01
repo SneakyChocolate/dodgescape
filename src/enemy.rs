@@ -65,7 +65,7 @@ pub fn handle_effects(game: &mut Game) {
                     EnemyEffect::Chase { radius, power } => {
                         for player in game.players.iter() {
                             if !player.alive {continue;}
-                            let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
+                            let dist = vector::distance((enemy.get_x(), enemy.get_y()), (player.get_x(), player.get_y()));
                             if dist.2 <= radius.translate(enemy.get_radius()) + player.get_radius() {
                                 let add = vector::normalize((dist.0, dist.1), *power);
                                 actions.push((i, Action::UpdateEnemyVelocity(g, (enemy.velocity.0 + add.0, enemy.velocity.1 + add.1))));
@@ -85,7 +85,7 @@ pub fn handle_effects(game: &mut Game) {
                             if !player.alive {
                                 continue;
                             }
-                            let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
+                            let dist = vector::distance((enemy.get_x(), enemy.get_y()), (player.get_x(), player.get_y()));
                             if dist.2 <= radius.translate(enemy.get_radius()) + player.get_radius() {
                                 let add = vector::normalize((dist.0, dist.1), *power);
                                 actions.push((p, Action::AddPlayerPosition(add)));
@@ -95,7 +95,7 @@ pub fn handle_effects(game: &mut Game) {
                     EnemyEffect::Shoot { radius, speed, cooldown, time_left, lifetime, projectile_radius, color, effects, under_dps } => {
                         for player in game.players.iter() {
                             if !player.alive {continue;}
-                            let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
+                            let dist = vector::distance((enemy.get_x(), enemy.get_y()), (player.get_x(), player.get_y()));
                             if dist.2 <= radius.translate(enemy.get_radius()) + player.get_radius() {
                                 let v = vector::normalize((dist.0, dist.1), *speed);
                                 if *time_left == 0 {
@@ -121,7 +121,7 @@ pub fn handle_effects(game: &mut Game) {
                     EnemyEffect::SlowPlayers { radius, slow, duration } => {
                         for (p, player) in game.players.iter().enumerate() {
                             if !player.alive {continue;}
-                            let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
+                            let dist = vector::distance((enemy.get_x(), enemy.get_y()), (player.get_x(), player.get_y()));
                             if dist.2 <= radius.translate(enemy.get_radius()) + player.get_radius() {
                                 let id = enemy.id;
                                 // check if effect of this item id is already applied
@@ -157,7 +157,7 @@ pub fn handle_effects(game: &mut Game) {
                     EnemyEffect::ShrinkPlayers { radius, shrink, duration } => {
                         for (p, player) in game.players.iter().enumerate() {
                             if !player.alive {continue;}
-                            let dist = vector::distance((enemy.x, enemy.y), (player.x, player.y));
+                            let dist = vector::distance((enemy.get_x(), enemy.get_y()), (player.get_x(), player.get_y()));
                             if dist.2 <= radius.translate(enemy.get_radius()) + player.get_radius() {
                                 let id = enemy.id;
                                 // check if effect of this item id is already applied
