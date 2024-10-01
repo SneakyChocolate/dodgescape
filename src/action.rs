@@ -1,5 +1,5 @@
 
-use crate::{enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game}, gametraits::Radius, player::{Player, PlayerEffect}, vector};
+use crate::{enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game}, gametraits::{Moveable, Radius}, player::{Player, PlayerEffect}, vector};
 
 pub enum Action {
     AddPlayerPosition((f32,f32)),

@@ -39,12 +39,6 @@ impl_Position!(Player);
 impl_Movable!(Player);
 impl_Drawable!(Player);
 
-impl MoveObject for Player {
-    fn barrier_cross_check(&mut self, old_position: (f32, f32), walls: &Walls, walltypes: Option<&Vec<WallType>>) {
-        // TODO
-    }
-}
-
 impl Player {
     pub fn new(name: &String) -> Player {
         let color = Color::random().to_string();

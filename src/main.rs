@@ -1,5 +1,7 @@
 // remember firewall inbound and outbound rules for this port
 
+#![allow(warnings)]
+
 mod http;
 mod server;
 mod parser;

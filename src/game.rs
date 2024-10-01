@@ -1,13 +1,13 @@
 use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, MoveObject, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self}, wall::{Wall, WallType}};
+use crate::{collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self}, wall::{Wall, WallType}};
 use serde::Serialize;
 
 pub fn move_object<T: Moveable>(object: &mut T, walls: &Walls, walltypes: Option<&Vec<WallType>>) {
     let (vx, vy) = object.get_velocity();
     let x = object.get_x() + vx * object.get_speed_multiplier();
     let y = object.get_y() + vy * object.get_speed_multiplier();
-    object.set_pos(x, y, walls, walltypes);
+    object.set_pos(x, y);
 }
 
 pub fn draw(radius: f32, position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
@@ -161,20 +161,20 @@ pub fn handle_collision(game: &mut Game) {
     for wgroup in game.walls.iter() {
         for wall in wgroup.1.iter() {
             // enemies
-            // if wall.enemy {
-            //     for (g, egroup) in game.enemies.iter().enumerate() {
-            //         if !egroup.0.contains(&wgroup.0) {continue;} 
-            //         for (i, enemy) in egroup.1.iter().enumerate() {
-            //             let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
-            //             if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.get_radius() {
-            //                 if enemy_collisions.iter().any(|(_, e, _)| {*e == i}) {
-            //                     continue;
-            //                 }
-            //                 enemy_collisions.push((g, i, cp));
-            //             }
-            //         }
-            //     }
-            // }
+            if wall.enemy {
+                for (g, egroup) in game.enemies.iter().enumerate() {
+                    if !egroup.0.contains(&wgroup.0) {continue;} 
+                    for (i, enemy) in egroup.1.iter().enumerate() {
+                        let cp = wall.get_nearest_point(&(enemy.x, enemy.y));
+                        if vector::distance(cp, (enemy.x, enemy.y)).2 <= enemy.get_radius() {
+                            if enemy_collisions.iter().any(|(_, e, _)| {*e == i}) {
+                                continue;
+                            }
+                            enemy_collisions.push((g, i, cp));
+                        }
+                    }
+                }
+            }
             // players
             if wall.player {
                 for (i, player) in game.players.iter().enumerate() {

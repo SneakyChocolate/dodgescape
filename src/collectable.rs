@@ -18,12 +18,6 @@ impl_Position!(Collectable);
 impl_Movable!(Collectable);
 impl_Drawable!(Collectable);
 
-impl MoveObject for Collectable {
-    fn barrier_cross_check(&mut self, old_position: (f32, f32), walls: &Walls, walltypes: Option<&Vec<WallType>>) {
-        // TODO
-    }
-}
-
 impl Collectable {
     pub fn new(x: f32, y: f32, color: Color, items: Vec<Item>) -> Self {
         let mut p = Self {

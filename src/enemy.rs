@@ -23,42 +23,6 @@ impl_Position!(Enemy);
 impl_Movable!(Enemy);
 impl_Drawable!(Enemy);
 
-impl MoveObject for Enemy {
-    fn barrier_cross_check(&mut self, old_position: (f32, f32), walls: &Walls, walltypes: Option<&Vec<WallType>>) {
-        let walltypes = match walltypes {
-            Some(w) => w,
-            None => {
-                return;
-            },
-        };
-        let current = (self.get_x(), self.get_y());
-        let dist = vector::distance(old_position, current);
-        let mut enemy_collisions: Vec<(usize, usize, (f32, f32))> = vec![];
-        for wgroup in walls.iter() {
-            if !walltypes.contains(&wgroup.0) {
-                continue;
-            }
-            for wall in wgroup.1.iter() {
-                if !wall.enemy {
-                    continue;
-                }
-                let cp = wall.get_nearest_point(&current);
-                let dist2 = vector::distance(cp, current);
-                let push = vector::normalize((dist2.0, dist2.1), self.get_radius() + 0.001);
-                let speed = vector::abs(self.velocity);
-                if vector::distance(cp, current).2 <= self.get_radius() {
-                    self.x = cp.0 + push.0;
-                    self.y = cp.1 + push.1;
-                    let new_v = vector::normalize(vector::collision((self.x, self.y), self.velocity, cp), speed);
-                    self.velocity = new_v;
-                    self.just_collided = true;
-                }
-                // TODO future replacement for collision handle
-            }
-        }
-    }
-}
-
 impl Enemy {
     pub fn new(x: f32, y: f32, velocity: (f32, f32), radius: f32, color: &str) -> Enemy {
         let mut p = Enemy {
