@@ -197,21 +197,21 @@ pub fn handle_collision(game: &mut Game) {
                 for (g, egroup) in game.enemies.iter().enumerate() {
                     if !egroup.0.contains(&wgroup.0) {continue;} 
                     for (e, enemy) in egroup.1.iter().enumerate() {
-                        match cross_barrier_check(enemy, wall) {
-                            Some(f) => {
-                                let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
-                                let pos = enemyv.point(f - OFFSET);
-                                let bcs = barrier_crosses.iter().position(|bc| {bc.0 == e && bc.3 == g && bc.2 < f});
-                                match bcs {
-                                    Some(_) => { },
-                                    None => {
-                                        // no shorter distance found
-                                        barrier_crosses.push((e, Action::SetEnemyPosition { group: g, x: pos.0, y: pos.1 }, f, g));
-                                    },
-                                }
-                            },
-                            None => {},
-                        };
+                        // match cross_barrier_check(enemy, wall) {
+                        //     Some(f) => {
+                        //         let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
+                        //         let pos = enemyv.point(f - OFFSET);
+                        //         let bcs = barrier_crosses.iter().position(|bc| {bc.0 == e && bc.3 == g && bc.2 < f});
+                        //         match bcs {
+                        //             Some(_) => { },
+                        //             None => {
+                        //                 // no shorter distance found
+                        //                 barrier_crosses.push((e, Action::SetEnemyPosition { group: g, x: pos.0, y: pos.1 }, f, g));
+                        //             },
+                        //         }
+                        //     },
+                        //     None => {},
+                        // };
                         let cp = wall.get_nearest_point(&(enemy.get_x(), enemy.get_y()));
                         if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
                             if collisions.iter().any(|c| {
@@ -230,7 +230,7 @@ pub fn handle_collision(game: &mut Game) {
             // players
             if wall.player {
                 for (p, player) in game.players.iter().enumerate() {
-                    cross_barrier_check(player, wall);
+                    // cross_barrier_check(player, wall);
                     let cp = wall.get_nearest_point(&(player.get_x(), player.get_y()));
                     if vector::distance(cp, (player.get_x(), player.get_y())).2 <= player.get_radius() {
                         if collisions.iter().any(|c| {
