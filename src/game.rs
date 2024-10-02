@@ -189,7 +189,7 @@ pub fn handle_collision(game: &mut Game) {
         }
     }
     let mut collisions: Vec<(EntityIndex, (f32, f32))> = vec![];
-    let mut actions: Vec<(usize, Action)> = vec![];
+    let mut barrier_crosses: Vec<(usize, Action, f32, usize)> = vec![];
     for wgroup in game.walls.iter() {
         for wall in wgroup.1.iter() {
             // enemies
@@ -200,8 +200,15 @@ pub fn handle_collision(game: &mut Game) {
                         match cross_barrier_check(enemy, wall) {
                             Some(f) => {
                                 let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
-                                let pos = enemyv.point(f - 0.5);
-                                actions.push((e, Action::SetEnemyPosition { group: g, x: pos.0, y: pos.1 }));
+                                let pos = enemyv.point(f - OFFSET);
+                                let bcs = barrier_crosses.iter().position(|bc| {bc.0 == e && bc.3 == g && bc.2 < f});
+                                match bcs {
+                                    Some(_) => { },
+                                    None => {
+                                        // no shorter distance found
+                                        barrier_crosses.push((e, Action::SetEnemyPosition { group: g, x: pos.0, y: pos.1 }, f, g));
+                                    },
+                                }
                             },
                             None => {},
                         };
@@ -240,9 +247,6 @@ pub fn handle_collision(game: &mut Game) {
             }
         }
     }
-    for (e, action) in actions.iter() {
-        action.execute(game, *e);
-    }
     // offset for pushing object away on collision so collision doesnt trigger again
     const OFFSET: f32 = 0.001;
     for (collision, cp) in collisions {
@@ -263,6 +267,9 @@ pub fn handle_collision(game: &mut Game) {
         let new_v = vector::normalize(vector::collision((object.get_x(), object.get_y()), object.get_velocity(), cp), speed);
         object.set_velocity(new_v);
         object.set_just_collided(true);
+    }
+    for (e, action, dist, group) in barrier_crosses.iter() {
+        action.execute(game, *e);
     }
 }
 pub fn handle_movements(game: &mut Game) {

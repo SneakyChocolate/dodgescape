@@ -5,7 +5,7 @@ use crate::{collectable::Collectable, color::Color, enemy::{Enemy, EnemyEffect},
 impl Game {
     pub fn spawn_enemies(&mut self) {
         let spawn_m = 3;
-        let speed_m = 15.0;
+        let speed_m = 150.0;
         self.spawn_dirt_enemies(speed_m, spawn_m);
         self.spawn_wind_enemies(speed_m, spawn_m);
         self.spawn_flower_enemies(speed_m, spawn_m);
