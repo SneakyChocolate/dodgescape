@@ -190,7 +190,7 @@ pub fn handle_collision(game: &mut Game) {
     }
     let mut enemy_collisons: HashMap<(usize, usize), (f32, f32)> = HashMap::new();
     // let mut barrier_crosses: Vec<(usize, Action, f32, usize)> = vec![];
-    let mut barrier_crosses: HashMap<(usize, usize), f32> = HashMap::new();
+    let mut barrier_crosses: HashMap<(usize, usize), (f32, Line)> = HashMap::new();
     for wgroup in game.walls.iter() {
         for wall in wgroup.1.iter() {
             // enemies
@@ -204,13 +204,13 @@ pub fn handle_collision(game: &mut Game) {
                                 let bcs = barrier_crosses.get_mut(&(e, g));
                                 match bcs {
                                     Some(bc) => {
-                                        if f < *bc {
-                                            *bc = f;
+                                        if f < bc.0 {
+                                            bc.0 = f;
                                         }
                                     },
                                     None => {
                                         // no shorter distance found
-                                        barrier_crosses.insert((e, g), f);
+                                        barrier_crosses.insert((e, g), (f, enemyv));
                                     },
                                 }
                             },
@@ -255,29 +255,26 @@ pub fn handle_collision(game: &mut Game) {
             }
         }
     }
-    for ((e, g), f) in barrier_crosses.iter() {
-        let enemy = get_enemy(game, *g, *e);
-        let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
-        let np = enemyv.point(*f * 0.9);
-        enemy.x = np.0;
-        enemy.y = np.1;
-    }
     // offset for pushing object away on collision so collision doesnt trigger again
     const OFFSET: f32 = 0.001;
     for ((e, g), cp) in enemy_collisons {
         let object: Box<&mut dyn Moveable> = Box::new(get_enemy(game, g, e));
-        let old = object.get_old();
-        let step = vector::distance(object.get_old(), (object.get_x(), object.get_y()));
-        let velocity = (step.0, step.1);
-        let speed = vector::abs(velocity);
-        let dist = vector::distance(cp, (old.0, old.1));
+        let speed = vector::abs(object.get_velocity());
+        let dist = vector::distance(cp, (object.get_x(), object.get_y()));
         let push = vector::normalize((dist.0, dist.1), object.get_radius() + OFFSET);
         let x = cp.0 + push.0;
         let y = cp.1 + push.1;
         object.set_pos(x, y);
-        let new_v = vector::normalize(vector::collision((old.0, old.1), velocity, cp), speed);
+        let new_v = vector::normalize(vector::collision((object.get_x(), object.get_y()), object.get_velocity(), cp), speed);
         object.set_velocity(new_v);
         object.set_just_collided(true);
+    }
+    for ((e, g), (f, l)) in barrier_crosses.iter() {
+        let enemy = get_enemy(game, *g, *e);
+        let np = l.point(*f * 0.0);
+        let x = np.0;
+        let y = np.1;
+        enemy.set_pos(x, y);
     }
 }
 pub fn handle_movements(game: &mut Game) {
