@@ -1,4 +1,4 @@
-use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
+use std::{collections::HashMap, sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
 use crate::{action::Action, collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, EntityIndex, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self, get_intersection, Line}, wall::{Wall, WallType}};
 use crate::gametraits::*;
@@ -189,7 +189,8 @@ pub fn handle_collision(game: &mut Game) {
         }
     }
     let mut collisions: Vec<(EntityIndex, (f32, f32))> = vec![];
-    let mut barrier_crosses: Vec<(usize, Action, f32, usize)> = vec![];
+    // let mut barrier_crosses: Vec<(usize, Action, f32, usize)> = vec![];
+    let mut barrier_crosses: HashMap<(usize, usize), f32> = HashMap::new();
     for wgroup in game.walls.iter() {
         for wall in wgroup.1.iter() {
             // enemies
@@ -201,13 +202,16 @@ pub fn handle_collision(game: &mut Game) {
                             Some(f) => {
                                 let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
                                 let pos = enemyv.point(0.0);
-                                let bcs = barrier_crosses.iter().position(|bc| {bc.0 == e && bc.3 == g && bc.2 < f});
+                                let bcs = barrier_crosses.get_mut(&(e, g));
                                 match bcs {
-                                    Some(_) => { },
+                                    Some(bc) => {
+                                        if f < *bc {
+                                            *bc = f;
+                                        }
+                                    },
                                     None => {
                                         // no shorter distance found
-                                        barrier_crosses.push((e, Action::SetEnemyPosition { group: g, x: pos.0, y: pos.1 }, f, g));
-                                        barrier_crosses.push((e, Action::ResetEnemyOld { group: g }, f, g));
+                                        barrier_crosses.insert((e, g), f);
                                     },
                                 }
                             },
@@ -247,8 +251,8 @@ pub fn handle_collision(game: &mut Game) {
             }
         }
     }
-    for (e, action, dist, group) in barrier_crosses.iter() {
-        action.execute(game, *e);
+    for bc in barrier_crosses.iter() {
+        
     }
     // offset for pushing object away on collision so collision doesnt trigger again
     const OFFSET: f32 = 0.001;
