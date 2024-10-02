@@ -5,7 +5,7 @@ use crate::{collectable::Collectable, color::Color, enemy::{Enemy, EnemyEffect},
 impl Game {
     pub fn spawn_enemies(&mut self) {
         let spawn_m = 3;
-        let speed_m = 150.0;
+        let speed_m = 550.0;
         self.spawn_dirt_enemies(speed_m, spawn_m);
         self.spawn_wind_enemies(speed_m, spawn_m);
         self.spawn_flower_enemies(speed_m, spawn_m);
@@ -55,7 +55,7 @@ impl Game {
     pub fn spawn_flower_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Flower, WallType::SpawnA];
         let mut enemies = vec![];
-        for _ in 0..150 * spawn_m {
+        for _ in 0..550 * spawn_m {
             let cap = 0.2 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
