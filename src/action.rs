@@ -5,6 +5,7 @@ pub enum Action {
     AddPlayerPosition((f32,f32)),
     AddEnemyPosition{group: usize, x: f32, y: f32},
     SetEnemyPosition{group: usize, x: f32, y: f32},
+    ResetEnemyOld{group: usize},
     AddPlayerVelocity((f32,f32)),
     SetPlayerInvincible(bool),
     SetItemActive{i: usize, v: bool},
@@ -269,6 +270,10 @@ impl Action {
                 let player = game.players.get_mut(entity).unwrap();
                 let item = player.inventory.items.get_mut(*i).unwrap();
                 item.active = *v;
+            },
+            Action::ResetEnemyOld { group } => {
+                let enemy = get_enemy(game, *group, entity);
+                enemy.old_position = (enemy.x, enemy.y);
             },
         }
     }

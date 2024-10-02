@@ -197,32 +197,32 @@ pub fn handle_collision(game: &mut Game) {
                 for (g, egroup) in game.enemies.iter().enumerate() {
                     if !egroup.0.contains(&wgroup.0) {continue;} 
                     for (e, enemy) in egroup.1.iter().enumerate() {
-                        // match cross_barrier_check(enemy, wall) {
-                        //     Some(f) => {
-                        //         let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
-                        //         let pos = enemyv.point(f - OFFSET);
-                        //         let bcs = barrier_crosses.iter().position(|bc| {bc.0 == e && bc.3 == g && bc.2 < f});
-                        //         match bcs {
-                        //             Some(_) => { },
-                        //             None => {
-                        //                 // no shorter distance found
-                        //                 barrier_crosses.push((e, Action::SetEnemyPosition { group: g, x: pos.0, y: pos.1 }, f, g));
-                        //             },
-                        //         }
-                        //     },
-                        //     None => {},
-                        // };
+                        match cross_barrier_check(enemy, wall) {
+                            Some(f) => {
+                                let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
+                                let pos = enemyv.point(0.0);
+                                let bcs = barrier_crosses.iter().position(|bc| {bc.0 == e && bc.3 == g && bc.2 < f});
+                                match bcs {
+                                    Some(_) => { },
+                                    None => {
+                                        // no shorter distance found
+                                        barrier_crosses.push((e, Action::SetEnemyPosition { group: g, x: pos.0, y: pos.1 }, f, g));
+                                        barrier_crosses.push((e, Action::ResetEnemyOld { group: g }, f, g));
+                                    },
+                                }
+                            },
+                            None => {},
+                        };
                         let cp = wall.get_nearest_point(&(enemy.get_x(), enemy.get_y()));
                         if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
-                            if collisions.iter().any(|c| {
+                            if !collisions.iter().any(|c| {
                                 match c.0 {
                                     EntityIndex::Player { p } => false,
                                     EntityIndex::Enemy { g, e: e2 } => e2 == e,
                                 }
                             }) {
-                                continue;
+                                collisions.push((EntityIndex::Enemy { g, e }, cp));
                             }
-                            collisions.push((EntityIndex::Enemy { g, e }, cp));
                         }
                     }
                 }
@@ -247,6 +247,9 @@ pub fn handle_collision(game: &mut Game) {
             }
         }
     }
+    for (e, action, dist, group) in barrier_crosses.iter() {
+        action.execute(game, *e);
+    }
     // offset for pushing object away on collision so collision doesnt trigger again
     const OFFSET: f32 = 0.001;
     for (collision, cp) in collisions {
@@ -267,9 +270,6 @@ pub fn handle_collision(game: &mut Game) {
         let new_v = vector::normalize(vector::collision((object.get_x(), object.get_y()), object.get_velocity(), cp), speed);
         object.set_velocity(new_v);
         object.set_just_collided(true);
-    }
-    for (e, action, dist, group) in barrier_crosses.iter() {
-        action.execute(game, *e);
     }
 }
 pub fn handle_movements(game: &mut Game) {
