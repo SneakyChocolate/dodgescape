@@ -251,8 +251,12 @@ pub fn handle_collision(game: &mut Game) {
             }
         }
     }
-    for bc in barrier_crosses.iter() {
-        
+    for ((e, g), f) in barrier_crosses.iter() {
+        let enemy = get_enemy(game, *g, *e);
+        let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
+        let np = enemyv.point(*f);
+        enemy.x = np.0;
+        enemy.y = np.1;
     }
     // offset for pushing object away on collision so collision doesnt trigger again
     const OFFSET: f32 = 0.001;
