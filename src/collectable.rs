@@ -22,6 +22,7 @@ impl Collectable {
     pub fn new(x: f32, y: f32, color: Color, items: Vec<Item>) -> Self {
         let mut p = Self {
             x,y,
+            old_position: (x, y),
             velocity: (0.0, 0.0),
             radius: 15.0,
             draw_packs: vec![],

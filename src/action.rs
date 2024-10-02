@@ -4,6 +4,7 @@ use crate::{enemy::{Enemy, EnemyEffect}, game::{get_enemy, get_player, DrawPack,
 pub enum Action {
     AddPlayerPosition((f32,f32)),
     AddEnemyPosition{group: usize, x: f32, y: f32},
+    SetEnemyPosition{group: usize, x: f32, y: f32},
     AddPlayerVelocity((f32,f32)),
     SetPlayerInvincible(bool),
     SetItemActive{i: usize, v: bool},
@@ -252,6 +253,12 @@ impl Action {
                 let enemy = get_enemy(game, *group, entity);
                 let x = enemy.x + *x;
                 let y = enemy.y + *y;
+                enemy.set_pos(x, y);
+            },
+            Action::SetEnemyPosition { group, x, y } => {
+                let enemy = get_enemy(game, *group, entity);
+                let x = *x;
+                let y = *y;
                 enemy.set_pos(x, y);
             },
             Action::SetPlayerInvincible(b) => {

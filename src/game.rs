@@ -1,14 +1,14 @@
 use std::{sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, EntityIndex, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self}, wall::{Wall, WallType}};
+use crate::{action::Action, collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, EntityIndex, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self, get_intersection, Line}, wall::{Wall, WallType}};
 use crate::gametraits::*;
 use crate::{impl_RadiusTrait, impl_Drawable, impl_Entity, impl_Moveable, impl_Position};
 use serde::Serialize;
 
 pub fn move_object<T: Moveable>(object: &mut T, walls: &Walls, walltypes: Option<&Vec<WallType>>) {
     let (vx, vy) = object.get_velocity();
-    let x = object.get_x() + vx * object.get_speed_multiplier();
-    let y = object.get_y() + vy * object.get_speed_multiplier();
+    let x = object.get_x() + vx;
+    let y = object.get_y() + vy;
     object.set_pos(x, y);
 }
 pub fn get_player<'a>(game: &'a mut Game, player: usize) -> &'a mut Player {
@@ -158,8 +158,28 @@ pub fn handle_kill_revive(game: &mut Game) {
     }
 }
 
-pub fn cross_barrier_check<T: Moveable>(object: &T, wall: &Wall) {
-    // TODO
+pub fn cross_barrier_check<T: Moveable>(object: &T, wall: &Wall) -> Option<f32> {
+    let a = Line::from_points(object.get_old(), (object.get_x(), object.get_y()));
+    if vector::abs(a.dir) < object.get_radius() {
+        return None;
+    }
+    let b = Line::from_points(wall.a, wall.b);
+    let intersection = get_intersection(a, b);
+    match intersection {
+        Some(xy) => {
+            let condition =
+                xy.0 <= 1.0 && xy.0 >= 0.0 &&
+                xy.1 <= 1.0 && xy.1 >= 0.0
+            ;
+            if condition {
+                Some(xy.0)
+            }
+            else {
+                None
+            }
+        },
+        None => None,
+    }
 }
 
 pub fn handle_collision(game: &mut Game) {
@@ -169,6 +189,7 @@ pub fn handle_collision(game: &mut Game) {
         }
     }
     let mut collisions: Vec<(EntityIndex, (f32, f32))> = vec![];
+    let mut actions: Vec<(usize, Action)> = vec![];
     for wgroup in game.walls.iter() {
         for wall in wgroup.1.iter() {
             // enemies
@@ -176,7 +197,14 @@ pub fn handle_collision(game: &mut Game) {
                 for (g, egroup) in game.enemies.iter().enumerate() {
                     if !egroup.0.contains(&wgroup.0) {continue;} 
                     for (e, enemy) in egroup.1.iter().enumerate() {
-                        cross_barrier_check(enemy, wall);
+                        match cross_barrier_check(enemy, wall) {
+                            Some(f) => {
+                                let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
+                                let pos = enemyv.point(f - 0.5);
+                                actions.push((e, Action::SetEnemyPosition { group: g, x: pos.0, y: pos.1 }));
+                            },
+                            None => {},
+                        };
                         let cp = wall.get_nearest_point(&(enemy.get_x(), enemy.get_y()));
                         if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
                             if collisions.iter().any(|c| {
@@ -211,6 +239,9 @@ pub fn handle_collision(game: &mut Game) {
                 }
             }
         }
+    }
+    for (e, action) in actions.iter() {
+        action.execute(game, *e);
     }
     // offset for pushing object away on collision so collision doesnt trigger again
     const OFFSET: f32 = 0.001;

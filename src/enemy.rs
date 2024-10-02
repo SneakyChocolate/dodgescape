@@ -27,6 +27,7 @@ impl Enemy {
     pub fn new(x: f32, y: f32, velocity: (f32, f32), radius: f32, color: &str) -> Enemy {
         let mut p = Enemy {
             x,y,
+            old_position: (x, y),
             velocity,
             radius,
             view_radius: Radius::Relative(1.0),

@@ -104,13 +104,13 @@ pub fn lgs(a: Line, b: Line) -> Matrix {
     matrix
     
 }
-pub fn intersection(a: Line, b: Line) -> Option<f32> {
+pub fn get_intersection(a: Line, b: Line) -> Option<(f32, f32)> {
     let mut matrix = lgs(a, b);
     crate::math::matrix::normalize(&mut matrix);
     if matrix[0][0] == 0.0 || matrix[1][1] == 0.0 {
         return None;
     }
-    Some(matrix[0][2])
+    Some((matrix[0][2], matrix[1][2]))
 }
 
 #[cfg(test)]
@@ -145,23 +145,23 @@ mod tests {
     fn intersection_test() {
         let a = Line::from_points((0.0, 4.0), (2.0, 0.0));
         let b = Line::from_points((1.0, 4.0), (1.0, 0.0));
-        let result = intersection(a, b);
-        assert_eq!(result, Some(0.5));
+        let result = get_intersection(a, b);
+        assert_eq!(result, Some((0.5, 0.5)));
     }
     
     #[test]
     fn intersection_test_negative() {
         let a = Line::from_points((0.0, 0.0), (0.0, 1.0));
         let b = Line::from_points((3.0, 0.0), (8.0, 0.0));
-        let result = intersection(b, a);
-        assert_eq!(result, Some(-3.0 / 5.0));
+        let result = get_intersection(b, a);
+        assert_eq!(result, Some((-3.0 / 5.0, 0.0)));
     }
 
     #[test]
     fn intersection_test_no_intersection() {
         let a = Line::from_points((0.0, 1.0), (1.0, 1.0));
         let b = Line::from_points((0.0, 0.0), (1.0, 0.0));
-        let result = intersection(a, b);
+        let result = get_intersection(a, b);
         assert_eq!(result, None);
     }
 }

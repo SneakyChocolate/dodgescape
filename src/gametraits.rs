@@ -44,6 +44,7 @@ macro_rules! impl_Drawable {
 pub trait Position {
     fn get_x(&self) -> f32;
     fn get_y(&self) -> f32;
+    fn get_old(&self) -> (f32, f32);
 }
 #[macro_export]
 macro_rules! impl_Position {
@@ -54,6 +55,9 @@ macro_rules! impl_Position {
             }
             fn get_y(&self) -> f32 {
                 self.y
+            }
+            fn get_old(&self) -> (f32, f32) {
+                self.old_position
             }
         }
     };
@@ -92,7 +96,7 @@ macro_rules! impl_Moveable {
     ($struct_name:ident) => {
         impl Moveable for $struct_name {
             fn get_velocity(&self) -> (f32, f32) {
-                self.velocity
+                (self.velocity.0 * self.speed_multiplier, self.velocity.1 * self.speed_multiplier)
             }
             fn get_speed_multiplier(&self) -> f32 {
                 self.speed_multiplier
