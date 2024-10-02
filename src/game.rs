@@ -198,24 +198,24 @@ pub fn handle_collision(game: &mut Game) {
                 for (g, egroup) in game.enemies.iter().enumerate() {
                     if !egroup.0.contains(&wgroup.0) {continue;} 
                     for (e, enemy) in egroup.1.iter().enumerate() {
-                        match cross_barrier_check(enemy, wall) {
-                            Some(f) => {
-                                let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
-                                let bcs = barrier_crosses.get_mut(&(e, g));
-                                match bcs {
-                                    Some(bc) => {
-                                        if f < bc.0 {
-                                            bc.0 = f;
-                                        }
-                                    },
-                                    None => {
-                                        // no shorter distance found
-                                        barrier_crosses.insert((e, g), (f, enemyv));
-                                    },
-                                }
-                            },
-                            None => {},
-                        };
+                        // match cross_barrier_check(enemy, wall) {
+                        //     Some(f) => {
+                        //         let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
+                        //         let bcs = barrier_crosses.get_mut(&(e, g));
+                        //         match bcs {
+                        //             Some(bc) => {
+                        //                 if f < bc.0 {
+                        //                     bc.0 = f;
+                        //                 }
+                        //             },
+                        //             None => {
+                        //                 // no shorter distance found
+                        //                 barrier_crosses.insert((e, g), (f, enemyv));
+                        //             },
+                        //         }
+                        //     },
+                        //     None => {},
+                        // };
                         let cp = wall.get_nearest_point(&(enemy.get_x(), enemy.get_y()));
                         if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
                             let ocp = enemy_collisons.get_mut(&(e, g));

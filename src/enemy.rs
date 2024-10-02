@@ -158,7 +158,6 @@ pub fn handle_effects(game: &mut Game) {
                     },
                     EnemyEffect::ShrinkPlayers { radius, shrink, duration } => {
                         for (p, player) in game.players.iter().enumerate() {
-                            if !player.alive {continue;}
                             let dist = vector::distance((enemy.get_x(), enemy.get_y()), (player.get_x(), player.get_y()));
                             if dist.2 <= radius.translate(enemy.get_radius()) + player.get_radius() {
                                 let id = enemy.id;
