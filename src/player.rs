@@ -137,6 +137,26 @@ impl Player {
                         self.inventory.selected_item = Some(0);
                     },
                     Some(s) => {
+                        let key = "KeyB".to_owned();
+                        if self.just_pressed.contains(&key) {
+                            self.inventory.bind_mode = true;
+                        }
+                        if self.inventory.bind_mode {
+                            let key = "Escape".to_owned();
+                            if self.just_pressed.contains(&key) {
+                                self.inventory.bind_mode = false;
+                            }
+                            else {
+                                let key = self.just_pressed.get(0);
+                                match key {
+                                    Some(binding) => {
+                                        self.inventory.bindings.insert(binding.clone(), *s);
+                                    },
+                                    None => {},
+                                }
+                            }
+                        }
+
                         let key = "ArrowDown".to_owned();
                         if self.just_pressed.contains(&key) {
                             if *s == self.inventory.items.len() - 1 {
@@ -181,6 +201,25 @@ impl Player {
         }
         else {
             self.inventory.selected_item = None;
+            self.inventory.bind_mode = false;
+        }
+
+        // handle keybindings
+        for key in self.just_pressed.iter() {
+            let b = self.inventory.bindings.get(key);
+            match b {
+                Some(i) => {
+                    println!("{}, {}", key, i);
+                    let item = self.inventory.items.get_mut(*i);
+                    match item {
+                        Some(item) => {
+                            item.active = !item.active;
+                        },
+                        None => {},
+                    }
+                },
+                None => {},
+            }
         }
     }
     fn handle_movement(&mut self) {
