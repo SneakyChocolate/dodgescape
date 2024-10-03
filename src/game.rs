@@ -7,8 +7,8 @@ use serde::Serialize;
 
 pub fn move_object<T: Moveable>(object: &mut T, walls: &Walls, walltypes: Option<&Vec<WallType>>) {
     let (vx, vy) = object.get_velocity();
-    let x = object.get_x() + vx;
-    let y = object.get_y() + vy;
+    let x = object.get_x() + vx * object.get_speed_multiplier();
+    let y = object.get_y() + vy * object.get_speed_multiplier();
     object.set_pos(x, y);
 }
 pub fn get_player<'a>(game: &'a mut Game, player: usize) -> &'a mut Player {
@@ -160,9 +160,6 @@ pub fn handle_kill_revive(game: &mut Game) {
 
 pub fn cross_barrier_check<T: Moveable>(object: &T, wall: &Wall) -> Option<f32> {
     let a = Line::from_points(object.get_old(), (object.get_x(), object.get_y()));
-    if vector::abs(a.dir) < object.get_radius() {
-        return None;
-    }
     let b = Line::from_points(wall.a, wall.b);
     let intersection = get_intersection(a, b);
     match intersection {
@@ -183,6 +180,7 @@ pub fn cross_barrier_check<T: Moveable>(object: &T, wall: &Wall) -> Option<f32> 
 }
 
 pub fn handle_collision(game: &mut Game) {
+    return;
     for group in game.enemies.iter_mut() {
         for enemy in group.1.iter_mut() {
             enemy.just_collided = false;
@@ -198,25 +196,28 @@ pub fn handle_collision(game: &mut Game) {
                 for (g, egroup) in game.enemies.iter().enumerate() {
                     if !egroup.0.contains(&wgroup.0) {continue;} 
                     for (e, enemy) in egroup.1.iter().enumerate() {
-                        // match cross_barrier_check(enemy, wall) {
-                        //     Some(f) => {
-                        //         let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
-                        //         let bcs = barrier_crosses.get_mut(&(e, g));
-                        //         match bcs {
-                        //             Some(bc) => {
-                        //                 if f < bc.0 {
-                        //                     bc.0 = f;
-                        //                 }
-                        //             },
-                        //             None => {
-                        //                 // no shorter distance found
-                        //                 barrier_crosses.insert((e, g), (f, enemyv));
-                        //             },
-                        //         }
-                        //     },
-                        //     None => {},
-                        // };
+                        let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
+                        let speed = vector::abs(enemyv.dir);
                         let cp = wall.get_nearest_point(&(enemy.get_x(), enemy.get_y()));
+                        if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= speed {
+                            match cross_barrier_check(enemy, wall) {
+                                Some(f) => {
+                                    let bcs = barrier_crosses.get_mut(&(e, g));
+                                    match bcs {
+                                        Some(bc) => {
+                                            if f < bc.0 {
+                                                bc.0 = f;
+                                            }
+                                        },
+                                        None => {
+                                            // no shorter distance found
+                                            barrier_crosses.insert((e, g), (f, enemyv));
+                                        },
+                                    }
+                                },
+                                None => {},
+                            };
+                        }
                         if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
                             let ocp = enemy_collisons.get_mut(&(e, g));
                             match ocp {

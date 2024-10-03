@@ -96,7 +96,7 @@ macro_rules! impl_Moveable {
     ($struct_name:ident) => {
         impl Moveable for $struct_name {
             fn get_velocity(&self) -> (f32, f32) {
-                (self.velocity.0 * self.speed_multiplier, self.velocity.1 * self.speed_multiplier)
+                (self.velocity.0, self.velocity.1)
             }
             fn get_speed_multiplier(&self) -> f32 {
                 self.speed_multiplier

@@ -19,7 +19,7 @@ impl Game {
         self.spawn_lightning_enemies(speed_m, spawn_m);
         self.spawn_poison_enemies(speed_m, spawn_m);
         self.spawn_candy_enemies(speed_m, spawn_m);
-        // self.spawn_hypnosis_enemies(speed_m, spawn_m);
+        self.spawn_hypnosis_enemies(speed_m, spawn_m);
         self.spawn_hell_enemies(speed_m, spawn_m);
     }
     pub fn spawn_dirt_enemies(&mut self, speed_m: f32, spawn_m: i32) {
@@ -277,7 +277,7 @@ impl Game {
         for _ in 0..20 * spawn_m {
             let cap = 0.1 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let cloudradius = rand::thread_rng().gen_range(100.0..=300.0);
+            let cloudradius = rand::thread_rng().gen_range(200.0..=500.0);
             let color = "rgba(100,80,150,0.7)";
             let mut enemy = Enemy::new(-25000.0, 25000.0, velocity, cloudradius, color);
             enemy.draw_packs.push(DrawPack::new(color, Shape::Circle { radius: Radius::Relative(0.8) }, (cloudradius, cloudradius / 5.0)));
@@ -288,7 +288,7 @@ impl Game {
             enemy.effects.push(EnemyEffect::Explode {
                 lifetime: 400,
                 radius: (10.0, 30.0),
-                speed: 15.0,
+                speed: 25.0,
                 time_left: 0,
                 cooldown: cd,
                 color: "rgb(255,255,255)".to_owned(),
@@ -304,7 +304,7 @@ impl Game {
     pub fn spawn_hell_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Hell];
         let mut enemies = vec![];
-        for _ in 0..20 * spawn_m {
+        for _ in 0..30 * spawn_m {
             let cap = 0.8 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let radius = rand::thread_rng().gen_range(100.0..=300.0);
@@ -322,7 +322,7 @@ impl Game {
                 cooldown: cd,
                 color: "rgb(255,255,0)".to_owned(),
                 amount: (radius / 20.0) as usize,
-                effects: vec![EnemyEffect::SlowPlayers { radius: fire_aura_radius, slow: 0.3, duration: 100 }, EnemyEffect::Chase { radius: Radius::Absolute(1000.0), power: 0.2 }],
+                effects: vec![EnemyEffect::SlowPlayers { radius: fire_aura_radius, slow: 0.3, duration: 100 }, EnemyEffect::Chase { radius: Radius::Absolute(1000.0), power: 0.5 }],
                 under_dps: vec![DrawPack::new("rgba(255,200,0,0.2)", Shape::Circle { radius: fire_aura_radius }, (0.0,0.0))],
             });
             enemy.effects.push(EnemyEffect::SlowPlayers { radius: Radius::Relative(3.0), slow: 0.5, duration: 1 });
@@ -351,18 +351,19 @@ impl Game {
     pub fn spawn_candy_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Candy];
         let mut enemies = vec![];
-        for _ in 0..400 * spawn_m {
+        for _ in 0..300 * spawn_m {
             let cap = 0.3 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let radius = rand::thread_rng().gen_range(30.0..=70.0);
             let color = "rgb(255,0,255)";
             let mut enemy = Enemy::new(-25000.0, -25000.0, velocity, radius, color);
             enemy.id = 1;
-            enemy.effects.push(EnemyEffect::Chase { radius: Radius::Relative(4.0), power: -0.20 });
-            enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(5.0), power: -4.0 });
-            enemy.draw_packs.push(DrawPack::new("rgba(255,0,255,0.2)", Shape::Circle { radius: Radius::Relative(5.0) }, (0.0, 0.0)));
+            let radiu = Radius::Relative(10.0);
+            enemy.effects.push(EnemyEffect::Chase { radius: Radius::Relative(5.0), power: -0.20 });
+            enemy.effects.push(EnemyEffect::Push { radius: radiu, power: -4.0 });
+            enemy.draw_packs.push(DrawPack::new("rgba(255,0,255,0.1)", Shape::Circle { radius: radiu }, (0.0, 0.0)));
             enemy.draw_packs.push(DrawPack::new("", Shape::Image { keyword: "candytop".to_owned(), scale: radius / 300.0 }, (-radius / 1.2, -radius / 1.2)));
-            enemy.view_radius = Radius::Relative(5.0);
+            enemy.view_radius = radiu;
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
@@ -370,7 +371,7 @@ impl Game {
     pub fn spawn_hypnosis_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Candy];
         let mut enemies = vec![];
-        for _ in 0..400 * spawn_m {
+        for _ in 0..100 * spawn_m {
             let cap = 0.3 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let radius = rand::thread_rng().gen_range(50.0..=100.0);

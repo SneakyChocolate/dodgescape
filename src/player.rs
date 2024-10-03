@@ -49,7 +49,7 @@ impl Player {
             name: name.clone(),
             radius: 30.0,
             alive: true,
-            speed: 10.0,
+            speed: 15.0,
             zoom: 1.0,
             zoomlimit: (1.0, 1.0),
             color: color.clone(),
@@ -136,6 +136,7 @@ impl Player {
             for c in collectables.iter_mut() {
                 c.collect(self);
             }
+            collectables.clear();
         }
         let key = "KeyG".to_owned();
         if self.just_pressed.contains(&key) {
@@ -343,6 +344,7 @@ pub fn handle_effects(game: &mut Game) {
     for player in game.players.iter_mut() {
         player.speed_multiplier = 1.0;
         player.radius_multiplier = 1.0;
+        player.zoomlimit = (1.0, 1.0);
         player.invincible = false;
     }
     // reverse order due to deletions and index errors
