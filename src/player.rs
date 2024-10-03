@@ -8,7 +8,7 @@ use crate::{impl_RadiusTrait};
 pub enum PlayerEffect {
     Shrink {origin: usize, shrink: f32, ease: usize},
     SpeedAlter {origin: usize, slow: f32, ease: usize},
-    Harden {ease: usize, cooldown: usize},
+    Harden {ease: usize, cooldown: usize, speed: f32},
 }
 
 #[derive(Default)]
@@ -313,7 +313,7 @@ pub fn handle_effects(game: &mut Game) {
                         actions.push((p, Action::MulPlayerRadiusMultiplier { f: *shrink }));
                     }
                 },
-                PlayerEffect::Harden { ease, cooldown } => {
+                PlayerEffect::Harden { ease, cooldown, speed } => {
                     if *cooldown == 0 {
                         // remove this effect
                         deletions.push((p, Action::RemovePlayerEffect { effect: e }));
@@ -326,7 +326,7 @@ pub fn handle_effects(game: &mut Game) {
                     }
                     else {
                         *ease -= 1;
-                        actions.push((p, Action::MulPlayerSpeedMultiplier { f: 0.0 }));
+                        actions.push((p, Action::MulPlayerSpeedMultiplier { f: *speed }));
                         actions.push((p, Action::SetPlayerInvincible(true)));
                     }
                 },

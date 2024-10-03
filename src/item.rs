@@ -22,7 +22,7 @@ pub enum ItemEffect {
     Consumable{uses: usize},
     PushEnemies{power: f32, radius: Radius},
     RotateEnemies{power: f32, radius: Radius},
-    Harden{limit: usize, cooldown: usize},
+    Harden{limit: usize, cooldown: usize, speed: f32},
     Usable,
 }
 
@@ -145,10 +145,10 @@ pub fn handle_effects(game: &mut Game) {
                             }
                         }
                     },
-                    ItemEffect::Harden { limit, cooldown } => {
+                    ItemEffect::Harden { limit, cooldown, speed } => {
                         let effect = player.effects.iter().position(|e| {
                             match e {
-                                crate::player::PlayerEffect::Harden { ease, cooldown } => true,
+                                crate::player::PlayerEffect::Harden { ease, cooldown, speed } => true,
                                 _ => false,
                             }
                         });
@@ -157,7 +157,7 @@ pub fn handle_effects(game: &mut Game) {
                                 
                             },
                             None => {
-                                actions.push((p, Action::PushPlayerEffect(crate::player::PlayerEffect::Harden { ease: *limit, cooldown: *cooldown })));
+                                actions.push((p, Action::PushPlayerEffect(crate::player::PlayerEffect::Harden { ease: *limit, cooldown: *cooldown, speed: *speed })));
                             },
                         }
                     },

@@ -464,7 +464,7 @@ impl Game {
             // player effects
             for effect in player.effects.iter() {
                 match effect {
-                    crate::player::PlayerEffect::Harden { ease, cooldown } => {
+                    crate::player::PlayerEffect::Harden { ease, cooldown, speed } => {
                         let pos = (player.get_x() - 20.0, player.get_y() - 60.0);
                         let dp = DrawPack::new("rgba(0,0,255,0.5)", Shape::Text { content: format!("cd: {}", *cooldown), size: 20.0 }, (0.0, 0.0));
                         let acc = draw(0.0, &pos, &dp, &camera, zoom);
