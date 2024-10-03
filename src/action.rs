@@ -13,6 +13,8 @@ pub enum Action {
     DecrementEnemyEase{group: usize, effect: usize},
     Despawn(usize),
     MulEnemyRadiusMultiplier {f: f32, group: usize},
+    SetEnemyRadiusMultiplier {f: f32, group: usize},
+    AddEnemyRadiusMultiplier {f: f32, group: usize},
     MulEnemySpeedMultiplier {f: f32, group: usize},
     MulPlayerRadiusMultiplier {f: f32},
     MulPlayerSpeed(f32),
@@ -167,6 +169,14 @@ impl Action {
             Action::MulEnemyRadiusMultiplier { group, f } => {
                 let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
                 enemy.radius_multiplier *= *f;
+            },
+            Action::SetEnemyRadiusMultiplier { group, f } => {
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                enemy.radius_multiplier += *f;
+            },
+            Action::AddEnemyRadiusMultiplier { group, f } => {
+                let enemy = game.enemies.get_mut(*group).unwrap().1.get_mut(entity).unwrap();
+                enemy.radius_multiplier = *f;
             },
             Action::MulPlayerSpeedMultiplier { f } => {
                 let player = game.players.get_mut(entity).unwrap();

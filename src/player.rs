@@ -85,7 +85,7 @@ impl Player {
         let key = "KeyR".to_owned();
         if self.keys_down.contains(&key) {
             self.x = 0.0;
-            self.y = 0.0;
+            self.y = -15000.0;
             self.alive = true;
         }
         
@@ -130,6 +130,12 @@ impl Player {
         let key = "KeyE".to_owned();
         if self.just_pressed.contains(&key) {
             self.inventory.open = !self.inventory.open;
+        }
+        let key = "KeyC".to_owned();
+        if self.just_pressed.contains(&key) {
+            for c in collectables.iter_mut() {
+                c.collect(self);
+            }
         }
         let key = "KeyG".to_owned();
         if self.just_pressed.contains(&key) {

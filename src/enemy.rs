@@ -195,8 +195,8 @@ pub fn handle_effects(game: &mut Game) {
                         if enemy.just_collided {
                             actions.push((i, Action::SetEnemyRadius(g, *defaultsize)));
                         }
-                        else if enemy.get_radius() < *maxsize {
-                            actions.push((i, Action::SetEnemyRadius(g, enemy.get_radius() + *size)));
+                        else if enemy.radius < *maxsize {
+                            actions.push((i, Action::SetEnemyRadius(g, enemy.radius + *size)));
                         }
                     },
                     EnemyEffect::SpeedAlter { power, ease, origin } => {

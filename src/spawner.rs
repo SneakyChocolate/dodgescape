@@ -229,11 +229,11 @@ impl Game {
             enemy.draw_packs.push(DrawPack::new("rgb(255,150,0)", Shape::Circle { radius: Radius::Relative(0.8)}, (0.0, 0.0)));
             enemy.draw_packs.push(DrawPack::new("rgb(0,0,0)", Shape::Circle { radius: Radius::Relative(0.1)}, (-10.0, -10.0)));
             enemy.draw_packs.push(DrawPack::new("rgb(0,0,0)", Shape::Circle { radius: Radius::Relative(0.1)}, (10.0, -10.0)));
-            let r = Radius::Relative(10.0);
-            enemy.draw_packs.insert(0, DrawPack::new("rgba(0,0,255,0.05)", Shape::Circle { radius: Radius::Relative(10.0) }, (0.0, 0.0)));
+            let r = Radius::Relative(15.0);
+            enemy.draw_packs.insert(0, DrawPack::new("rgba(0,0,255,0.05)", Shape::Circle { radius: r }, (0.0, 0.0)));
             enemy.effects.push(EnemyEffect::Chase { radius: r, power: 0.03 });
             enemy.effects.push(EnemyEffect::SlowPlayers { radius: r, slow: 0.8, duration: 1 });
-            enemy.effects.push(EnemyEffect::Shoot { lifetime: 200, radius: r, projectile_radius: 20.0, speed: 14.0, time_left: 0, cooldown: 100, color: "rgb(200,200,200)".to_owned(), effects: vec![], under_dps: vec![] });
+            enemy.effects.push(EnemyEffect::Shoot { lifetime: 200, radius: r, projectile_radius: 20.0, speed: 24.0, time_left: 0, cooldown: 100, color: "rgb(200,200,200)".to_owned(), effects: vec![], under_dps: vec![] });
             enemy.view_radius = r;
             enemies.push(enemy);
         }
@@ -265,7 +265,7 @@ impl Game {
             let mut enemy = Enemy::new(0.0, 20000.0, velocity, 90.0, "rgb(25,25,25)");
             let cd = rand::thread_rng().gen_range(200..=400);
             let radius = rand::thread_rng().gen_range(10.0..=30.0);
-            enemy.effects.push(EnemyEffect::Explode { lifetime: 400, radius: (10.0, 30.0), speed: 10.0, time_left: 0, cooldown: cd, color: "rgb(255,255,0)".to_owned(), amount: 10, effects: Vec::new(), under_dps: vec![] });
+            enemy.effects.push(EnemyEffect::Explode { lifetime: 400, radius: (10.0, 30.0), speed: 20.0, time_left: 0, cooldown: cd, color: "rgb(255,255,0)".to_owned(), amount: 10, effects: Vec::new(), under_dps: vec![] });
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
@@ -354,15 +354,15 @@ impl Game {
         for _ in 0..400 * spawn_m {
             let cap = 0.3 * speed_m;
             let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
-            let radius = rand::thread_rng().gen_range(50.0..=100.0);
+            let radius = rand::thread_rng().gen_range(30.0..=70.0);
             let color = "rgb(255,0,255)";
             let mut enemy = Enemy::new(-25000.0, -25000.0, velocity, radius, color);
             enemy.id = 1;
-            enemy.effects.push(EnemyEffect::Chase { radius: Radius::Relative(3.0), power: -0.05 });
-            enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(4.0), power: -1.5 });
-            enemy.draw_packs.push(DrawPack::new("rgba(255,0,255,0.2)", Shape::Circle { radius: Radius::Relative(4.0) }, (0.0, 0.0)));
+            enemy.effects.push(EnemyEffect::Chase { radius: Radius::Relative(4.0), power: -0.20 });
+            enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(5.0), power: -4.0 });
+            enemy.draw_packs.push(DrawPack::new("rgba(255,0,255,0.2)", Shape::Circle { radius: Radius::Relative(5.0) }, (0.0, 0.0)));
             enemy.draw_packs.push(DrawPack::new("", Shape::Image { keyword: "candytop".to_owned(), scale: radius / 300.0 }, (-radius / 1.2, -radius / 1.2)));
-            enemy.view_radius = Radius::Relative(4.0);
+            enemy.view_radius = Radius::Relative(5.0);
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
@@ -515,189 +515,155 @@ impl Game {
     pub fn spawn_collectables(&mut self) {
         let scale = 0.3;
         let mut item_counter = 0;
-        // spawn b
-        let c = Collectable::new(-11000.0, -11000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
-        ]);
-        self.collectables.push(c);
-        let c = Collectable::new(11000.0, -11000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
-        ]);
-        self.collectables.push(c);
-        let c = Collectable::new(-11000.0, 11000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
-        ]);
-        self.collectables.push(c);
-        let c = Collectable::new(11000.0, 11000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
-        ]);
-        self.collectables.push(c);
-        // dirt area
-        let c = Collectable::new(2000.0, 2000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("monocle",
-                vec![ItemEffect::Vision((0.9,0.9))],
-                vec![], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "monocle".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // dirt area
-        let c = Collectable::new(200.0, 200.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("heart",
-                vec![
-                    ItemEffect::Revive { radius: Radius::Relative(5.0) },
-                    ItemEffect::Consumable { uses: 3 },
-                ],
-                vec![], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "heart".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // above spawn in fire
-        let c = Collectable::new(0.0, -2000.0, Color::new(200, 200, 100, 1), vec![
-            Item::new("microscope", vec![
-                ItemEffect::Vision((1.0,5.0)),
-            ], vec![], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "microscope".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // explosion area
-        let c = Collectable::new(0.0, -200.0, Color::new(50, 50, 50, 1), vec![
-            Item::new("bunker", vec![
-                ItemEffect::Harden { limit: 50, cooldown: 300, speed: 0.0 },
-                ItemEffect::Usable,
-            ], vec![ ], &mut item_counter,
-                None
-            )
-        ]);
-        self.collectables.push(c);
-        // candy area
-        let c = Collectable::new(0.0, -200.0, Color::new(50, 50, 50, 1), vec![
-            Item::new("sugar rush", vec![
-                ItemEffect::Harden { limit: 10, cooldown: 100, speed: 3.0 },
-                ItemEffect::Usable,
-            ], vec![ ], &mut item_counter,
-                None
-            )
-        ]);
-        self.collectables.push(c);
-        // water area middle
-        let c = Collectable::new(4000.0, -4000.0, Color::new(255, 255, 255, 1), vec![
-            Item::new("binoculars", vec![ItemEffect::Vision((0.7,1.0))], vec![], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "binoculars".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // left to spawn in fire
-        let c = Collectable::new(-6000.0, 0.0, Color::new(200, 200, 0, 1), vec![
-            Item::new("telescope", vec![ItemEffect::Vision((0.4,0.6))], vec![], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "telescope".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // hell area start
-        let c = Collectable::new(17500.0, -17500.0, Color::new(255,0,0,1), vec![
-            Item::new("heatwave", vec![
-                ItemEffect::SlowEnemies { power: 0.5, radius: Radius::Relative(7.0), duration: 100 },
-            ], vec![
-                DrawPack::new("rgba(255,0,0,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
-            ], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "heatwave".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // ice area middle
-        let c = Collectable::new(0.0, -16500.0, Color::new(255,0,0,1), vec![
-            Item::new("blizzard", vec![
-                ItemEffect::SlowEnemies { power: 0.8, radius: Radius::Relative(20.0), duration: 1 },
-            ], vec![
-                DrawPack::new("rgba(100,100,255,0.2)", Shape::Circle { radius: Radius::Relative(20.0) }, (0.0, 0.0))
-            ], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "blizzard".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // bottom space area
-        let c = Collectable::new(-9000.0, 14500.0, Color::new(255,0,0,1), vec![
-            Item::new("univeye", vec![
-                ItemEffect::Vision((0.01,1.0)),
-            ], vec![ ], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "univeye".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // flower area
-        let c = Collectable::new(-4500.0, -4000.0, Color::new(255,0,0,1), vec![
-            Item::new("puddle", vec![
-            ], vec![ ], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "puddle".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // wind area
-        let c = Collectable::new(-4000.0, 5500.0, Color::new(255,0,0,1), vec![
-            Item::new("windaura", vec![
-                ItemEffect::PushEnemies { power: 2.0, radius: Radius::Relative(5.0) },
-            ], vec![
-                DrawPack::new("rgba(255,255,255,0.2)", Shape::Circle { radius: Radius::Relative(5.0) }, (0.0, 0.0))
-            ], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "push".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // dirt area
-        let c = Collectable::new(4000.0, 4000.0, Color::new(255,0,0,1), vec![
-            Item::new("sandstorm", vec![
-                ItemEffect::ShrinkEnemies { power: 0.5, radius: Radius::Relative(7.0), duration: 100 },
-            ], vec![
-                DrawPack::new("rgba(50,40,20,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
-            ], &mut item_counter,
-                None
-            )
-        ]);
-        self.collectables.push(c);
-        // black hole area
-        let c = Collectable::new(-9000.0, -14000.0, Color::new(255,0,0,1), vec![
-            Item::new("hourglass", vec![
-            ], vec![
-                DrawPack::new("rgba(0,255,0,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
-            ], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "hourglass".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // black hole area
-        let c = Collectable::new(8000.0, -12500.0, Color::new(255,0,0,1), vec![
-            Item::new("orbit", vec![
-                ItemEffect::RotateEnemies { power: 1.0, radius: Radius::Relative(12.0) },
-            ], vec![
-                DrawPack::new("rgba(150,0,255,0.2)", Shape::Circle { radius: Radius::Relative(12.0) }, (0.0, 0.0))
-            ], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "orbit".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // black hole area
-        let c = Collectable::new(11000.0, 16000.0, Color::new(255,0,0,1), vec![
-            Item::new("blackhole", vec![
-            ], vec![ ], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "blackhole".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
-        // water area
-        let c = Collectable::new(6000.0, -6000.0, Color::new(255,0,0,1), vec![
-            Item::new("speedup", vec![
-                ItemEffect::SlowEnemies { power: 3.0, radius: Radius::Relative(15.0), duration: 1 },
-                ItemEffect::Speed(3.0),
-            ], vec![
-                DrawPack::new("rgba(0,0,255,0.2)", Shape::Circle { radius: Radius::Relative(15.0) }, (0.0, 0.0))
-            ], &mut item_counter,
-                Some(DrawPack::new("", Shape::Image { keyword: "speedup".to_owned(), scale }, (0.0, 0.0)))
-            )
-        ]);
-        self.collectables.push(c);
+        let collectables = vec![
+            Collectable::new(-11000.0, -11000.0, Color::new(200, 200, 100, 1), vec![
+                Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
+            ]),
+            Collectable::new(11000.0, -11000.0, Color::new(200, 200, 100, 1), vec![
+                Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
+            ]),
+            Collectable::new(-11000.0, 11000.0, Color::new(200, 200, 100, 1), vec![
+                Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
+            ]),
+            Collectable::new(11000.0, 11000.0, Color::new(200, 200, 100, 1), vec![
+                Item::new("teleportation scroll", vec![], vec![], &mut item_counter, None ),
+            ]),
+            Collectable::new(2000.0, 2000.0, Color::new(200, 200, 100, 1), vec![
+                Item::new("monocle",
+                    vec![ItemEffect::Vision((0.9,0.9))],
+                    vec![], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "monocle".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(200.0, 200.0, Color::new(200, 200, 100, 1), vec![
+                Item::new("heart",
+                    vec![
+                        ItemEffect::Revive { radius: Radius::Relative(5.0) },
+                        ItemEffect::Consumable { uses: 3 },
+                    ],
+                    vec![], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "heart".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(0.0, -2000.0, Color::new(200, 200, 100, 1), vec![
+                Item::new("microscope", vec![
+                    ItemEffect::Vision((1.0,5.0)),
+                ], vec![], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "microscope".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(0.0, 20000.0, Color::new(50, 50, 50, 1), vec![
+                Item::new("bunker", vec![
+                    ItemEffect::Harden { limit: 50, cooldown: 300, speed: 0.0 },
+                    ItemEffect::Usable,
+                ], vec![ ], &mut item_counter,
+                    None
+                )
+            ]),
+            Collectable::new(-22000.0, -22000.0, Color::new(50, 50, 50, 1), vec![
+                Item::new("sugar rush", vec![
+                    ItemEffect::Harden { limit: 10, cooldown: 100, speed: 3.0 },
+                    ItemEffect::Usable,
+                ], vec![ ], &mut item_counter,
+                    None
+                )
+            ]),
+            Collectable::new(4000.0, -4000.0, Color::new(255, 255, 255, 1), vec![
+                Item::new("binoculars", vec![ItemEffect::Vision((0.7,1.0))], vec![], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "binoculars".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(-6000.0, 0.0, Color::new(200, 200, 0, 1), vec![
+                Item::new("telescope", vec![ItemEffect::Vision((0.4,0.6))], vec![], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "telescope".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(17500.0, -17500.0, Color::new(255,0,0,1), vec![
+                Item::new("heatwave", vec![
+                    ItemEffect::SlowEnemies { power: 0.5, radius: Radius::Relative(7.0), duration: 100 },
+                ], vec![
+                    DrawPack::new("rgba(255,0,0,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
+                ], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "heatwave".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(0.0, -16500.0, Color::new(255,0,0,1), vec![
+                Item::new("blizzard", vec![
+                    ItemEffect::SlowEnemies { power: 0.8, radius: Radius::Relative(20.0), duration: 1 },
+                ], vec![
+                    DrawPack::new("rgba(100,100,255,0.2)", Shape::Circle { radius: Radius::Relative(20.0) }, (0.0, 0.0))
+                ], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "blizzard".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(-9000.0, 14500.0, Color::new(255,0,0,1), vec![
+                Item::new("univeye", vec![
+                    ItemEffect::Vision((0.01,1.0)),
+                ], vec![ ], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "univeye".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(-4500.0, -4000.0, Color::new(255,0,0,1), vec![
+                Item::new("puddle", vec![
+                ], vec![ ], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "puddle".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(-4000.0, 5500.0, Color::new(255,0,0,1), vec![
+                Item::new("windaura", vec![
+                    ItemEffect::PushEnemies { power: 2.0, radius: Radius::Relative(5.0) },
+                ], vec![
+                    DrawPack::new("rgba(255,255,255,0.2)", Shape::Circle { radius: Radius::Relative(5.0) }, (0.0, 0.0))
+                ], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "push".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(4000.0, 4000.0, Color::new(255,0,0,1), vec![
+                Item::new("sandstorm", vec![
+                    ItemEffect::ShrinkEnemies { power: 0.5, radius: Radius::Relative(7.0), duration: 100 },
+                ], vec![
+                    DrawPack::new("rgba(50,40,20,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
+                ], &mut item_counter,
+                    None
+                )
+            ]),
+            Collectable::new(-9000.0, -14000.0, Color::new(255,0,0,1), vec![
+                Item::new("hourglass", vec![
+                ], vec![
+                    DrawPack::new("rgba(0,255,0,0.2)", Shape::Circle { radius: Radius::Relative(7.0) }, (0.0, 0.0))
+                ], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "hourglass".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(8000.0, -12500.0, Color::new(255,0,0,1), vec![
+                Item::new("orbit", vec![
+                    ItemEffect::RotateEnemies { power: 1.0, radius: Radius::Relative(12.0) },
+                ], vec![
+                    DrawPack::new("rgba(150,0,255,0.2)", Shape::Circle { radius: Radius::Relative(12.0) }, (0.0, 0.0))
+                ], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "orbit".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(11000.0, 16000.0, Color::new(255,0,0,1), vec![
+                Item::new("blackhole", vec![
+                ], vec![ ], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "blackhole".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+            Collectable::new(6000.0, -6000.0, Color::new(255,0,0,1), vec![
+                Item::new("speedup", vec![
+                    ItemEffect::SlowEnemies { power: 3.0, radius: Radius::Relative(15.0), duration: 1 },
+                    ItemEffect::Speed(3.0),
+                ], vec![
+                    DrawPack::new("rgba(0,0,255,0.2)", Shape::Circle { radius: Radius::Relative(15.0) }, (0.0, 0.0))
+                ], &mut item_counter,
+                    Some(DrawPack::new("", Shape::Image { keyword: "speedup".to_owned(), scale }, (0.0, 0.0)))
+                )
+            ]),
+        ];
+        for c in collectables {
+            self.collectables.push(c);
+        }
         // across the fire area
         let cords = vec![(8,0),(-8,0),(0,8),(0,-8)];
         for c in cords {
