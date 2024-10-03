@@ -180,7 +180,6 @@ pub fn cross_barrier_check<T: Moveable>(object: &T, wall: &Wall) -> Option<f32> 
 }
 
 pub fn handle_collision(game: &mut Game) {
-    return;
     for group in game.enemies.iter_mut() {
         for enemy in group.1.iter_mut() {
             enemy.just_collided = false;
@@ -199,25 +198,25 @@ pub fn handle_collision(game: &mut Game) {
                         let enemyv = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
                         let speed = vector::abs(enemyv.dir);
                         let cp = wall.get_nearest_point(&(enemy.get_x(), enemy.get_y()));
-                        if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= speed {
-                            match cross_barrier_check(enemy, wall) {
-                                Some(f) => {
-                                    let bcs = barrier_crosses.get_mut(&(e, g));
-                                    match bcs {
-                                        Some(bc) => {
-                                            if f < bc.0 {
-                                                bc.0 = f;
-                                            }
-                                        },
-                                        None => {
-                                            // no shorter distance found
-                                            barrier_crosses.insert((e, g), (f, enemyv));
-                                        },
-                                    }
-                                },
-                                None => {},
-                            };
-                        }
+                        // if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= speed {
+                        //     match cross_barrier_check(enemy, wall) {
+                        //         Some(f) => {
+                        //             let bcs = barrier_crosses.get_mut(&(e, g));
+                        //             match bcs {
+                        //                 Some(bc) => {
+                        //                     if f < bc.0 {
+                        //                         bc.0 = f;
+                        //                     }
+                        //                 },
+                        //                 None => {
+                        //                     // no shorter distance found
+                        //                     barrier_crosses.insert((e, g), (f, enemyv));
+                        //                 },
+                        //             }
+                        //         },
+                        //         None => {},
+                        //     };
+                        // }
                         if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
                             let ocp = enemy_collisons.get_mut(&(e, g));
                             match ocp {
