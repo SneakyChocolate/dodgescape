@@ -493,6 +493,13 @@ impl Game {
                 let acc = draw(0.0, &(object.get_x(), object.get_y()), &drawpack, &camera, 1.0);
                 objects.push_str(&acc);
 
+                // key bindings
+                for (i, (key, item)) in object.inventory.bindings.iter().enumerate() {
+                    let drawpack = DrawPack::new("white", Shape::Text { content: format!("{} - {}", key, item), size: 15.0 }, (800.0, -400.0 + 20.0 * i as f32));
+                    let acc = draw(0.0, &(object.get_x(), object.get_y()), &drawpack, &camera, 1.0);
+                    objects.push_str(&acc);
+                }
+
                 // inventory items
                 for (i, item) in object.inventory.items.iter().enumerate() {
                     let line_height = 50.0;

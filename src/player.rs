@@ -108,6 +108,25 @@ impl Player {
         }
     }
     fn handle_inventory(&mut self, collectables: &mut Vec<Collectable>) {
+        // handle keybindings
+        if !self.inventory.bind_mode {
+            for key in self.just_pressed.iter() {
+                let b = self.inventory.bindings.get(key);
+                match b {
+                    Some(i) => {
+                        let item = self.inventory.items.get_mut(*i);
+                        match item {
+                            Some(item) => {
+                                item.active = !item.active;
+                            },
+                            None => {},
+                        }
+                    },
+                    None => {},
+                }
+            }
+        }
+
         let key = "KeyE".to_owned();
         if self.just_pressed.contains(&key) {
             self.inventory.open = !self.inventory.open;
@@ -139,20 +158,29 @@ impl Player {
                     Some(s) => {
                         let key = "KeyB".to_owned();
                         if self.just_pressed.contains(&key) {
-                            self.inventory.bind_mode = true;
-                        }
-                        if self.inventory.bind_mode {
-                            let key = "Escape".to_owned();
-                            if self.just_pressed.contains(&key) {
+                            if self.inventory.bind_mode {
                                 self.inventory.bind_mode = false;
+                                self.inventory.bindings.clear();
                             }
                             else {
-                                let key = self.just_pressed.get(0);
-                                match key {
-                                    Some(binding) => {
-                                        self.inventory.bindings.insert(binding.clone(), *s);
-                                    },
-                                    None => {},
+                                self.inventory.bind_mode = true;
+                            }
+                        }
+                        else {
+                            if self.inventory.bind_mode {
+                                let key = "Escape".to_owned();
+                                if self.just_pressed.contains(&key) {
+                                    self.inventory.bind_mode = false;
+                                }
+                                else {
+                                    let key = self.just_pressed.get(0);
+                                    match key {
+                                        Some(binding) => {
+                                            self.inventory.bind_mode = false;
+                                            self.inventory.bindings.insert(binding.clone(), *s);
+                                        },
+                                        None => {},
+                                    }
                                 }
                             }
                         }
@@ -202,24 +230,6 @@ impl Player {
         else {
             self.inventory.selected_item = None;
             self.inventory.bind_mode = false;
-        }
-
-        // handle keybindings
-        for key in self.just_pressed.iter() {
-            let b = self.inventory.bindings.get(key);
-            match b {
-                Some(i) => {
-                    println!("{}, {}", key, i);
-                    let item = self.inventory.items.get_mut(*i);
-                    match item {
-                        Some(item) => {
-                            item.active = !item.active;
-                        },
-                        None => {},
-                    }
-                },
-                None => {},
-            }
         }
     }
     fn handle_movement(&mut self) {
