@@ -85,7 +85,7 @@ impl Player {
         let key = "KeyR".to_owned();
         if self.keys_down.contains(&key) {
             self.x = 0.0;
-            self.y = -15000.0;
+            self.y = 0.0;
             self.alive = true;
         }
         

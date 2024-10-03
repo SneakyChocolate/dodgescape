@@ -1,4 +1,4 @@
-const host = "127.0.0.1:7878/";
+const host = window.location.href.substr(7);
 let login_button = document.getElementById("login");
 let username = document.getElementById("nameinput");
 let canvas;
