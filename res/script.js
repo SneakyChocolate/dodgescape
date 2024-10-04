@@ -158,7 +158,7 @@ function render(data) {
     objects = JSON.parse(data).objects; 
   }
   catch (e) {
-    console.log("panic");
+    console.log("panic", e);
     return;
   }
   for (o in objects) {
