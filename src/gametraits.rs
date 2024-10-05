@@ -1,3 +1,4 @@
+
 use serde::Serialize;
 
 use crate::{game::{DrawPack, Walls}, wall::WallType};

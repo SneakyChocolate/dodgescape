@@ -158,14 +158,18 @@ function render(data) {
     objects = JSON.parse(data).objects; 
   }
   catch (e) {
-    console.log("panic", e);
+    console.log("panic", e, data);
     return;
   }
   for (o in objects) {
     let object = objects[o];
     if (object == null) continue;
-    let x = (object.position.x - object.camera.x + object.draw_pack.offset[0]) * object.zoom * f + middle[0];
-    let y = (object.position.y - object.camera.y + object.draw_pack.offset[1]) * object.zoom * f + middle[1];
+    let dx = (object.position.x - object.camera.x + object.draw_pack.offset[0]) * object.zoom * f;
+    let dy = (object.position.y - object.camera.y + object.draw_pack.offset[1]) * object.zoom * f;
+    // let s = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) / 300;
+    let s = 1;
+    let x = dx * s + middle[0];
+    let y = dy * s + middle[1];
 
     for (s in object.draw_pack.shape) {
       let shape = object.draw_pack.shape[s];
