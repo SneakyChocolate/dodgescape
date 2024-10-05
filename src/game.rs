@@ -248,7 +248,13 @@ pub fn handle_collision(game: &mut Game) {
                     if vector::distance(cp, (player.get_x(), player.get_y())).2 <= player.get_radius() {
                         let collision = collisions.get_mut(&EntityIndex::Player { p });
                         match collision {
-                            Some(_) => todo!(),
+                            Some((ocp, bc)) => {
+                                let old_dist = vector::distance((player.x, player.y), *ocp);
+                                let dist = vector::distance((player.x, player.y), cp);
+                                if dist.2 < old_dist.2 {
+                                    *ocp = cp;
+                                }
+                            },
                             None => {
                                 collisions.insert(EntityIndex::Player { p }, (cp, None));
                             },
