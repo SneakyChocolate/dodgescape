@@ -94,13 +94,13 @@ pub struct Game {
 }
 
 pub fn handle_players(players: &mut Vec<Player>, collectables: &mut Vec<Collectable>) {
-    for object in players {
-        object.handle_keys(collectables);
-        if object.alive {
-            object.draw_packs[0].color = object.color.clone();
+    for player in players.iter_mut() {
+        player.handle_keys(collectables);
+        if player.alive {
+            player.draw_packs[0].color = player.color.clone();
         }
         else {
-            object.draw_packs[0].color = "rgb(255,0,0)".to_owned();
+            player.draw_packs[0].color = "rgb(255,0,0)".to_owned();
         }
     }
 }
@@ -275,6 +275,7 @@ pub fn handle_collision(game: &mut Game) {
         enemy.x = x;
         enemy.y = y;
     }
+    // handle wall angle from collision
     for (ei, (mut cp, bc)) in collisions {
         let object: Box<&mut dyn Moveable> = match ei {
             EntityIndex::Player { p } => {
@@ -308,17 +309,19 @@ pub fn handle_collision(game: &mut Game) {
     }
 }
 pub fn handle_movements(game: &mut Game) {
-    for object in &mut game.players {
-        if object.alive && !object.skip_move {
-            move_object(object, &game.walls, None);
+    for player in &mut game.players {
+        if player.alive && !player.skip_move {
+            player.old_position = (player.get_x(), player.get_y());
+            move_object(player, &game.walls, None);
         }
         else {
-            object.skip_move = false;
+            player.skip_move = false;
         }
     }
     for group in game.enemies.iter_mut() {
-        for object in group.1.iter_mut() {
-            move_object(object, &game.walls, Some(&group.0));
+        for enemy in group.1.iter_mut() {
+            enemy.old_position = (enemy.get_x(), enemy.get_y());
+            move_object(enemy, &game.walls, Some(&group.0));
         }
     }
 }

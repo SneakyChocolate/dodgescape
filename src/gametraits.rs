@@ -104,10 +104,8 @@ macro_rules! impl_Moveable {
                 self.speed_multiplier
             }
             fn set_pos(&mut self, x: f32, y: f32) {
-                let old = (self.get_x(), self.get_y());
                 self.x = x;
                 self.y = y;
-                self.old_position = old;
             }
             fn set_velocity(&mut self, v: (f32, f32)) {
                 self.velocity = v;
