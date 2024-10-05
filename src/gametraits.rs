@@ -2,6 +2,7 @@ use serde::Serialize;
 
 use crate::{game::{DrawPack, Walls}, wall::WallType};
 
+#[derive(PartialEq, Eq, Hash)]
 pub enum EntityIndex {
     Player{p: usize},
     Enemy{g: usize, e: usize},

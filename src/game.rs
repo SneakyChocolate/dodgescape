@@ -185,7 +185,7 @@ pub fn handle_collision(game: &mut Game) {
             enemy.just_collided = false;
         }
     }
-    let mut enemy_collisons: HashMap<(usize, usize), ((f32, f32), Option<(f32, f32)>)> = HashMap::new();
+    let mut collisions: HashMap<EntityIndex, ((f32, f32), Option<(f32, f32)>)> = HashMap::new();
     // let mut barrier_crosses: Vec<(usize, Action, f32, usize)> = vec![];
     let mut barrier_crosses: HashMap<(usize, usize), (f32, Line)> = HashMap::new();
     for wgroup in game.walls.iter() {
@@ -200,30 +200,30 @@ pub fn handle_collision(game: &mut Game) {
                         let cp = wall.get_nearest_point(&(enemy.get_x(), enemy.get_y()));
                         let mut barrier_crossed = None;
 
-                        if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= speed {
-                            match cross_barrier_check(enemy, wall) {
-                                Some(f) => {
-                                    let bcs = barrier_crosses.get_mut(&(e, g));
-                                    match bcs {
-                                        Some(bc) => {
-                                            if f < bc.0 {
-                                                bc.0 = f;
-                                                barrier_crossed = Some(enemyv.point(f));
-                                            }
-                                        },
-                                        None => {
-                                            // no shorter distance found
-                                            barrier_crossed = Some(enemyv.point(f));
-                                            barrier_crosses.insert((e, g), (f, enemyv));
-                                        },
-                                    }
-                                },
-                                None => {},
-                            };
-                        }
+                        // if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= speed {
+                        //     match cross_barrier_check(enemy, wall) {
+                        //         Some(f) => {
+                        //             let bcs = barrier_crosses.get_mut(&(e, g));
+                        //             match bcs {
+                        //                 Some(bc) => {
+                        //                     if f < bc.0 {
+                        //                         bc.0 = f;
+                        //                         barrier_crossed = Some(enemyv.point(f));
+                        //                     }
+                        //                 },
+                        //                 None => {
+                        //                     // no shorter distance found
+                        //                     barrier_crossed = Some(enemyv.point(f));
+                        //                     barrier_crosses.insert((e, g), (f, enemyv));
+                        //                 },
+                        //             }
+                        //         },
+                        //         None => {},
+                        //     };
+                        // }
 
                         if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
-                            let ocp = enemy_collisons.get_mut(&(e, g));
+                            let ocp = collisions.get_mut(&EntityIndex::Enemy { g, e });
                             match ocp {
                                 Some((ocp, bc)) => {
                                     let odist = vector::distance((enemy.x, enemy.y), *ocp);
@@ -233,7 +233,7 @@ pub fn handle_collision(game: &mut Game) {
                                     }
                                 },
                                 None => {
-                                    enemy_collisons.insert((e, g), (cp, barrier_crossed));
+                                    collisions.insert(EntityIndex::Enemy { g, e }, (cp, barrier_crossed));
                                 },
                             }
                         }
@@ -246,15 +246,13 @@ pub fn handle_collision(game: &mut Game) {
                     // cross_barrier_check(player, wall);
                     let cp = wall.get_nearest_point(&(player.get_x(), player.get_y()));
                     if vector::distance(cp, (player.get_x(), player.get_y())).2 <= player.get_radius() {
-                        // if collisions.iter().any(|c| {
-                        //     match c.0 {
-                        //         EntityIndex::Player { p: p2 } => p == p2,
-                        //         EntityIndex::Enemy { g, e } => false,
-                        //     }
-                        // }) {
-                        //     continue;
-                        // }
-                        // collisions.push((EntityIndex::Player { p }, cp));
+                        let collision = collisions.get_mut(&EntityIndex::Player { p });
+                        match collision {
+                            Some(_) => todo!(),
+                            None => {
+                                collisions.insert(EntityIndex::Player { p }, (cp, None));
+                            },
+                        }
                     }
                 }
             }
@@ -269,14 +267,21 @@ pub fn handle_collision(game: &mut Game) {
         let y = np.1;
         enemy.set_pos(x, y);
     }
-    for ((e, g), (mut cp, bc)) in enemy_collisons {
+    for (ei, (mut cp, bc)) in collisions {
         match bc {
             Some(f) => {
                 cp = f;
             },
             None => {},
         };
-        let object: Box<&mut dyn Moveable> = Box::new(get_enemy(game, g, e));
+        let object: Box<&mut dyn Moveable> = match ei {
+            EntityIndex::Player { p } => {
+                Box::new(get_player(game, p))
+            },
+            EntityIndex::Enemy { g, e } => {
+                Box::new(get_enemy(game, g, e))
+            },
+        };
         let speed = vector::abs(object.get_velocity());
         let dist = vector::distance(cp, (object.get_x(), object.get_y()));
         let push = vector::normalize((dist.0, dist.1), object.get_radius() + OFFSET);
