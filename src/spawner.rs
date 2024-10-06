@@ -21,6 +21,15 @@ impl Game {
         self.spawn_candy_enemies(speed_m, spawn_m);
         self.spawn_hypnosis_enemies(speed_m, spawn_m);
         self.spawn_hell_enemies(speed_m, spawn_m);
+        // self.spawn_test_enemies(speed_m, spawn_m);
+    }
+    pub fn spawn_test_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+        let ids = vec![WallType::SpawnA];
+        let mut enemies = vec![];
+        let velocity: (f32, f32) = (-30.0, 10.0);
+        let mut enemy = Enemy::new(0.0, 0.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(255,255,255)");
+        enemies.push(enemy);
+        self.enemies.push((ids, enemies)); 
     }
     pub fn spawn_dirt_enemies(&mut self, speed_m: f32, spawn_m: i32) {
         let ids = vec![WallType::Dirt, WallType::SpawnA];

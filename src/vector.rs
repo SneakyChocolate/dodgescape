@@ -35,8 +35,11 @@ impl Line {
             start: a,
         }
     }
-    pub fn point(&self, x: f32) -> Point {
-        (self.dir.0 * x + self.start.0, self.dir.1 * x + self.start.1)
+    pub fn point(&self, x: f32, d: f32) -> Point {
+        let move_distance = abs(self.dir);
+        let d_percentage = d / move_distance;
+        let s = x + d_percentage;
+        (self.dir.0 * s + self.start.0, self.dir.1 * s + self.start.1)
     }
 }
 
