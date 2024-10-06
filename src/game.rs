@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{action::Action, collectable::Collectable, color, enemy::Enemy, gametraits::{Drawable, EntityIndex, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self, get_intersection, Line}, wall::{Wall, WallType}};
+use crate::{action::Action, collectable::{self, Collectable}, color::{self, Color}, enemy::Enemy, gametraits::{Drawable, EntityIndex, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self, get_intersection, Line}, wall::{Wall, WallType}};
 use crate::gametraits::*;
 use crate::{impl_RadiusTrait, impl_Drawable, impl_Entity, impl_Moveable, impl_Position};
 use serde::Serialize;
@@ -281,8 +281,8 @@ pub fn handle_collision(game: &mut Game) {
         collisions.insert(EntityIndex::Enemy { g: *g, e: *e }, cp);
     }
     // handle wall angle from collision
-    for (ei, cp) in collisions {
-        let object: Box<&mut dyn Moveable> = match ei {
+    for (entity_index, collision_point) in collisions {
+        let object: Box<&mut dyn Moveable> = match entity_index {
             EntityIndex::Player { p } => {
                 Box::new(get_player(game, p))
             },
@@ -293,15 +293,15 @@ pub fn handle_collision(game: &mut Game) {
         let (mut x, mut y) = (object.get_x(), object.get_y());
         let v = object.get_velocity();
         let speed = vector::abs(v);
-        let dist = vector::distance(cp, (x, y));
+        let dist = vector::distance(collision_point, (x, y));
         if dist.2 == 0.0 {
             return;
         }
         let push = vector::normalize((dist.0, dist.1), object.get_radius() + OFFSET);
-        let nx = cp.0 + push.0;
-        let ny = cp.1 + push.1;
+        let nx = collision_point.0 + push.0;
+        let ny = collision_point.1 + push.1;
         object.set_pos(nx, ny);
-        let new_v = vector::normalize(vector::collision((x, y), v, cp), speed);
+        let new_v = vector::normalize(vector::collision((x, y), v, collision_point), speed);
         object.set_velocity(new_v);
         object.set_just_collided(true);
     }
@@ -606,7 +606,11 @@ impl Game {
         let index = self.players.iter().position(|p| {p.name == *player});
         match index {
             Some(i) => {
+                let player = self.players.get_mut(i).unwrap();
+                let mut drop = Collectable::new(player.x, player.y, Color::new(0, 0, 255, 1), vec![]);
+                drop.items.append(&mut player.inventory.items);
                 self.players.remove(i);
+                self.collectables.push(drop);
             },
             None => { }
         };
