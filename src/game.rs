@@ -196,12 +196,14 @@ pub fn handle_collision(game: &mut Game) {
                     for (e, enemy) in egroup.1.iter().enumerate() {
                         let enemy_vector = Line::from_points(enemy.old_position, (enemy.get_x(), enemy.get_y()));
                         let moved_distance = vector::abs(enemy_vector.dir);
-                        let cp = wall.get_nearest_point(&(enemy.get_x(), enemy.get_y()));
+                        let clostest = wall.get_nearest_point(&(enemy.get_x(), enemy.get_y()));
+                        let mut barrier_crossed = false;
 
                         // barrier cross check with vector intersection
-                        if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= moved_distance {
+                        if vector::distance(clostest, (enemy.get_x(), enemy.get_y())).2 <= moved_distance {
                             match cross_barrier_check(enemy, wall) {
                                 Some(ncp) => {
+                                    barrier_crossed = true;
                                     let other_cross_point = barrier_crosses.get_mut(&(e, g));
                                     match other_cross_point {
                                         Some(ocp) => {
@@ -216,24 +218,26 @@ pub fn handle_collision(game: &mut Game) {
                                     }
                                 },
                                 None => {
-                                    // closest point from enemy to walls
-                                    if vector::distance(cp, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
-                                        let ocp = collisions.get_mut(&EntityIndex::Enemy { g, e });
-                                        match ocp {
-                                            Some(ocp) => {
-                                                let old_dist = vector::distance((enemy.x, enemy.y), *ocp);
-                                                let dist = vector::distance((enemy.x, enemy.y), cp);
-                                                if dist.2 < old_dist.2 {
-                                                    *ocp = cp;
-                                                }
-                                            },
-                                            None => {
-                                                collisions.insert(EntityIndex::Enemy { g, e }, cp);
-                                            },
-                                        }
-                                    }
                                 },
                             };
+                        }
+                        else if !barrier_crossed {
+                            // closest point from enemy to walls
+                            if vector::distance(clostest, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
+                                let ocp = collisions.get_mut(&EntityIndex::Enemy { g, e });
+                                match ocp {
+                                    Some(ocp) => {
+                                        let old_dist = vector::distance((enemy.x, enemy.y), *ocp);
+                                        let dist = vector::distance((enemy.x, enemy.y), clostest);
+                                        if dist.2 < old_dist.2 {
+                                            *ocp = clostest;
+                                        }
+                                    },
+                                    None => {
+                                        collisions.insert(EntityIndex::Enemy { g, e }, clostest);
+                                    },
+                                }
+                            }
                         }
                     }
                 }
@@ -271,8 +275,9 @@ pub fn handle_collision(game: &mut Game) {
         let cp = l.point(*f, 0.0);
         let x = np.0;
         let y = np.1;
-        enemy.x = x;
-        enemy.y = y;
+        // enemy.x = x;
+        // enemy.y = y;
+        enemy.set_pos(x, y);
         collisions.insert(EntityIndex::Enemy { g: *g, e: *e }, cp);
     }
     // handle wall angle from collision
