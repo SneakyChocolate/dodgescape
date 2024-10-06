@@ -221,7 +221,7 @@ pub fn handle_collision(game: &mut Game) {
                                 },
                             };
                         }
-                        else if !barrier_crossed {
+                        if !barrier_crossed {
                             // closest point from enemy to walls
                             if vector::distance(clostest, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
                                 let ocp = collisions.get_mut(&EntityIndex::Enemy { g, e });
@@ -267,7 +267,7 @@ pub fn handle_collision(game: &mut Game) {
         }
     }
     // offset for pushing object away on collision so collision doesnt trigger again
-    // TODO fix barrier crossing
+    // TODO fix 180 turn on barrier cross
     const OFFSET: f32 = 0.001;
     for ((e, g), (f, l)) in barrier_crosses.iter() {
         let enemy = get_enemy(game, *g, *e);
@@ -275,8 +275,6 @@ pub fn handle_collision(game: &mut Game) {
         let cp = l.point(*f, 0.0);
         let x = np.0;
         let y = np.1;
-        // enemy.x = x;
-        // enemy.y = y;
         enemy.set_pos(x, y);
         collisions.insert(EntityIndex::Enemy { g: *g, e: *e }, cp);
     }
@@ -290,6 +288,13 @@ pub fn handle_collision(game: &mut Game) {
                 Box::new(get_enemy(game, g, e))
             },
         };
+
+        // push object out of wall
+        let push_vector = Line::from_points(collision_point, (object.get_x(), object.get_y()));
+        let np = push_vector.point(0.0, object.get_radius());
+        object.set_pos(np.0, np.1);
+
+        // calculate angle
         let (mut x, mut y) = (object.get_x(), object.get_y());
         let v = object.get_velocity();
         let speed = vector::abs(v);
@@ -412,9 +417,10 @@ impl Game {
                 crate::item::handle_effects(&mut self);
                 handle_players(&mut self.players, &mut self.collectables);
                 handle_movements(&mut self);
+                handle_collectables(&mut self);
+
                 handle_collision(&mut self);
                 handle_kill_revive(&mut self);
-                handle_collectables(&mut self);
             }
         });
     }
