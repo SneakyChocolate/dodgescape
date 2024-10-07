@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::mpsc::{Receiver, Sender}, thread::{self, JoinHandle}, time::Duration};
 
-use crate::{action::Action, collectable::{self, Collectable}, color::{self, Color}, enemy::Enemy, gametraits::{Drawable, EntityIndex, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self, get_intersection, Line}, wall::{Wall, WallType}};
+use crate::{action::Action, collectable::{self, Collectable}, color::{self, Color}, enemy::Enemy, gametraits::{Drawable, EntityIndex, Moveable, Position, Radius}, player::Player, server::ServerMessage, vector::{self, get_intersection, Line}, wall::{Wall, WallType}, Float};
 use crate::gametraits::*;
 use crate::{impl_RadiusTrait, impl_Drawable, impl_Entity, impl_Moveable, impl_Position};
 use serde::Serialize;
@@ -18,7 +18,7 @@ pub fn get_enemy<'a>(game: &'a mut Game, group: usize, enemy: usize) -> &'a mut 
     game.enemies.get_mut(group).unwrap().1.get_mut(enemy).unwrap()
 }
 
-pub fn draw(radius: f32, position: &(f32, f32), draw_pack: &DrawPack, camera: &(f32, f32), zoom: f32) -> String {
+pub fn draw(radius: Float, position: &(Float, Float), draw_pack: &DrawPack, camera: &(Float, Float), zoom: Float) -> String {
     format!("{{\"radius\":{},\"position\":{{\"x\":{},\"y\":{}}},\"draw_pack\":{},\"camera\":{{\"x\":{},\"y\":{}}},\"zoom\":{}}},",
         radius,
         position.0,
@@ -29,7 +29,7 @@ pub fn draw(radius: f32, position: &(f32, f32), draw_pack: &DrawPack, camera: &(
         zoom,
     )
 }
-pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom: f32) -> String {
+pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(Float, Float), zoom: Float) -> String {
     let pos = (object.get_x(), object.get_y());
     let draw_packs = object.get_draw_packs();
     let mut output = "".to_owned();
@@ -40,7 +40,7 @@ pub fn draw_object<T: Drawable + Position>(object: &T, camera: &(f32, f32), zoom
     output
 }
 
-pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {
+pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (Float, Float, Float) {
     let a = (a.get_x(), a.get_y());
     let b = (b.get_x(), b.get_y());
     vector::distance(a, b)
@@ -49,11 +49,11 @@ pub fn distance<T: Position, B: Position>(a: &T, b: &B) -> (f32, f32, f32) {
 #[derive(Serialize, Debug, Clone)]
 pub enum Shape {
     Circle{radius: Radius},
-    Rectangle{width: f32, height: f32},
-    Line{width: f32, x: f32, y: f32},
-    Text{content: String, size: f32},
-    Poly{corners: Vec<(f32,f32)>},
-    Image{keyword: String, scale: f32},
+    Rectangle{width: Float, height: Float},
+    Line{width: Float, x: Float, y: Float},
+    Text{content: String, size: Float},
+    Poly{corners: Vec<(Float,Float)>},
+    Image{keyword: String, scale: Float},
 }
 
 impl Default for Shape {
@@ -65,10 +65,10 @@ impl Default for Shape {
 pub struct DrawPack {
     pub color: String,
     pub shape: Shape,
-    pub offset: (f32, f32),
+    pub offset: (Float, Float),
 }
 impl DrawPack {
-    pub fn new(color: &str, shape: Shape, offset: (f32, f32)) -> Self {
+    pub fn new(color: &str, shape: Shape, offset: (Float, Float)) -> Self {
         Self {
             color: color.to_owned(),
             shape,
@@ -87,8 +87,8 @@ pub struct Game {
     pub game_loop: Option<JoinHandle<()>>,
     pub running: bool,
     pub enemies: Enemies,
-    pub grid: Vec<((f32, f32), DrawPack, bool)>,
-    pub map: Vec<((f32, f32), DrawPack)>,
+    pub grid: Vec<((Float, Float), DrawPack, bool)>,
+    pub map: Vec<((Float, Float), DrawPack)>,
     pub walls: Walls,
     pub collectables: Vec<Collectable>,
 }
@@ -158,7 +158,7 @@ pub fn handle_kill_revive(game: &mut Game) {
     }
 }
 
-pub fn cross_barrier_check<T: Moveable>(object: &T, wall: &Wall) -> Option<f32> {
+pub fn cross_barrier_check<T: Moveable>(object: &T, wall: &Wall) -> Option<Float> {
     let a = Line::from_points(object.get_old(), (object.get_x(), object.get_y()));
     let b = Line::from_points(wall.a, wall.b);
     let intersection = get_intersection(a, b);
@@ -185,8 +185,8 @@ pub fn handle_collision(game: &mut Game) {
             enemy.just_collided = false;
         }
     }
-    let mut collisions: HashMap<EntityIndex, (f32, f32)> = HashMap::new();
-    let mut barrier_crosses: HashMap<(usize, usize), (f32, Line, Wall)> = HashMap::new();
+    let mut collisions: HashMap<EntityIndex, (Float, Float)> = HashMap::new();
+    let mut barrier_crosses: HashMap<(usize, usize), (Float, Line, Wall)> = HashMap::new();
     for wgroup in game.walls.iter() {
         for wall in wgroup.1.iter() {
             // enemies
@@ -279,7 +279,7 @@ pub fn handle_collision(game: &mut Game) {
 
     // handle wall angle from collision
     // offset for pushing object away on collision so collision doesnt trigger again
-    const OFFSET: f32 = 0.001;
+    const OFFSET: Float = 0.001;
     for (entity_index, collision_point) in collisions {
         let object: Box<&mut dyn Moveable> = match entity_index {
             EntityIndex::Player { p } => {
@@ -532,7 +532,7 @@ impl Game {
 
                 // key bindings
                 for (i, (key, item)) in object.inventory.bindings.iter().enumerate() {
-                    let drawpack = DrawPack::new("white", Shape::Text { content: format!("{} - {}", key, item), size: 15.0 }, (800.0, -400.0 + 20.0 * i as f32));
+                    let drawpack = DrawPack::new("white", Shape::Text { content: format!("{} - {}", key, item), size: 15.0 }, (800.0, -400.0 + 20.0 * i as Float));
                     let acc = draw(0.0, &(object.get_x(), object.get_y()), &drawpack, &camera, 1.0);
                     objects.push_str(&acc);
                 }
@@ -540,7 +540,7 @@ impl Game {
                 // inventory items
                 for (i, item) in object.inventory.items.iter().enumerate() {
                     let line_height = 50.0;
-                    let line_offset = line_height * (i as f32);
+                    let line_offset = line_height * (i as Float);
                     match object.inventory.selected_item {
                         Some(s) => {
                             if i == s {
@@ -583,7 +583,7 @@ impl Game {
         objects.push_str("null]}");
         objects
     }
-    pub fn handle_input(&mut self, player_name: &String, mouse: (f32, f32), keys_down: Vec<String>, wheel: i32) {
+    pub fn handle_input(&mut self, player_name: &String, mouse: (Float, Float), keys_down: Vec<String>, wheel: i32) {
         let player = match self.get_mut(player_name) {
             Some(p) => p,
             None => return,

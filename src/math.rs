@@ -1,7 +1,11 @@
+use crate::Float;
 
-pub type Matrix = Vec<Vec<f32>>;
+
+pub type Matrix = Vec<Vec<Float>>;
 
 pub mod matrix {
+    use crate::Float;
+
     use super::Matrix;
 
     pub fn check(matrix: &Matrix) -> bool {
@@ -31,22 +35,22 @@ pub mod matrix {
         });
     }
 
-    pub fn div(row: &mut Vec<f32>, value: f32) {
-        let nrow = row.iter().map(|e| e / value).collect::<Vec<f32>>();
+    pub fn div(row: &mut Vec<Float>, value: Float) {
+        let nrow = row.iter().map(|e| e / value).collect::<Vec<Float>>();
         *row = nrow;
     }
-    pub fn mul(row: &mut Vec<f32>, value: f32) {
-        let nrow = row.iter().map(|e| e * value).collect::<Vec<f32>>();
+    pub fn mul(row: &mut Vec<Float>, value: Float) {
+        let nrow = row.iter().map(|e| e * value).collect::<Vec<Float>>();
         *row = nrow;
     }
-    pub fn add(row1: &mut Vec<f32>, row2: &Vec<f32>) {
+    pub fn add(row1: &mut Vec<Float>, row2: &Vec<Float>) {
         let zip = row1.iter().zip(row2.iter());
-        let nrow = zip.map(|(r1, r2)| {*r1 + *r2}).collect::<Vec<f32>>();
+        let nrow = zip.map(|(r1, r2)| {*r1 + *r2}).collect::<Vec<Float>>();
         *row1 = nrow;
     }
-    pub fn sub(row1: &mut Vec<f32>, row2: &Vec<f32>) {
+    pub fn sub(row1: &mut Vec<Float>, row2: &Vec<Float>) {
         let zip = row1.iter().zip(row2.iter());
-        let nrow = zip.map(|(r1, r2)| {*r1 - *r2}).collect::<Vec<f32>>();
+        let nrow = zip.map(|(r1, r2)| {*r1 - *r2}).collect::<Vec<Float>>();
         *row1 = nrow;
     }
 

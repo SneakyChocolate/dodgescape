@@ -1,4 +1,4 @@
-use crate::{action::Action, game::{DrawPack, Game}, gametraits::{Drawable, Radius}, vector};
+use crate::{action::Action, game::{DrawPack, Game}, gametraits::{Drawable, Radius}, vector, Float};
 use crate::gametraits::*;
 
 
@@ -14,15 +14,15 @@ pub struct Item {
 
 #[derive(Debug)]
 pub enum ItemEffect {
-    Vision((f32,f32)),
-    Speed(f32),
-    SlowEnemies{power: f32, radius: Radius, duration: usize},
-    ShrinkEnemies{power: f32, radius: Radius, duration: usize},
+    Vision((Float,Float)),
+    Speed(Float),
+    SlowEnemies{power: Float, radius: Radius, duration: usize},
+    ShrinkEnemies{power: Float, radius: Radius, duration: usize},
     Revive{radius: Radius},
     Consumable{uses: usize},
-    PushEnemies{power: f32, radius: Radius},
-    RotateEnemies{power: f32, radius: Radius},
-    Harden{limit: usize, cooldown: usize, speed: f32},
+    PushEnemies{power: Float, radius: Radius},
+    RotateEnemies{power: Float, radius: Radius},
+    Harden{limit: usize, cooldown: usize, speed: Float},
     Usable,
 }
 

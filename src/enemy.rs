@@ -1,30 +1,30 @@
 use rand::{thread_rng, Rng};
 
-use crate::{action::Action, game::{DrawPack, Game, Shape}, impl_Drawable, impl_Entity, impl_Moveable, impl_Position, player::PlayerEffect, vector};
+use crate::{action::Action, game::{DrawPack, Game, Shape}, impl_Drawable, impl_Entity, impl_Moveable, impl_Position, player::PlayerEffect, vector, Float};
 use crate::gametraits::*;
 use crate::{impl_RadiusTrait};
 
 #[derive(Default)]
 pub struct Enemy {
     pub id: usize,
-    pub velocity: (f32, f32),
-    pub speed_multiplier: f32,
-    pub radius_multiplier: f32,
-    pub x: f32,
-    pub y: f32,
+    pub velocity: (Float, Float),
+    pub speed_multiplier: Float,
+    pub radius_multiplier: Float,
+    pub x: Float,
+    pub y: Float,
     pub draw_packs: Vec<DrawPack>,
-    pub radius: f32,
+    pub radius: Float,
     pub effects: Vec<EnemyEffect>,
     pub just_collided: bool,
     pub view_radius: Radius,
     pub harmless: bool,
-    pub old_position: (f32, f32),
+    pub old_position: (Float, Float),
 }
 
 impl_Entity!(Enemy);
 
 impl Enemy {
-    pub fn new(x: f32, y: f32, velocity: (f32, f32), radius: f32, color: &str) -> Enemy {
+    pub fn new(x: Float, y: Float, velocity: (Float, Float), radius: Float, color: &str) -> Enemy {
         let mut p = Enemy {
             x,y,
             old_position: (x, y),
@@ -44,17 +44,17 @@ impl Enemy {
 
 #[derive(Clone)]
 pub enum EnemyEffect {
-    Chase {radius: Radius, power: f32},
+    Chase {radius: Radius, power: Float},
     Crumble,
     Lifetime(usize),
-    Push {radius: Radius, power: f32},
-    Shoot {lifetime: usize, radius: Radius, projectile_radius: f32, speed: f32, time_left: usize, cooldown: usize, color: String, effects: Vec<EnemyEffect>, under_dps: Vec<DrawPack>},
-    Explode {lifetime: usize, radius: (f32, f32), speed: f32, amount: usize, time_left: usize, cooldown: usize, color: String, effects: Vec<EnemyEffect>, under_dps: Vec<DrawPack>},
-    SlowPlayers {radius: Radius, slow: f32, duration: usize},
-    Grow {size: f32, maxsize: f32, defaultsize: f32},
-    SpeedAlter {origin: usize, power: f32, ease: usize},
-    Shrink {origin: usize, power: f32, ease: usize, start: usize},
-    ShrinkPlayers {radius: Radius, shrink: f32, duration: usize},
+    Push {radius: Radius, power: Float},
+    Shoot {lifetime: usize, radius: Radius, projectile_radius: Float, speed: Float, time_left: usize, cooldown: usize, color: String, effects: Vec<EnemyEffect>, under_dps: Vec<DrawPack>},
+    Explode {lifetime: usize, radius: (Float, Float), speed: Float, amount: usize, time_left: usize, cooldown: usize, color: String, effects: Vec<EnemyEffect>, under_dps: Vec<DrawPack>},
+    SlowPlayers {radius: Radius, slow: Float, duration: usize},
+    Grow {size: Float, maxsize: Float, defaultsize: Float},
+    SpeedAlter {origin: usize, power: Float, ease: usize},
+    Shrink {origin: usize, power: Float, ease: usize, start: usize},
+    ShrinkPlayers {radius: Radius, shrink: Float, duration: usize},
 }
 
 pub fn handle_effects(game: &mut Game) {
@@ -216,7 +216,7 @@ pub fn handle_effects(game: &mut Game) {
                         }
                         else {
                             deletions.push((i, Action::DecrementEnemyEase { group: g, effect: e }));
-                            let r = *power + *power * ((*start - *ease) as f32 / *start as f32);
+                            let r = *power + *power * ((*start - *ease) as Float / *start as Float);
                             actions.push((i, Action::MulEnemyRadiusMultiplier { f: r, group: g }));
                         }
                     },

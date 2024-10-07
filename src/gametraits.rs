@@ -1,7 +1,7 @@
 
 use serde::Serialize;
 
-use crate::{game::{DrawPack, Walls}, wall::WallType};
+use crate::{game::{DrawPack, Walls}, wall::WallType, Float};
 
 #[derive(PartialEq, Eq, Hash)]
 pub enum EntityIndex {
@@ -11,12 +11,12 @@ pub enum EntityIndex {
 
 #[derive(Serialize, Debug, Clone, Copy)]
 pub enum Radius {
-    Absolute(f32),
-    Relative(f32),
+    Absolute(Float),
+    Relative(Float),
 }
 
 impl Radius {
-    pub fn translate(&self, origin: f32) -> f32 {
+    pub fn translate(&self, origin: Float) -> Float {
         match self {
             Radius::Absolute(v) => *v,
             Radius::Relative(v) => origin * *v,
@@ -44,21 +44,21 @@ macro_rules! impl_Drawable {
     };
 }
 pub trait Position {
-    fn get_x(&self) -> f32;
-    fn get_y(&self) -> f32;
-    fn get_old(&self) -> (f32, f32);
+    fn get_x(&self) -> Float;
+    fn get_y(&self) -> Float;
+    fn get_old(&self) -> (Float, Float);
 }
 #[macro_export]
 macro_rules! impl_Position {
     ($struct_name:ident) => {
         impl Position for $struct_name {
-            fn get_x(&self) -> f32 {
+            fn get_x(&self) -> Float {
                 self.x
             }
-            fn get_y(&self) -> f32 {
+            fn get_y(&self) -> Float {
                 self.y
             }
-            fn get_old(&self) -> (f32, f32) {
+            fn get_old(&self) -> (Float, Float) {
                 self.old_position
             }
         }
@@ -66,17 +66,17 @@ macro_rules! impl_Position {
 }
 
 pub trait RadiusTrait {
-    fn get_radius(&self) -> f32;
-    fn set_radius(&mut self, v: f32);
+    fn get_radius(&self) -> Float;
+    fn set_radius(&mut self, v: Float);
 }
 #[macro_export]
 macro_rules! impl_RadiusTrait {
     ($struct_name:ident) => {
         impl RadiusTrait for $struct_name {
-            fn get_radius(&self) -> f32 {
+            fn get_radius(&self) -> Float {
                 self.radius * self.radius_multiplier
             }
-            fn set_radius(&mut self, v: f32) {
+            fn set_radius(&mut self, v: Float) {
                 self.radius = v;
             }
         }
@@ -84,11 +84,11 @@ macro_rules! impl_RadiusTrait {
 }
 
 pub trait Moveable: Position + RadiusTrait {
-    fn set_pos(&mut self, x: f32, y: f32);
-    fn set_velocity(&mut self, v: (f32, f32));
-    fn set_speed_multiplier(&mut self, v: f32);
-    fn get_velocity(&self) -> (f32, f32);
-    fn get_speed_multiplier(&self) -> f32;
+    fn set_pos(&mut self, x: Float, y: Float);
+    fn set_velocity(&mut self, v: (Float, Float));
+    fn set_speed_multiplier(&mut self, v: Float);
+    fn get_velocity(&self) -> (Float, Float);
+    fn get_speed_multiplier(&self) -> Float;
     fn get_just_collided(&self) -> bool;
     fn set_just_collided(&mut self, v: bool);
 }
@@ -97,20 +97,20 @@ pub trait Moveable: Position + RadiusTrait {
 macro_rules! impl_Moveable {
     ($struct_name:ident) => {
         impl Moveable for $struct_name {
-            fn get_velocity(&self) -> (f32, f32) {
+            fn get_velocity(&self) -> (Float, Float) {
                 (self.velocity.0, self.velocity.1)
             }
-            fn get_speed_multiplier(&self) -> f32 {
+            fn get_speed_multiplier(&self) -> Float {
                 self.speed_multiplier
             }
-            fn set_pos(&mut self, x: f32, y: f32) {
+            fn set_pos(&mut self, x: Float, y: Float) {
                 self.x = x;
                 self.y = y;
             }
-            fn set_velocity(&mut self, v: (f32, f32)) {
+            fn set_velocity(&mut self, v: (Float, Float)) {
                 self.velocity = v;
             }
-            fn set_speed_multiplier(&mut self, v: f32) {
+            fn set_speed_multiplier(&mut self, v: Float) {
                 self.speed_multiplier = v;
             }
             fn get_just_collided(&self) -> bool {

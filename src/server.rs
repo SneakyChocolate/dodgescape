@@ -1,6 +1,6 @@
 use std::{fs, io::{Read, Write}, net::{TcpListener, TcpStream}, sync::mpsc::{self, Sender}, thread::{self, JoinHandle}};
 
-use crate::http::Http_request;
+use crate::{http::Http_request, Float};
 
 use serde::{Deserialize, Serialize};
 
@@ -8,20 +8,20 @@ use serde::{Deserialize, Serialize};
 pub enum ServerMessage {
     Login(String, Sender<String>),
     Logout(String),
-    Input{name: String, mouse: (f32, f32), keys: Vec<String>, wheel: i32},
+    Input{name: String, mouse: (Float, Float), keys: Vec<String>, wheel: i32},
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ClientMessage {
     pub mode: String,
     pub username: String,
-    pub x: Option<f32>,
-    pub y: Option<f32>,
+    pub x: Option<Float>,
+    pub y: Option<Float>,
     pub keys_down: Option<Vec<String>>,
     pub wheel: Option<i32>,
 }
 impl ClientMessage {
-    pub fn new(mode: String, username: String, x: Option<f32>, y: Option<f32>, keys_down: Option<Vec<String>>, wheel: Option<i32>) -> ClientMessage {
+    pub fn new(mode: String, username: String, x: Option<Float>, y: Option<Float>, keys_down: Option<Vec<String>>, wheel: Option<i32>) -> ClientMessage {
         ClientMessage { mode, username, x, y, keys_down, wheel }
     }
 }

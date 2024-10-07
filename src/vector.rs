@@ -1,10 +1,10 @@
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use rand::Rng;
 
-use crate::math::Matrix;
+use crate::{math::Matrix, Float};
 
-pub type Point = (f32, f32);
+pub type Point = (Float, Float);
 
 #[derive(Debug)]
 pub struct Line {
@@ -35,7 +35,7 @@ impl Line {
             start: a,
         }
     }
-    pub fn point(&self, x: f32, d: f32) -> Point {
+    pub fn point(&self, x: Float, d: Float) -> Point {
         let move_distance = abs(self.dir);
         let d_percentage = d / move_distance;
         let s = x + d_percentage;
@@ -43,10 +43,10 @@ impl Line {
     }
 }
 
-pub fn abs(a: Point) -> f32 {
-    f32::sqrt(f32::powi(a.0, 2) + f32::powi(a.1, 2))
+pub fn abs(a: Point) -> Float {
+    Float::sqrt(Float::powi(a.0, 2) + Float::powi(a.1, 2))
 }
-pub fn distance(a: Point, b: Point) -> (f32, f32, f32) {
+pub fn distance(a: Point, b: Point) -> (Float, Float, Float) {
     let (ax, ay) = a;
     let (bx, by) = b;
 
@@ -55,7 +55,7 @@ pub fn distance(a: Point, b: Point) -> (f32, f32, f32) {
 
     (dx, dy, abs((dx, dy)))
 }
-pub fn normalize(a: Point, value: f32) -> Point {
+pub fn normalize(a: Point, value: Float) -> Point {
     let dd = distance(a, (0.0, 0.0)).2;
     if dd == 0.0 {
         return (0.0, 0.0);
@@ -63,7 +63,7 @@ pub fn normalize(a: Point, value: f32) -> Point {
 
     (a.0 / dd * value, a.1 / dd * value)
 }
-pub fn normalize_mut(a: &mut Point, value: f32) {
+pub fn normalize_mut(a: &mut Point, value: Float) {
     let dd = distance(*a, (0.0, 0.0)).2;
     if dd == 0.0 {
         a.0 = 0.0;
@@ -74,11 +74,11 @@ pub fn normalize_mut(a: &mut Point, value: f32) {
     a.0 = a.0 / dd * value;
     a.1 = a.1 / dd * value;
 }
-pub fn point_from_angle(angle: f32) -> Point {
-    (f32::cos(angle * PI / 180.0), f32::sin(angle * PI / 180.0))
+pub fn point_from_angle(angle: Float) -> Point {
+    (Float::cos(angle * PI / 180.0), Float::sin(angle * PI / 180.0))
 }
-pub fn angle_from_point(point: Point) -> f32 {
-    let mut r = f32::atan(point.1 / point.0) * 180.0 / PI;
+pub fn angle_from_point(point: Point) -> Float {
+    let mut r = Float::atan(point.1 / point.0) * 180.0 / PI;
     if point.0 < 0.0 {
         r += 180.0;
     }
@@ -107,7 +107,7 @@ pub fn lgs(a: Line, b: Line) -> Matrix {
     matrix
     
 }
-pub fn get_intersection(a: Line, b: Line) -> Option<(f32, f32)> {
+pub fn get_intersection(a: Line, b: Line) -> Option<(Float, Float)> {
     let mut matrix = lgs(a, b);
     crate::math::matrix::normalize(&mut matrix);
     if matrix[0][0] == 0.0 || matrix[1][1] == 0.0 {

@@ -1,25 +1,25 @@
-use crate::{color::Color, game::{DrawPack, Shape, Walls}, impl_Drawable, impl_Entity,  impl_Moveable, impl_Position, item::Item, player::Player, wall::WallType};
+use crate::{color::Color, game::{DrawPack, Shape, Walls}, impl_Drawable, impl_Entity,  impl_Moveable, impl_Position, item::Item, player::Player, wall::WallType, Float};
 use crate::gametraits::*;
 use crate::{impl_RadiusTrait};
 
 #[derive(Default)]
 pub struct Collectable {
-    pub velocity: (f32, f32),
-    pub speed_multiplier: f32,
-    pub radius_multiplier: f32,
-    pub x: f32,
-    pub y: f32,
+    pub velocity: (Float, Float),
+    pub speed_multiplier: Float,
+    pub radius_multiplier: Float,
+    pub x: Float,
+    pub y: Float,
     pub draw_packs: Vec<DrawPack>,
-    pub radius: f32,
+    pub radius: Float,
     pub just_collided: bool,
     pub items: Vec<Item>,
-    pub old_position: (f32, f32),
+    pub old_position: (Float, Float),
 }
 
 impl_Entity!(Collectable);
 
 impl Collectable {
-    pub fn new(x: f32, y: f32, color: Color, items: Vec<Item>) -> Self {
+    pub fn new(x: Float, y: Float, color: Color, items: Vec<Item>) -> Self {
         let mut p = Self {
             x,y,
             old_position: (x, y),

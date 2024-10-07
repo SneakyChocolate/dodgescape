@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::{collectable::Collectable, color::Color, enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game, Shape}, gametraits::Radius, item::{Item, ItemEffect}, vector::random_point, wall::{Wall, WallType}};
+use crate::{collectable::Collectable, color::Color, enemy::{Enemy, EnemyEffect}, game::{DrawPack, Game, Shape}, gametraits::Radius, item::{Item, ItemEffect}, vector::random_point, wall::{Wall, WallType}, Float};
 
 impl Game {
     pub fn spawn_enemies(&mut self) {
@@ -23,20 +23,20 @@ impl Game {
         self.spawn_hell_enemies(speed_m, spawn_m);
         // self.spawn_test_enemies(speed_m, spawn_m);
     }
-    pub fn spawn_test_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_test_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::SpawnA];
         let mut enemies = vec![];
-        let velocity: (f32, f32) = (-30.0, 10.0);
+        let velocity: (Float, Float) = (-30.0, 10.0);
         let mut enemy = Enemy::new(0.0, 0.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(255,255,255)");
         enemies.push(enemy);
         self.enemies.push((ids, enemies)); 
     }
-    pub fn spawn_dirt_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_dirt_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Dirt, WallType::SpawnA];
         let mut enemies = vec![];
         for _ in 0..120 * spawn_m {
             let cap = 0.5 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(1500.0, 1000.0, velocity, rand::thread_rng().gen_range(10.0..=50.0), "rgb(50,40,20)");
             enemy.effects.push(EnemyEffect::Crumble);
             enemy.effects.push(EnemyEffect::ShrinkPlayers { radius: Radius::Relative(10.0), shrink: 0.9, duration: 1 });
@@ -47,12 +47,12 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_wind_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_wind_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Wind, WallType::SpawnA];
         let mut enemies = vec![];
         for _ in 0..40 * spawn_m {
             let cap = 0.8 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, 1000.0, velocity, rand::thread_rng().gen_range(40.0..=100.0), "rgb(200,200,255)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,255,255,0.1)", Shape::Circle { radius: Radius::Relative(3.0) }, (0.0, 0.0)));
             enemy.effects.push(EnemyEffect::Push { radius: Radius::Relative(3.0), power: 5.0 });
@@ -61,12 +61,12 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_flower_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_flower_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Flower, WallType::SpawnA];
         let mut enemies = vec![];
         for _ in 0..550 * spawn_m {
             let cap = 0.2 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-1000.0, -1000.0, velocity, rand::thread_rng().gen_range(10.0..=30.0), "rgb(255,250,5)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,255,0.2)", Shape::Circle { radius: Radius::Relative(5.0) }, (0.0, 0.0)));
             enemy.effects.push(EnemyEffect::Chase { radius: Radius::Relative(5.0), power: 0.2});
@@ -76,18 +76,18 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_water_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_water_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Water, WallType::SpawnA];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.5 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(2000.0, -2000.0, velocity, rand::thread_rng().gen_range(50.0..=100.0), "rgb(50,50,200)");
             enemies.push(enemy);
         }
         for _ in 0..5 * spawn_m {
             let cap = 0.2 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let radius = rand::thread_rng().gen_range(400.0..=600.0);
             let mut enemy = Enemy::new(3000.0, -3000.0, velocity, radius, "rgb(10,10,100)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(10,10,100,0.5)", Shape::Circle { radius: Radius::Relative(1.3) }, (0.0, 0.0)));
@@ -98,7 +98,7 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_fire_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_fire_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let size = 20.0..=50.0;
         let amount = 150;
         let speed = 1.0;
@@ -107,32 +107,32 @@ impl Game {
         let mut enemies = vec![];
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let enemy = Enemy::new(0.0, -dist, velocity, rand::thread_rng().gen_range(size.clone()), "red");
             enemies.push(enemy);
         }
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let enemy = Enemy::new(0.0, dist, velocity, rand::thread_rng().gen_range(size.clone()), "red");
             enemies.push(enemy);
         }
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let enemy = Enemy::new(-dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), "red");
             enemies.push(enemy);
         }
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let enemy = Enemy::new(dist, 0.0, velocity, rand::thread_rng().gen_range(size.clone()), "red");
             enemies.push(enemy);
         }
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_blackhole_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_blackhole_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let size = 200.0..=500.0;
         let amount = 50;
         let speed = 2.0;
@@ -155,7 +155,7 @@ impl Game {
         let mut enemies = vec![];
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(dist, -dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
             enemy.view_radius = Radius::Relative(2.0);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: Radius::Relative(2.0) }, (0.0, 0.0)));
@@ -164,7 +164,7 @@ impl Game {
         }
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(dist, dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
             enemy.view_radius = Radius::Relative(2.0);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: Radius::Relative(2.0) }, (0.0, 0.0)));
@@ -173,7 +173,7 @@ impl Game {
         }
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-dist, -dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
             enemy.view_radius = Radius::Relative(2.0);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: Radius::Relative(2.0) }, (0.0, 0.0)));
@@ -182,7 +182,7 @@ impl Game {
         }
         for _ in 0..amount * spawn_m {
             let cap = speed * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-dist, dist, velocity, rand::thread_rng().gen_range(size.clone()), color);
             enemy.view_radius = Radius::Relative(2.0);
             enemy.draw_packs.push(DrawPack::new(auracolor, Shape::Circle { radius: Radius::Relative(2.0) }, (0.0, 0.0)));
@@ -192,12 +192,12 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_tech_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_tech_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Shooting];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.2 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-20000.0, 0.0, velocity, rand::thread_rng().gen_range(30.0..=30.0), "rgb(25,25,25)");
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,255,0,0.02)", Shape::Circle { radius: Radius::Relative(30.0) }, (0.0, 0.0)));
             enemy.effects.push(EnemyEffect::Shoot { radius: Radius::Relative(30.0), speed: 10.0, cooldown: 60, time_left: 0, lifetime: 1000, projectile_radius: 20.0, color: "black".to_owned(), effects: vec![], under_dps: vec![] });
@@ -206,7 +206,7 @@ impl Game {
         }
         for _ in 0..50 * spawn_m {
             let cap = 0.5 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(-20000.0, 0.0, velocity, rand::thread_rng().gen_range(30.0..=70.0), "rgb(255,125,125)");
             let r = Radius::Relative(5.0);
             enemy.draw_packs.insert(0, DrawPack::new("rgba(255,0,0,0.1)", Shape::Circle { radius: r }, (0.0, 0.0)));
@@ -217,13 +217,13 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_ice_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_ice_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Ice];
         let mut enemies = vec![];
         // snowballs
         for _ in 0..25 * spawn_m {
             let cap = 0.5 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(0.0, -20000.0, velocity, rand::thread_rng().gen_range(50.0..=70.0), "rgb(255,255,255)");
             let r = Radius::Relative(2.0);
             enemy.effects.push(EnemyEffect::Grow { size: 0.2, maxsize: 10.0 * enemy.radius, defaultsize: enemy.radius });
@@ -233,7 +233,7 @@ impl Game {
         // snowmans
         for _ in 0..35 * spawn_m {
             let cap = 0.5 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(0.0, -20000.0, velocity, rand::thread_rng().gen_range(50.0..=70.0), "rgb(255,255,255)");
             enemy.draw_packs.push(DrawPack::new("rgb(255,150,0)", Shape::Circle { radius: Radius::Relative(0.8)}, (0.0, 0.0)));
             enemy.draw_packs.push(DrawPack::new("rgb(0,0,0)", Shape::Circle { radius: Radius::Relative(0.1)}, (-10.0, -10.0)));
@@ -249,12 +249,12 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_snake_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_snake_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Snake];
         let mut enemies = vec![];
         for _ in 0..50 * spawn_m {
             let cap = 0.8 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(20000.0, 0.0, velocity, 90.0, "rgb(25,25,25)");
             let r = Radius::Relative(20.0);
             enemy.draw_packs.insert(0, DrawPack::new("rgba(0,255,255,0.02)", Shape::Circle { radius: r }, (0.0, 0.0)));
@@ -265,12 +265,12 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_explosion_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_explosion_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Explosion];
         let mut enemies = vec![];
         for _ in 0..20 * spawn_m {
             let cap = 0.1 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let mut enemy = Enemy::new(0.0, 20000.0, velocity, 90.0, "rgb(25,25,25)");
             let cd = rand::thread_rng().gen_range(200..=400);
             let radius = rand::thread_rng().gen_range(10.0..=30.0);
@@ -280,12 +280,12 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_lightning_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_lightning_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Lightning];
         let mut enemies = vec![];
         for _ in 0..20 * spawn_m {
             let cap = 0.1 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let cloudradius = rand::thread_rng().gen_range(200.0..=500.0);
             let color = "rgba(100,80,150,0.7)";
             let mut enemy = Enemy::new(-25000.0, 25000.0, velocity, cloudradius, color);
@@ -310,12 +310,12 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_hell_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_hell_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Hell];
         let mut enemies = vec![];
         for _ in 0..30 * spawn_m {
             let cap = 0.8 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let radius = rand::thread_rng().gen_range(100.0..=300.0);
             let color = "rgb(60,0,0)";
             let mut enemy = Enemy::new(25000.0, -25000.0, velocity, radius, color);
@@ -340,12 +340,12 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_poison_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_poison_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Poison];
         let mut enemies = vec![];
         for _ in 0..150 * spawn_m {
             let cap = 0.6 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let radius = rand::thread_rng().gen_range(100.0..=200.0);
             let color = "rgb(0,255,0)";
             let mut enemy = Enemy::new(25000.0, 25000.0, velocity, radius, color);
@@ -357,12 +357,12 @@ impl Game {
         self.enemies.push((ids, enemies)); 
     }
 
-    pub fn spawn_candy_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_candy_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Candy];
         let mut enemies = vec![];
         for _ in 0..300 * spawn_m {
             let cap = 0.3 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let radius = rand::thread_rng().gen_range(30.0..=70.0);
             let color = "rgb(255,0,255)";
             let mut enemy = Enemy::new(-25000.0, -25000.0, velocity, radius, color);
@@ -377,12 +377,12 @@ impl Game {
         }
         self.enemies.push((ids, enemies)); 
     }
-    pub fn spawn_hypnosis_enemies(&mut self, speed_m: f32, spawn_m: i32) {
+    pub fn spawn_hypnosis_enemies(&mut self, speed_m: Float, spawn_m: i32) {
         let ids = vec![WallType::Candy];
         let mut enemies = vec![];
         for _ in 0..100 * spawn_m {
             let cap = 0.3 * speed_m;
-            let velocity: (f32, f32) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
+            let velocity: (Float, Float) = (rand::thread_rng().gen_range(-cap..=cap), rand::thread_rng().gen_range(-cap..=cap));
             let radius = rand::thread_rng().gen_range(50.0..=100.0);
             let color = "rgb(190,190,190)";
             let mut enemy = Enemy::new(-25000.0, -25000.0, velocity, radius, color);
@@ -397,9 +397,9 @@ impl Game {
         }
         self.enemies.push((ids, enemies)); 
     }
-    pub fn spawn_grid(&mut self, size: f32, color: &str, space: f32, width: f32) {
+    pub fn spawn_grid(&mut self, size: Float, color: &str, space: Float, width: Float) {
         for i in 0..(size as i32 / space as i32) {
-            let offset = i as f32 * space;
+            let offset = i as Float * space;
             self.grid.push((
                 (offset, -size),
                 DrawPack::new(color, Shape::Line { width, x: offset, y: size }, (0.0, 0.0)),
@@ -422,7 +422,7 @@ impl Game {
             ));
         }
     }
-    pub fn spawn_area(&mut self, corners: Vec<(f32, f32)>, color: &str, walltype: WallType, collision_types: (bool, bool)) {
+    pub fn spawn_area(&mut self, corners: Vec<(Float, Float)>, color: &str, walltype: WallType, collision_types: (bool, bool)) {
         let start = (0.0, 0.0);
         for c in 0..corners.len() {
             let a = corners[c];
@@ -679,7 +679,7 @@ impl Game {
         let cords = vec![(8,0),(-8,0),(0,8),(0,-8)];
         for c in cords {
             for i in 0..10 {
-                let center = (c.0 as f32 * 1000.0, c.1 as f32 * 1000.0);
+                let center = (c.0 as Float * 1000.0, c.1 as Float * 1000.0);
                 let distance = (0.0, 2000.0);
                 let point = random_point(center, distance);
                 let c = Collectable::new(point.0, point.1, Color::new(255,0,0,1), vec![

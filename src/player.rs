@@ -1,14 +1,14 @@
 
 
-use crate::{action::Action, collectable::Collectable, color::Color, game::{DrawPack, Game, Shape, Walls}, impl_Drawable, impl_Moveable, impl_Entity, impl_Position, inventory::Inventory, vector, wall::WallType};
+use crate::{action::Action, collectable::Collectable, color::Color, game::{DrawPack, Game, Shape, Walls}, impl_Drawable, impl_Entity, impl_Moveable, impl_Position, inventory::Inventory, vector, wall::WallType, Float};
 use crate::gametraits::*;
 use crate::{impl_RadiusTrait};
 
 #[derive(Clone, Copy, Debug)]
 pub enum PlayerEffect {
-    Shrink {origin: usize, shrink: f32, ease: usize},
-    SpeedAlter {origin: usize, slow: f32, ease: usize},
-    Harden {ease: usize, cooldown: usize, speed: f32},
+    Shrink {origin: usize, shrink: Float, ease: usize},
+    SpeedAlter {origin: usize, slow: Float, ease: usize},
+    Harden {ease: usize, cooldown: usize, speed: Float},
 }
 
 #[derive(Default)]
@@ -21,21 +21,21 @@ pub struct Player {
     pub invincible: bool,
     just_pressed: Vec<String>,
     pub keys_down: Vec<String>,
-    pub mouse: (f32, f32),
+    pub mouse: (Float, Float),
     pub name: String,
     old_keys_down: Vec<String>,
-    pub radius: f32,
-    pub radius_multiplier: f32,
+    pub radius: Float,
+    pub radius_multiplier: Float,
     pub skip_move: bool,
-    pub speed: f32,
-    pub speed_multiplier: f32,
-    pub velocity: (f32, f32),
-    pub x: f32,
-    pub y: f32,
-    pub zoom: f32,
-    pub zoomlimit: (f32, f32),
+    pub speed: Float,
+    pub speed_multiplier: Float,
+    pub velocity: (Float, Float),
+    pub x: Float,
+    pub y: Float,
+    pub zoom: Float,
+    pub zoomlimit: (Float, Float),
     pub just_collided: bool,
-    pub old_position: (f32, f32),
+    pub old_position: (Float, Float),
 }
 
 impl_Entity!(Player);
@@ -67,7 +67,7 @@ impl Player {
         let scroll = self.inventory.items.iter().position(|e| {e.name == "teleportation scroll".to_owned()}).unwrap();
         self.inventory.items.remove(scroll);
     }
-    fn tp_possibility(&mut self, target: (f32, f32), key: &str) {
+    fn tp_possibility(&mut self, target: (Float, Float), key: &str) {
         let scroll = self.inventory.items.iter().position(|e| {e.name == "teleportation scroll".to_owned()});
         match scroll {
             Some(_) => {
@@ -244,8 +244,8 @@ impl Player {
         let mut vy = 0.0;
         let key = "Space".to_owned();
         if self.keys_down.contains(&key) {
-            vx = self.mouse.0 as f32 / 50.0 * self.speed;
-            vy = self.mouse.1 as f32 / 50.0 * self.speed;
+            vx = self.mouse.0 as Float / 50.0 * self.speed;
+            vy = self.mouse.1 as Float / 50.0 * self.speed;
         }
         else {
             let key = "KeyW".to_owned();

@@ -28,6 +28,8 @@ use server::Server;
 
 use crate::{game::Game, server::ServerMessage};
 
+pub type Float = f64;
+
 fn main() {
     let (sms, smr) = channel::<ServerMessage>();
 
