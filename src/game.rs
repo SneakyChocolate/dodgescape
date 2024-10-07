@@ -221,24 +221,24 @@ pub fn handle_collision(game: &mut Game) {
                                 },
                             };
                         }
-                        // if !barrier_crossed {
-                        //     // closest point from enemy to walls
-                        //     if vector::distance(clostest, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
-                        //         let ocp = collisions.get_mut(&EntityIndex::Enemy { g, e });
-                        //         match ocp {
-                        //             Some(ocp) => {
-                        //                 let old_dist = vector::distance((enemy.x, enemy.y), *ocp);
-                        //                 let dist = vector::distance((enemy.x, enemy.y), clostest);
-                        //                 if dist.2 < old_dist.2 {
-                        //                     *ocp = clostest;
-                        //                 }
-                        //             },
-                        //             None => {
-                        //                 collisions.insert(EntityIndex::Enemy { g, e }, clostest);
-                        //             },
-                        //         }
-                        //     }
-                        // }
+                        if !barrier_crossed {
+                            // closest point from enemy to walls
+                            if vector::distance(clostest, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
+                                let ocp = collisions.get_mut(&EntityIndex::Enemy { g, e });
+                                match ocp {
+                                    Some(ocp) => {
+                                        let old_dist = vector::distance((enemy.x, enemy.y), *ocp);
+                                        let dist = vector::distance((enemy.x, enemy.y), clostest);
+                                        if dist.2 < old_dist.2 {
+                                            *ocp = clostest;
+                                        }
+                                    },
+                                    None => {
+                                        collisions.insert(EntityIndex::Enemy { g, e }, clostest);
+                                    },
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -266,19 +266,20 @@ pub fn handle_collision(game: &mut Game) {
             }
         }
     }
-    // offset for pushing object away on collision so collision doesnt trigger again
-    // TODO fix 180 turn on barrier cross
-    const OFFSET: f32 = 0.001;
-    for ((e, g), (f, l)) in barrier_crosses.iter() {
+
+    for ((e, g), (f, line, wall)) in barrier_crosses.iter() {
         let enemy = get_enemy(game, *g, *e);
-        let np = l.point(*f, -enemy.get_radius());
-        let cp = l.point(*f, 0.0);
+        let np = line.point(*f, -enemy.get_radius());
+        let cp = wall.get_nearest_point(&np);
         let x = np.0;
         let y = np.1;
         enemy.set_pos(x, y);
         collisions.insert(EntityIndex::Enemy { g: *g, e: *e }, cp);
     }
+
     // handle wall angle from collision
+    // offset for pushing object away on collision so collision doesnt trigger again
+    const OFFSET: f32 = 0.001;
     for (entity_index, collision_point) in collisions {
         let object: Box<&mut dyn Moveable> = match entity_index {
             EntityIndex::Player { p } => {
