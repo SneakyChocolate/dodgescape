@@ -186,7 +186,7 @@ pub fn handle_collision(game: &mut Game) {
         }
     }
     let mut collisions: HashMap<EntityIndex, (f32, f32)> = HashMap::new();
-    let mut barrier_crosses: HashMap<(usize, usize), (f32, Line)> = HashMap::new();
+    let mut barrier_crosses: HashMap<(usize, usize), (f32, Line, Wall)> = HashMap::new();
     for wgroup in game.walls.iter() {
         for wall in wgroup.1.iter() {
             // enemies
@@ -213,7 +213,7 @@ pub fn handle_collision(game: &mut Game) {
                                         },
                                         None => {
                                             // no shorter distance found
-                                            barrier_crosses.insert((e, g), (ncp, enemy_vector));
+                                            barrier_crosses.insert((e, g), (ncp, enemy_vector, wall.clone()));
                                         },
                                     }
                                 },
@@ -221,24 +221,24 @@ pub fn handle_collision(game: &mut Game) {
                                 },
                             };
                         }
-                        if !barrier_crossed {
-                            // closest point from enemy to walls
-                            if vector::distance(clostest, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
-                                let ocp = collisions.get_mut(&EntityIndex::Enemy { g, e });
-                                match ocp {
-                                    Some(ocp) => {
-                                        let old_dist = vector::distance((enemy.x, enemy.y), *ocp);
-                                        let dist = vector::distance((enemy.x, enemy.y), clostest);
-                                        if dist.2 < old_dist.2 {
-                                            *ocp = clostest;
-                                        }
-                                    },
-                                    None => {
-                                        collisions.insert(EntityIndex::Enemy { g, e }, clostest);
-                                    },
-                                }
-                            }
-                        }
+                        // if !barrier_crossed {
+                        //     // closest point from enemy to walls
+                        //     if vector::distance(clostest, (enemy.get_x(), enemy.get_y())).2 <= enemy.get_radius() {
+                        //         let ocp = collisions.get_mut(&EntityIndex::Enemy { g, e });
+                        //         match ocp {
+                        //             Some(ocp) => {
+                        //                 let old_dist = vector::distance((enemy.x, enemy.y), *ocp);
+                        //                 let dist = vector::distance((enemy.x, enemy.y), clostest);
+                        //                 if dist.2 < old_dist.2 {
+                        //                     *ocp = clostest;
+                        //                 }
+                        //             },
+                        //             None => {
+                        //                 collisions.insert(EntityIndex::Enemy { g, e }, clostest);
+                        //             },
+                        //         }
+                        //     }
+                        // }
                     }
                 }
             }

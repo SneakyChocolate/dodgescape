@@ -21,7 +21,7 @@ pub enum WallType {
 }
 
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Wall {
     pub a: (f32, f32),
     pub b: (f32, f32),
