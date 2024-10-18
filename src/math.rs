@@ -3,7 +3,6 @@ use crate::Float;
 
 pub type Matrix = Vec<Vec<Float>>;
 
-// alias test
 pub mod matrix {
     use crate::Float;
 
