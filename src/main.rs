@@ -2,25 +2,25 @@
 
 #![allow(warnings)]
 
-mod http;
-mod server;
-mod parser;
-mod game;
-mod player;
+mod action;
+mod bits;
+mod collectable;
+mod color;
 mod enemy;
+mod game;
+mod gametraits;
+mod http;
+mod inventory;
+mod item;
+mod math;
+mod parser;
+mod player;
+mod server;
+mod spawner;
+mod string;
 mod vector;
 mod wall;
-mod math;
-mod action;
-mod inventory;
-mod gametraits;
-mod collectable;
-mod item;
 mod websocket;
-mod bits;
-mod color;
-mod string;
-mod spawner;
 
 use std::sync::mpsc::channel;
 
@@ -36,10 +36,9 @@ fn main() {
     let game = Game::new(smr);
     game.start();
     // wsl ip
-    // let server = Server::new("172.28.37.92:7878", sms);
-    let server = Server::new("172.19.241.59:7878", sms);
+    let server = Server::new("172.28.37.92:7878", sms);
+    // let server = Server::new("172.19.241.59:7878", sms);
     let server_handle = server.start();
     println!("server started...");
     let _ = server_handle.join();
 }
-
